@@ -19,5 +19,11 @@ public class Video {
 	private String channelTitle;
 	private boolean isShorts;
 	private String duration;
+	private int durationInSeconds;
 	private Timestamp publishedDate;
+	private long viewCount;
+
+	public int getDurationSeconds() {
+		return (int) java.time.Duration.parse(duration).getSeconds();
+	}
 }

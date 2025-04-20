@@ -1,14 +1,18 @@
 package com.example.music.controller;
 
+import com.example.music.model.SearchList;
 import com.example.music.model.Video;
 import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
+import com.example.music.service.serviceImpl.YoutubeServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,23 +36,29 @@ public class VideoController {
                          @RequestParam(value = "channel", required = false) String channel,
                          @RequestParam(value = "page", required = false, defaultValue = "1") int page,
                          @RequestParam(value = "filter", defaultValue = "all") String filter,
+                         @RequestParam(value = "sort", defaultValue = "relevance") String sort,
                          Model model) {
-        List<Video> videos = new ArrayList<>();
 
-        if (query != null && !query.trim().isEmpty()) {
-            videos = youtubeService.searchVideos(query, channel, page);
-        }
+        SearchList searchResult = youtubeService.searchVideos(query, channel, 1, sort);
+        List<Video> filtered = searchResult.getVideos();
 
+        // 필터링
         if (filter.equals("shorts")) {
-            videos = videos.stream().filter(Video::isShorts).collect(Collectors.toList());
+            filtered = filtered.stream().filter(Video::isShorts).collect(Collectors.toList());
         } else if (filter.equals("videos")) {
-            videos = videos.stream().filter(v -> !v.isShorts()).collect(Collectors.toList());
+            filtered = filtered.stream().filter(v -> !v.isShorts()).collect(Collectors.toList());
         }
 
-        model.addAttribute("videos", videos);
+        int pageSize = 10;
+        int totalCount = filtered.size();
+        int totalPages = (int) Math.ceil((double) totalCount / pageSize);
+        List<Video> paged = youtubeService.paginate(filtered, page, pageSize);
+
+        SearchList result = new SearchList(paged, totalCount, totalPages, page, sort);
+        model.addAttribute("searchResult", result);
         model.addAttribute("query", query);
         model.addAttribute("channel", channel);
-        model.addAttribute("currentPage", page);
+        model.addAttribute("filter", filter);
         return "video/search";
     }
 

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="video">
+    <resultMap id="videoResultMap" type="Video">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="thumbnail" column="thumbnail"/>
+        <result property="channelTitle" column="channel_title"/>
+        <result property="publishedDate" column="published_date"/>
+    </resultMap>
+
+    <insert id="addVideo" parameterType="Video">
+        INSERT INTO videos (title, thumbnail, channel_title, published_date)
+        VALUES (#{title}, #{thumbnail}, #{channelTitle}, #{publishedDate})
+    </insert>
+
+    <select id="getVideoById" resultMap="videoResultMap">
+        SELECT * FROM videos WHERE id = #{id}
+    </select>
+
+    <select id="getAllVideos" resultMap="videoResultMap">
+        SELECT * FROM videos
+    </select>
+
+    <select id="getVideosByChannel" resultMap="videoResultMap">
+        SELECT * FROM videos WHERE channel_title = #{channelTitle}
+    </select>
+
+    <update id="updateVideo" parameterType="Video">
+        UPDATE videos
+        SET title = #{title},
+        thumbnail = #{thumbnail},
+        channel_title = #{channelTitle}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteVideo">
+        DELETE FROM videos WHERE id = #{id}
+    </delete>
+
+</mapper>

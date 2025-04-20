@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="playlist">
+	<resultMap id="playlistResultMap" type="PlayList">
+		<id property="id" column="id" />
+		<result property="userId" column="user_id" />
+		<result property="title" column="title" />
+		<result property="image" column="image" />
+		<result property="viewCount" column="view_count" />
+		<result property="likeCount" column="like_count" />
+		<result property="createdDate" column="created_date" />
+	</resultMap>
+
+	<insert id="save" parameterType="PlayList">
+		INSERT INTO playlists (user_id,
+		title, image, view_count, like_count,
+		created_date)
+		VALUES (#{userId},
+		#{title}, #{image}, 0, 0, SYSDATE)
+	</insert>
+
+	<select id="getPlaylistByUserId" resultMap="playlistResultMap">
+		SELECT * FROM
+		playlists WHERE user_id = #{userId}
+	</select>
+
+	<delete id="deletePlaylist">
+		DELETE FROM playlists WHERE id = #{id}
+	</delete>
+
+</mapper>

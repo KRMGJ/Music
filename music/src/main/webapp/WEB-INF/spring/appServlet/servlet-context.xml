@@ -14,7 +14,7 @@
     <!-- Spring MVC 설정 -->
     <mvc:annotation-driven />
 
-    <!--	<resources mapping="/resources/**" location="/resources/" />-->
+    <!--<resources mapping="/resources/**" location="/resources/" />-->
     <!-- 정적 리소스 핸들러 -->
     <mvc:resources mapping="/**" location="classpath:/static/" cache-period="3600"/>
 
