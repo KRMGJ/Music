@@ -1,7 +1,6 @@
 package com.example.music.model;
 
 import java.sql.Timestamp;
-import java.util.Date;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,14 +15,13 @@ public class Video {
 	private String id;
 	private String title;
 	private String thumbnail;
-	private String channelTitle;
+	private String description;
 	private boolean isShorts;
 	private String duration;
 	private int durationInSeconds;
+	private String formattedDuration;
 	private Timestamp publishedDate;
 	private long viewCount;
-
-	public int getDurationSeconds() {
-		return (int) java.time.Duration.parse(duration).getSeconds();
-	}
+	private String formattedViewCount;
+	private ChannelInfo channelInfo;
 }

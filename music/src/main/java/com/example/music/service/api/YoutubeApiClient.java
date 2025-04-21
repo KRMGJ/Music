@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -15,9 +13,21 @@ import java.util.*;
 public class YoutubeApiClient {
 
     private static final String API_KEY = "AIzaSyBBNgTGf8f93anD6oYRWSFBJe388DBXBQg";
-    private static final String SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
-    private static final String DETAILS_URL = "https://www.googleapis.com/youtube/v3/videos";
+    private static final String API_URL = "https://www.googleapis.com/youtube/v3";
+    private static final String CHANNEL_URL = API_URL + "/channels";
+    private static final String SEARCH_URL = API_URL + "/search";
+    private static final String DETAILS_URL = API_URL + "/videos";
     private static final ObjectMapper mapper = new ObjectMapper();
+
+    public JsonNode fetchChannelInfo(String channelId) throws Exception {
+        String url = CHANNEL_URL
+                + "?part=snippet,statistics"
+                + "&id=" + channelId
+                + "&key=" + API_KEY;
+
+        JsonNode response = mapper.readTree(sendGetRequest(url));
+        return response.get("items").get(0); // 단일 채널 정보
+    }
 
     public JsonNode searchVideos(String encodedQuery) throws Exception {
         String url = SEARCH_URL + "?part=snippet&type=video&maxResults=50&q=" + encodedQuery + "&key=" + API_KEY;

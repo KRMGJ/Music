@@ -32,6 +32,7 @@
         <!-- LoginInterceptor -->
         <mvc:interceptor>
             <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/user/addUser"/>
             <mvc:exclude-mapping path="/auth/**"/>
             <mvc:exclude-mapping path="/common/**"/>
             <mvc:exclude-mapping path="/"/>
