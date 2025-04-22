@@ -52,6 +52,16 @@ public class YoutubeApiClient {
         return result;
     }
 
+    public JsonNode fetchSnippetById(String videoId) throws Exception {
+        String url = DETAILS_URL
+                + "?part=snippet"
+                + "&id=" + videoId
+                + "&key=" + API_KEY;
+
+        JsonNode response = mapper.readTree(sendGetRequest(url));
+        return response.get("items").get(0).get("snippet");
+    }
+
     private String sendGetRequest(String urlStr) throws Exception {
         HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
         conn.setRequestMethod("GET");

@@ -8,17 +8,13 @@ import org.springframework.stereotype.Service;
 import com.example.music.service.VideoService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VideoServiceImpl implements VideoService {
 
     @Autowired
     VideoDao videoDao;
-
-    @Override
-    public void insertVideo(Video video) {
-        videoDao.insertVideo(video);
-    }
 
     @Override
     public void updateVideo(Video video) {
@@ -46,5 +42,10 @@ public class VideoServiceImpl implements VideoService {
     public List<Video> getVideosByChannel(String channelTitle) {
         List<Video> videoList = videoDao.getVideosByChannel(channelTitle);
         return videoList;
+    }
+
+    @Override
+    public void saveVideoToPlaylist(Video video, Long playlistId) {
+        videoDao.insertPlaylistVideo(playlistId, video.getVideoId());
     }
 }

@@ -6,12 +6,14 @@
 		<typeAlias type="com.example.music.model.User" alias="User"/>
 		<typeAlias type="com.example.music.model.PlayList" alias="PlayList"/>
 		<typeAlias type="com.example.music.model.Video" alias="Video"/>
+		<typeAlias type="com.example.music.model.PlaylistVideo" alias="PlaylistVideo"/>
 	</typeAliases>
 
 	<mappers>
 		<mapper resource="mybatis/user.xml"/>
 		<mapper resource="mybatis/playlist.xml"/>
 		<mapper resource="mybatis/video.xml"/>
+		<mapper resource="mybatis/playlistVideo.xml"/>
 	</mappers>
 
 </configuration>

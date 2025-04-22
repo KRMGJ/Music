@@ -13,7 +13,7 @@ import com.example.music.util.MessageUtil;
 
 @Controller
 @RequestMapping("/auth")
-public class AuthCotroller {
+public class AuthController {
 
 	@Autowired
 	UserService userService;
@@ -29,8 +29,6 @@ public class AuthCotroller {
 		if (user != null && user.getPassword().equals(password)) {
 			session.setAttribute("loginUser", user);
 			session.setAttribute("isAdmin", user.getRole().equals("ADMIN"));
-			Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
-			System.out.println("isAdmin: " + isAdmin);
 			MessageUtil.successMessage("로그인 성공", "/", model);
 			return "common/success";
 		}
@@ -39,9 +37,9 @@ public class AuthCotroller {
 	}
 
 	@GetMapping("/logout")
-	public String logout(HttpSession session) {
+	public String logout(HttpSession session, Model model) {
 		session.invalidate();
-		MessageUtil.successMessage("로그아웃 성공", "/", null);
+		MessageUtil.successMessage("로그아웃 성공", "/", model);
 		return "common/success";
 	}
 }

@@ -1,5 +1,6 @@
 package com.example.music.service.serviceImpl;
 
+import com.example.music.dao.VideoDao;
 import com.example.music.model.ChannelInfo;
 import com.example.music.model.SearchList;
 import com.example.music.model.Video;
@@ -22,6 +23,9 @@ public class YoutubeServiceImpl implements YoutubeService {
 
     @Autowired
     YoutubeApiClient apiClient;
+
+    @Autowired
+    VideoDao videodao;
 
     @Override
     public SearchList searchVideos(String query, String channel, int page, String filter, String sort) {
@@ -47,15 +51,26 @@ public class YoutubeServiceImpl implements YoutubeService {
 
             List<String> videoIds = new ArrayList<>();
             for (JsonNode item : items) {
-                videoIds.add(item.get("id").get("videoId").asText());
+                if (item.get("id").has("videoId")) {
+                    videoIds.add(item.get("id").get("videoId").asText());
+                }
             }
 
             Map<String, JsonNode> videoDetails = apiClient.fetchVideoDetails(videoIds);
 
             List<Video> videos = new ArrayList<>();
             for (JsonNode item : items) {
+                JsonNode idNode = item.get("id");
+                if (idNode == null || !idNode.has("videoId")) continue;
+
+                String videoId = idNode.get("videoId").asText();
                 JsonNode snippet = item.get("snippet");
-                String videoId = item.get("id").get("videoId").asText();
+                JsonNode videoDetail = videoDetails.get(videoId);
+
+                if (snippet == null || videoDetail == null ||
+                        videoDetail.get("statistics") == null || videoDetail.get("contentDetails") == null) {
+                    continue;
+                }
                 String title = snippet.get("title").asText();
                 String description = snippet.get("description").asText();
                 String thumbnail = snippet.get("thumbnails").get("medium").get("url").asText();
@@ -66,7 +81,9 @@ public class YoutubeServiceImpl implements YoutubeService {
                 String durationStr = videoDetails.get(videoId).get("contentDetails").get("duration").asText();
                 int durationSec = (int) Duration.parse(durationStr).getSeconds();
                 String formattedDuration = getFormattedDuration(durationSec);
-                boolean isShorts = isShortVideo(title, description, durationSec);
+                boolean isShortsBool = isShortVideo(title, description, durationSec);
+                String isShorts = isShortsBool ? "Y" : "N";
+
 
                 String channelId = snippet.get("channelId").asText();
                 ChannelInfo channelInfo = channelInfoMap.get(channelId);
@@ -101,13 +118,12 @@ public class YoutubeServiceImpl implements YoutubeService {
                 default:
             }
 
-            // 필터링
-            if (filter.equals("shorts")) {
-                videos = videos.stream().filter(Video::isShorts).collect(Collectors.toList());
-            } else if (filter.equals("videos")) {
-                videos = videos.stream().filter(v -> !v.isShorts()).collect(Collectors.toList());
+            // 쇼츠 필터링
+            if ("shorts".equals(filter)) {
+                videos = videos.stream().filter(v -> "Y".equalsIgnoreCase(v.getIsShorts())).collect(Collectors.toList());
+            } else if ("videos".equals(filter)) {
+                videos = videos.stream().filter(v -> !"Y".equalsIgnoreCase(v.getIsShorts())).collect(Collectors.toList());
             }
-
 
             int pageSize = 10;
             int totalCount = videos.size();
@@ -123,10 +139,72 @@ public class YoutubeServiceImpl implements YoutubeService {
     }
 
     @Override
+    public Video fetchAndSaveVideoById(String videoId) {
+        try {
+            // 1. 이미 DB에 있는지 확인
+            Video existing = videodao.getVideoById(videoId);
+            if (existing != null) {
+                return existing;
+            }
+
+            // 2. API 호출해서 데이터 가져오기
+            List<String> ids = Collections.singletonList(videoId);
+            Map<String, JsonNode> videoDetails = apiClient.fetchVideoDetails(ids);
+
+            if (!videoDetails.containsKey(videoId)) {
+                throw new RuntimeException("YouTube API에서 해당 영상을 찾을 수 없습니다.");
+            }
+
+            JsonNode detail = videoDetails.get(videoId);
+            JsonNode snippet = apiClient.fetchSnippetById(videoId);
+
+            // 3. 데이터 추출
+            String title = snippet.get("title").asText();
+            String description = snippet.get("description").asText();
+            String thumbnail = snippet.get("thumbnails").get("medium").get("url").asText();
+            Timestamp publishedDate = Timestamp.from(OffsetDateTime.parse(snippet.get("publishedAt").asText()).toInstant());
+
+            long viewCount = detail.get("statistics").get("viewCount").asLong();
+            String formattedViewCount = formatViewCount(viewCount);
+
+            String durationStr = detail.get("contentDetails").get("duration").asText();
+            int durationSec = (int) Duration.parse(durationStr).getSeconds();
+            String formattedDuration = getFormattedDuration(durationSec);
+
+            boolean isShortsBool = isShortVideo(title, description, durationSec);
+            String isShorts = isShortsBool ? "Y" : "N";
+
+
+            String channelId = snippet.get("channelId").asText();
+            JsonNode channelData = apiClient.fetchChannelInfo(channelId);
+            String channelTitle = channelData.get("snippet").get("title").asText();
+            String channelThumb = channelData.get("snippet").get("thumbnails").get("medium").get("url").asText();
+            long subscriberCount = channelData.get("statistics").get("subscriberCount").asLong();
+            ChannelInfo channelInfo = new ChannelInfo(channelId, channelTitle, channelThumb, subscriberCount);
+
+            Video video = new Video(videoId, title, thumbnail, description, isShorts, durationStr, durationSec, formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo);
+
+            // 4. DB 저장
+            videodao.insertVideo(video);
+            return video;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("영상 정보를 불러오는 중 오류 발생");
+        }
+    }
+
+    /**
+     * @param title 제목
+     * @param desc 내용
+     * @param duration 영상 길이 (초 단위)
+     * @return 제목 또는 내용에 "short"가 포함되어 있거나, 영상 길이가 60초 이하인 경우 true
+     */
+    @Override
     public boolean isShortVideo(String title, String desc, int duration) {
-        String t = title.toLowerCase();
-        String d = desc.toLowerCase();
-        return duration <= 60 || t.contains("#shorts") || d.contains("#shorts") || t.contains("#short") || d.contains("#short");
+        return duration <= 60 || title.contains("#shorts") || desc.contains("#shorts") || title.contains("#short") || desc.contains("#short")
+                || title.contains("short") || desc.contains("short") || title.contains("Short") || desc.contains("Short")
+                || title.contains("쇼츠") || desc.contains("쇼츠") || title.contains("Shorts") || desc.contains("Shorts");
     }
 
     @Override
@@ -158,5 +236,4 @@ public class YoutubeServiceImpl implements YoutubeService {
             return String.format("%,d회", viewCount); // 천 단위 콤마
         }
     }
-
 }

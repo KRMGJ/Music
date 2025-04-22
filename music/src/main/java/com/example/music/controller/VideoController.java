@@ -1,20 +1,27 @@
 package com.example.music.controller;
 
+import com.example.music.model.PlayList;
 import com.example.music.model.SearchList;
+import com.example.music.model.User;
 import com.example.music.model.Video;
+import com.example.music.service.PlayListService;
 import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @Controller
 @RequestMapping("/video")
 public class VideoController {
 
     @Autowired
-    VideoService videoService;
+    PlayListService playListService;
 
     @Autowired
     YoutubeService youtubeService;
@@ -30,20 +37,18 @@ public class VideoController {
                          @RequestParam(value = "page", required = false, defaultValue = "1") int page,
                          @RequestParam(value = "filter", defaultValue = "all") String filter,
                          @RequestParam(value = "sort", defaultValue = "relevance") String sort,
+                         HttpSession session,
                          Model model) {
-
+        User user = (User) session.getAttribute("loginUser");
+        System.out.println("User: " + user.getId());
+        List<PlayList> playlists = playListService.getPlaylistsByUserId(user.getId());
         SearchList result = youtubeService.searchVideos(query, channel, page, filter, sort);
 
+        model.addAttribute("playlists", playlists);
         model.addAttribute("searchResult", result);
         model.addAttribute("query", query);
         model.addAttribute("channel", channel);
         model.addAttribute("filter", filter);
         return "video/search";
-    }
-
-    @PostMapping("/addVideo")
-    public String addVideo(@RequestBody Video video) {
-        videoService.insertVideo(video);
-        return "Video added successfully";
     }
 }

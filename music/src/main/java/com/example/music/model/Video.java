@@ -12,11 +12,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Video {
-	private String id;
+	private String videoId;
 	private String title;
 	private String thumbnail;
 	private String description;
-	private boolean isShorts;
+	private String isShorts;
 	private String duration;
 	private int durationInSeconds;
 	private String formattedDuration;

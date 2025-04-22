@@ -17,34 +17,39 @@ public class VideoDaoImpl implements VideoDao {
 
     @Override
     public void insertVideo(Video video) {
-        sqlSession.insert("Video.addVideo", video);
+        sqlSession.insert("video.addVideo", video);
     }
 
     @Override
     public void updateVideo(Video video) {
-        sqlSession.update("Video.updateVideo", video);
+        sqlSession.update("video.updateVideo", video);
     }
 
     @Override
     public void deleteVideo(String id) {
-        sqlSession.delete("Video.deleteVideo", id);
+        sqlSession.delete("video.deleteVideo", id);
     }
 
     @Override
     public Video getVideoById(String id) {
-        Video video = sqlSession.selectOne("Video.getVideoById", id);
+        Video video = sqlSession.selectOne("video.getVideoById", id);
         return video;
     }
 
     @Override
     public List<Video> getAllVideos() {
-        List<Video> videoList = sqlSession.selectList("Video.getAllVideos");
+        List<Video> videoList = sqlSession.selectList("video.getAllVideos");
         return videoList;
     }
 
     @Override
     public List<Video> getVideosByChannel(String channelTitle) {
-        List<Video> videoList = sqlSession.selectList("Video.getVideosByChannel", channelTitle);
+        List<Video> videoList = sqlSession.selectList("video.getVideosByChannel", channelTitle);
         return videoList;
+    }
+
+    @Override
+    public void insertPlaylistVideo(Long playlistId, String videoId) {
+        sqlSession.insert("video.insertPlaylistVideo", new Object[]{playlistId, videoId});
     }
 }

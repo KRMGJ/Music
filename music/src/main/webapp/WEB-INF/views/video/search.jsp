@@ -5,9 +5,10 @@
 <html>
 <head>
 <title>YouTube 검색</title>
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-	rel="stylesheet" />
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap JS + Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <style>
 .video-duration {
 	position: absolute;
@@ -79,7 +80,7 @@
 
 	<!-- 📺 검색 결과 -->
 	<c:choose>
-		<c:when test="${empty searchResult.videos}">
+		<c:when test="${searchResult == null || empty searchResult.videos}">
 			<p class="text-muted">검색 결과가 없습니다.</p>
 		</c:when>
 		<c:otherwise>
@@ -87,7 +88,7 @@
 				<div class="d-flex mb-4" style="height: 120px;">
 					<!-- 썸네일 -->
 					<div class="me-3 position-relative" style="flex-shrink: 0;">
-						<a href="https://www.youtube.com/watch?v=${video.id}"
+						<a href="https://www.youtube.com/watch?v=${video.videoId}"
 							target="_blank"> <img src="${video.thumbnail}" alt="썸네일"
 							style="width: 210px; height: 120px; object-fit: cover; border-radius: 8px;" />
 							<div class="video-duration">${video.formattedDuration}</div>
@@ -96,10 +97,21 @@
 
 					<!-- 텍스트 영역 -->
 					<div class="flex-grow-1">
+                        <!-- 더보기 버튼 -->
+                        <div class="dropdown text-end">
+                    	    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    		⋮
+                    	    </button>
+                    	    <ul class="dropdown-menu">
+                    	    	<li><a class="dropdown-item" href="#" onclick="openPlaylistModal('${video.videoId}')">플레이리스트에 추가</a></li>
+                    	    	<li><a class="dropdown-item" href="https://www.youtube.com/watch?v=${video.videoId}" target="_blank">공유</a></li>
+                    	    </ul>
+                        </div>
 						<!-- 제목 -->
-						<a href="https://www.youtube.com/watch?v=${video.id}"
+						<a href="https://www.youtube.com/watch?v=${video.videoId}"
 							target="_blank" class="text-decoration-none text-dark fw-bold"
-							style="font-size: 1rem;"> ${video.title} </a>
+							style="font-size: 1rem;">${fn:escapeXml(video.title)}
+                        </a>
 
 						<!-- 조회수, 업로드일 -->
 						<div class="text-muted" style="font-size: 0.85rem;">
@@ -130,12 +142,48 @@
 		<div class="d-flex justify-content-center mt-4">
 			<c:forEach var="i" begin="1" end="${searchResult.totalPages}">
 				<a href="/video/search?query=${param.query}&channel=${param.channel}&filter=${param.filter}&sort=${param.sort}&page=${i}"
-					class="btn btn-outline-secondary mx-1 ${searchResult.currentPage == i ? 'active' : ''}">
+					class="btn btn-outline-secondary mx-1 ${searchResult.currentPage == i ? 'btn-primary' : 'btn-outline-secondary'}">
 					${i} 
 				</a>
 			</c:forEach>
 		</div>
 	</c:if>
+
+	<!-- 플레이리스트 선택 모달 -->
+    <div class="modal fade" id="playlistModal" tabindex="-1" aria-labelledby="playlistModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="addToPlaylistForm" method="post" action="/playlist/addVideo">
+                <input type="hidden" name="videoId" id="modalVideoId" required />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="playlistModalLabel">플레이리스트에 추가</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                </div>
+                <div class="modal-body">
+                    <c:forEach var="playlist" items="${playlists}">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="playlistId" id="pl-${playlist.id}" value="${playlist.id}" required>
+                            <label class="form-check-label" for="pl-${playlist.id}">
+                                ${playlist.title}
+                            </label>
+                        </div>
+                    </c:forEach>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">추가</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function openPlaylistModal(videoId) {
+    	document.getElementById('modalVideoId').value = videoId;
+    	const modal = new bootstrap.Modal(document.getElementById('playlistModal'));
+    	modal.show();
+    }
+    </script>
 
 </body>
 </html>

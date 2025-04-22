@@ -2,16 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="video">
     <resultMap id="videoResultMap" type="Video">
-        <id property="id" column="id"/>
+        <id property="videoId" column="id"/>
         <result property="title" column="title"/>
         <result property="thumbnail" column="thumbnail"/>
-        <result property="channelTitle" column="channel_title"/>
+        <result property="description" column="description"/>
+        <result property="isShorts" column="is_shorts"/>
+        <result property="duration" column="duration"/>
+        <result property="durationInSeconds" column="duration_in_seconds"/>
+        <result property="formattedDuration" column="formatted_duration"/>
         <result property="publishedDate" column="published_date"/>
+        <result property="viewCount" column="view_count"/>
     </resultMap>
 
     <insert id="addVideo" parameterType="Video">
-        INSERT INTO videos (title, thumbnail, channel_title, published_date)
-        VALUES (#{title}, #{thumbnail}, #{channelTitle}, #{publishedDate})
+        INSERT INTO videos (id, title, thumbnail, description, is_shorts, duration, duration_in_seconds, formatted_duration, published_date, view_count)
+        VALUES (#{videoId}, #{title}, #{thumbnail}, #{description}, #{isShorts}, #{duration}, #{durationInSeconds}, #{formattedDuration}, #{publishedDate}, #{viewCount})
     </insert>
 
     <select id="getVideoById" resultMap="videoResultMap">
@@ -29,8 +34,15 @@
     <update id="updateVideo" parameterType="Video">
         UPDATE videos
         SET title = #{title},
-        thumbnail = #{thumbnail},
-        channel_title = #{channelTitle}
+            thumbnail = #{thumbnail},
+            channel_title = #{channelTitle},
+            description = #{description},
+            is_shorts = #{isShorts},
+            duration = #{duration},
+            duration_in_seconds = #{durationInSeconds},
+            formatted_duration = #{formattedDuration},
+            published_date = #{publishedDate},
+            view_count = #{viewCount}
         WHERE id = #{id}
     </update>
 

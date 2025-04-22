@@ -9,8 +9,15 @@
 </head>
 <body>
 	<script>
-		alert("${message}");
-		window.location.href = "<c:url value='${redirectUrl}'/>";
-	</script>
+    	alert("${message}");
+    	<c:choose>
+    		<c:when test="${not empty redirectUrl}">
+    			window.location.href = "<c:url value='${redirectUrl}'/>";
+    		</c:when>
+    		<c:otherwise>
+    			history.back();
+    		</c:otherwise>
+    	</c:choose>
+    </script>
 </body>
 </html>

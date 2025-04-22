@@ -11,4 +11,5 @@ public interface VideoDao {
     Video getVideoById(String id);
     List<Video> getAllVideos();
     List<Video> getVideosByChannel(String channelTitle);
+    void insertPlaylistVideo(Long playlistId, String videoId);
 }
