@@ -13,6 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Video {
 	private String videoId;
+	private String channelId;
 	private String title;
 	private String thumbnail;
 	private String description;

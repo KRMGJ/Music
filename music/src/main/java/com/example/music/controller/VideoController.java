@@ -7,6 +7,7 @@ import com.example.music.model.Video;
 import com.example.music.service.PlayListService;
 import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
+import com.example.music.util.MessageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -40,7 +41,10 @@ public class VideoController {
                          HttpSession session,
                          Model model) {
         User user = (User) session.getAttribute("loginUser");
-        System.out.println("User: " + user.getId());
+        if(user == null) {
+            MessageUtil.errorMessage("로그인 후 이용해주세요.", "/auth/login", model);
+            return "common/error";
+        }
         List<PlayList> playlists = playListService.getPlaylistsByUserId(user.getId());
         SearchList result = youtubeService.searchVideos(query, channel, page, filter, sort);
 

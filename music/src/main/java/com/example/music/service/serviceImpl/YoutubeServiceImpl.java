@@ -1,9 +1,11 @@
 package com.example.music.service.serviceImpl;
 
+import com.example.music.dao.ChannelInfoDao;
 import com.example.music.dao.VideoDao;
 import com.example.music.model.ChannelInfo;
 import com.example.music.model.SearchList;
 import com.example.music.model.Video;
+import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
 import com.example.music.service.api.YoutubeApiClient;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,6 +28,12 @@ public class YoutubeServiceImpl implements YoutubeService {
 
     @Autowired
     VideoDao videodao;
+
+    @Autowired
+    VideoService videoService;
+
+    @Autowired
+    ChannelInfoDao channelInfoDao;
 
     @Override
     public SearchList searchVideos(String query, String channel, int page, String filter, String sort) {
@@ -88,7 +96,7 @@ public class YoutubeServiceImpl implements YoutubeService {
                 String channelId = snippet.get("channelId").asText();
                 ChannelInfo channelInfo = channelInfoMap.get(channelId);
 
-                videos.add(new Video(videoId, title, thumbnail, description, isShorts, durationStr, durationSec, formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo));
+                videos.add(new Video(videoId, channelId, title, thumbnail, description, isShorts, durationStr, durationSec, formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo));
             }
 
             if (channel != null && !channel.isEmpty()) {
@@ -174,7 +182,6 @@ public class YoutubeServiceImpl implements YoutubeService {
             boolean isShortsBool = isShortVideo(title, description, durationSec);
             String isShorts = isShortsBool ? "Y" : "N";
 
-
             String channelId = snippet.get("channelId").asText();
             JsonNode channelData = apiClient.fetchChannelInfo(channelId);
             String channelTitle = channelData.get("snippet").get("title").asText();
@@ -182,10 +189,18 @@ public class YoutubeServiceImpl implements YoutubeService {
             long subscriberCount = channelData.get("statistics").get("subscriberCount").asLong();
             ChannelInfo channelInfo = new ChannelInfo(channelId, channelTitle, channelThumb, subscriberCount);
 
-            Video video = new Video(videoId, title, thumbnail, description, isShorts, durationStr, durationSec, formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo);
+            Video video = new Video(videoId, channelId, title, thumbnail, description, isShorts, durationStr, durationSec, formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo);
+
+            // 3.1. 채널 정보 DB에 저장
+            ChannelInfo existingChannel = channelInfoDao.getChannelInfoById(channelId);
+            if (existingChannel == null) {
+                channelInfoDao.insertChannelInfo(channelInfo);
+            } else {
+                channelInfoDao.updateChannelInfo(channelInfo);
+            }
 
             // 4. DB 저장
-            videodao.insertVideo(video);
+            videoService.insertVideo(video);
             return video;
 
         } catch (Exception e) {

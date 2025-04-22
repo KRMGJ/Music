@@ -21,8 +21,8 @@ public class VideoDaoImpl implements VideoDao {
     }
 
     @Override
-    public void updateVideo(Video video) {
-        sqlSession.update("video.updateVideo", video);
+    public void updateVideo(String videoId) {
+        sqlSession.update("video.updateVideo", videoId);
     }
 
     @Override
@@ -31,8 +31,8 @@ public class VideoDaoImpl implements VideoDao {
     }
 
     @Override
-    public Video getVideoById(String id) {
-        Video video = sqlSession.selectOne("video.getVideoById", id);
+    public Video getVideoById(String videoId) {
+        Video video = sqlSession.selectOne("video.getVideoById", videoId);
         return video;
     }
 
@@ -51,5 +51,11 @@ public class VideoDaoImpl implements VideoDao {
     @Override
     public void insertPlaylistVideo(Long playlistId, String videoId) {
         sqlSession.insert("video.insertPlaylistVideo", new Object[]{playlistId, videoId});
+    }
+
+    @Override
+    public List<Video> getVideosByVideoIds(List<String> videoIds) {
+        List<Video> videos = sqlSession.selectList("video.getVideosByVideoIds", videoIds);
+        return videos;
     }
 }

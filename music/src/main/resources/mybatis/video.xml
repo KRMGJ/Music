@@ -3,6 +3,7 @@
 <mapper namespace="video">
     <resultMap id="videoResultMap" type="Video">
         <id property="videoId" column="id"/>
+        <result property="channelId" column="channel_id"/>
         <result property="title" column="title"/>
         <result property="thumbnail" column="thumbnail"/>
         <result property="description" column="description"/>
@@ -12,15 +13,20 @@
         <result property="formattedDuration" column="formatted_duration"/>
         <result property="publishedDate" column="published_date"/>
         <result property="viewCount" column="view_count"/>
+        <association property="channelInfo" javaType="ChannelInfo">
+            <result property="channelTitle" column="channel_title"/>
+            <result property="channelThumbnail" column="channel_thumbnail"/>
+            <result property="subscriberCount" column="subscriber_count"/>
+        </association>
     </resultMap>
 
     <insert id="addVideo" parameterType="Video">
-        INSERT INTO videos (id, title, thumbnail, description, is_shorts, duration, duration_in_seconds, formatted_duration, published_date, view_count)
-        VALUES (#{videoId}, #{title}, #{thumbnail}, #{description}, #{isShorts}, #{duration}, #{durationInSeconds}, #{formattedDuration}, #{publishedDate}, #{viewCount})
+        INSERT INTO videos (id, channel_id, title, thumbnail, description, is_shorts, duration, duration_in_seconds, formatted_duration, published_date, view_count)
+        VALUES (#{videoId}, #{channelId}, #{title}, #{thumbnail}, #{description}, #{isShorts}, #{duration}, #{durationInSeconds}, #{formattedDuration}, #{publishedDate}, #{viewCount})
     </insert>
 
     <select id="getVideoById" resultMap="videoResultMap">
-        SELECT * FROM videos WHERE id = #{id}
+        SELECT * FROM videos WHERE id = #{videoId}
     </select>
 
     <select id="getAllVideos" resultMap="videoResultMap">
@@ -31,7 +37,17 @@
         SELECT * FROM videos WHERE channel_title = #{channelTitle}
     </select>
 
-    <update id="updateVideo" parameterType="Video">
+    <select id="getVideosByVideoIds" resultMap="videoResultMap">
+        SELECT * FROM videos v
+        JOIN channel_info c ON v.channel_id = c.channel_id
+        WHERE id IN
+        <foreach item="videoId" open="(" separator="," close=")" collection="list">
+            #{videoId}
+        </foreach>
+    </select>
+
+
+    <update id="updateVideo" parameterType="String">
         UPDATE videos
         SET title = #{title},
             thumbnail = #{thumbnail},
@@ -43,7 +59,7 @@
             formatted_duration = #{formattedDuration},
             published_date = #{publishedDate},
             view_count = #{viewCount}
-        WHERE id = #{id}
+        WHERE id = #{videoId}
     </update>
 
     <delete id="deleteVideo">

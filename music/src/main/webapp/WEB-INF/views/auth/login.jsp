@@ -11,6 +11,8 @@
 <title>로그인</title>
 </head>
 <body>
+<jsp:include page="/WEB-INF/views/layout/header.jsp" />
+
 	<div class="container">
 		<form action="<c:url value='/auth/login'/>" method="post">
 			<div class="mb-3">
