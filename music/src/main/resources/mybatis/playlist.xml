@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="playlist">
-    <resultMap id="playlistResultMap" type="PlayList">
+    <resultMap id="playlistResultMap" type="Playlist">
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
         <result property="title" column="title"/>
@@ -11,7 +11,7 @@
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
-    <insert id="save" parameterType="PlayList">
+    <insert id="save" parameterType="Playlist">
         INSERT INTO playlists (user_id,
         title, image, view_count, like_count,
         created_date)
@@ -19,19 +19,19 @@
         #{title}, #{image}, 0, 0, SYSDATE)
     </insert>
 
-    <update id="incrementViewCount" parameterType="PlayList">
+    <update id="incrementViewCount" parameterType="Playlist">
         UPDATE playlists
         SET view_count = view_count + 1
         WHERE id = #{id}
     </update>
 
-    <update id="incrementLikeCount" parameterType="PlayList">
+    <update id="incrementLikeCount" parameterType="Playlist">
         UPDATE playlists
         SET like_count = like_count + 1
         WHERE id = #{id}
     </update>
 
-    <update id="decrementLikeCount" parameterType="PlayList">
+    <update id="decrementLikeCount" parameterType="Playlist">
         UPDATE playlists
         SET like_count = like_count - 1
         WHERE id = #{id}
@@ -54,7 +54,7 @@
         playlists WHERE user_id = #{userId}
     </select>
 
-    <update id="updatePlaylist" parameterType="PlayList">
+    <update id="updatePlaylist" parameterType="Playlist">
         UPDATE playlists
         SET title = #{title},
         image = #{image}

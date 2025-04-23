@@ -1,20 +1,20 @@
 package com.example.music.service;
 
-import com.example.music.model.PlayList;
+import com.example.music.model.Playlist;
 import com.example.music.model.PlaylistVideo;
 import com.example.music.model.Video;
 
 import java.util.List;
 
-public interface PlayListService {
+public interface PlaylistService {
     String addVideoToPlayList(Video video, int playlistId);
-    void addPlayList(PlayList playList);
-    void updatePlayList(PlayList playList);
+    void addPlayList(Playlist playList);
+    void updatePlayList(Playlist playList);
     void deletePlaylistByPlaylistId(int playlistId);
     void deleteVideoFromPlayList(PlaylistVideo pv);
     List<Video> getVideosByPlaylistId(int playlistId);
-    PlayList getPlaylistByPlaylistId(int playlistId);
-    List<PlayList> getPlayListByTitle(String title);
-    List<PlayList> getAllPlaylists();
-    List<PlayList> getPlaylistsByUserId(int userId);
+    Playlist getPlaylistByPlaylistId(int playlistId);
+    List<Playlist> getPlayListByTitle(String title);
+    List<Playlist> getAllPlaylists();
+    List<Playlist> getPlaylistsByUserId(int userId);
 }

@@ -1,31 +1,31 @@
 package com.example.music.service.serviceImpl;
 
-import com.example.music.dao.PlayListDao;
-import com.example.music.dao.PlayListVideoDao;
+import com.example.music.dao.PlaylistDao;
+import com.example.music.dao.PlaylistVideoDao;
 import com.example.music.dao.VideoDao;
-import com.example.music.model.PlayList;
+import com.example.music.model.Playlist;
 import com.example.music.model.PlaylistVideo;
 import com.example.music.model.Video;
 import com.example.music.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.music.service.PlayListService;
+import com.example.music.service.PlaylistService;
 
 import java.util.Collections;
 import java.util.List;
 
 @Service
-public class PlayListServiceImpl implements PlayListService {
+public class PlaylistServiceImpl implements PlaylistService {
 
     @Autowired
-    PlayListDao playListDao;
+    PlaylistDao playListDao;
 
     @Autowired
     VideoDao videoDao;
 
     @Autowired
-    PlayListVideoDao playListVideoDao;
+    PlaylistVideoDao playListVideoDao;
 
     @Autowired
     VideoService videoService;
@@ -47,12 +47,12 @@ public class PlayListServiceImpl implements PlayListService {
     }
 
     @Override
-    public void addPlayList(PlayList playList) {
+    public void addPlayList(Playlist playList) {
         playListDao.insert(playList);
     }
 
     @Override
-    public void updatePlayList(PlayList playList) {
+    public void updatePlayList(Playlist playList) {
         playListDao.update(playList);
     }
 
@@ -78,26 +78,26 @@ public class PlayListServiceImpl implements PlayListService {
     }
 
     @Override
-    public PlayList getPlaylistByPlaylistId(int playlistId) {
-        PlayList playList = playListDao.getPlaylistByPlaylistId(playlistId);
+    public Playlist getPlaylistByPlaylistId(int playlistId) {
+        Playlist playList = playListDao.getPlaylistByPlaylistId(playlistId);
         return playList;
     }
 
     @Override
-    public List<PlayList> getPlayListByTitle(String title) {
-        List<PlayList> playList = playListDao.getPlaylistsByTitle(title);
+    public List<Playlist> getPlayListByTitle(String title) {
+        List<Playlist> playList = playListDao.getPlaylistsByTitle(title);
         return playList;
     }
 
     @Override
-    public List<PlayList> getAllPlaylists() {
-        List<PlayList> playList = playListDao.getAllPlaylists();
+    public List<Playlist> getAllPlaylists() {
+        List<Playlist> playList = playListDao.getAllPlaylists();
         return playList;
     }
 
     @Override
-    public List<PlayList> getPlaylistsByUserId(int userId) {
-        List<PlayList> playList = playListDao.getPlaylistsByUserId(userId);
+    public List<Playlist> getPlaylistsByUserId(int userId) {
+        List<Playlist> playList = playListDao.getPlaylistsByUserId(userId);
         return playList;
     }
 }

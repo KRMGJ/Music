@@ -1,9 +1,9 @@
 package com.example.music.controller;
 
-import com.example.music.model.PlayList;
+import com.example.music.model.Playlist;
 import com.example.music.model.SearchList;
 import com.example.music.model.User;
-import com.example.music.service.PlayListService;
+import com.example.music.service.PlaylistService;
 import com.example.music.service.YoutubeService;
 import com.example.music.util.MessageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import java.util.List;
 public class VideoController {
 
     @Autowired
-    PlayListService playListService;
+    PlaylistService playListService;
 
     @Autowired
     YoutubeService youtubeService;
@@ -42,7 +42,7 @@ public class VideoController {
             MessageUtil.errorMessage("로그인 후 이용해주세요.", "/auth/login", model);
             return "common/error";
         }
-        List<PlayList> playlists = playListService.getPlaylistsByUserId(user.getId());
+        List<Playlist> playlists = playListService.getPlaylistsByUserId(user.getId());
         SearchList result = youtubeService.searchVideos(query, channel, page, filter, sort);
 
         model.addAttribute("playlists", playlists);

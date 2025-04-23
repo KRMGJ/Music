@@ -4,7 +4,7 @@
 <configuration>
 	<typeAliases>
 		<typeAlias type="com.example.music.model.User" alias="User"/>
-		<typeAlias type="com.example.music.model.PlayList" alias="PlayList"/>
+		<typeAlias type="com.example.music.model.Playlist" alias="Playlist"/>
 		<typeAlias type="com.example.music.model.Video" alias="Video"/>
 		<typeAlias type="com.example.music.model.PlaylistVideo" alias="PlaylistVideo"/>
 		<typeAlias type="com.example.music.model.ChannelInfo" alias="ChannelInfo"/>

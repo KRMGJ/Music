@@ -1,27 +1,27 @@
 package com.example.music.dao.daoImpl;
 
-import com.example.music.model.PlayList;
+import com.example.music.model.Playlist;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.example.music.dao.PlayListDao;
+import com.example.music.dao.PlaylistDao;
 
 import java.util.List;
 
 @Repository
-public class PlayListDaoImpl implements PlayListDao {
+public class PlaylistDaoImpl implements PlaylistDao {
 
     @Autowired
     SqlSession sqlSession;
 
     @Override
-    public void insert(PlayList playList) {
+    public void insert(Playlist playList) {
         sqlSession.insert("playlist.save", playList);
     }
 
     @Override
-    public void update(PlayList playList) {
+    public void update(Playlist playList) {
         sqlSession.update("playlist.updatePlaylist", playList);
     }
 
@@ -31,26 +31,26 @@ public class PlayListDaoImpl implements PlayListDao {
     }
 
     @Override
-    public PlayList getPlaylistByPlaylistId(int id) {
-        PlayList playList = sqlSession.selectOne("playlist.getPlaylistById", id);
+    public Playlist getPlaylistByPlaylistId(int id) {
+        Playlist playList = sqlSession.selectOne("playlist.getPlaylistById", id);
         return playList;
     }
 
     @Override
-    public List<PlayList> getAllPlaylists() {
-        List<PlayList> playList = sqlSession.selectList("playlist.getAllPlaylists");
+    public List<Playlist> getAllPlaylists() {
+        List<Playlist> playList = sqlSession.selectList("playlist.getAllPlaylists");
         return playList;
     }
 
     @Override
-    public List<PlayList> getPlaylistsByUserId(int userId) {
-        List<PlayList> playList = sqlSession.selectList("playlist.getPlaylistsByUserId", userId);
+    public List<Playlist> getPlaylistsByUserId(int userId) {
+        List<Playlist> playList = sqlSession.selectList("playlist.getPlaylistsByUserId", userId);
         return playList;
     }
 
     @Override
-    public List<PlayList> getPlaylistsByTitle(String title) {
-        List<PlayList> playList = sqlSession.selectList("playlist.getPlaylistsByTitle", title);
+    public List<Playlist> getPlaylistsByTitle(String title) {
+        List<Playlist> playList = sqlSession.selectList("playlist.getPlaylistsByTitle", title);
         return playList;
     }
 
