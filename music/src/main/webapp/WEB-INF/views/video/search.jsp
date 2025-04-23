@@ -42,14 +42,21 @@
 
 </head>
 <body class="container py-4">
-
-    <c:if test="${not empty message}">
-        <div class="alert alert-info" role="alert">
-            ${message}
-        </div>
-    </c:if>
-	
 	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
+
+    <c:if test="${not empty successMessage}">
+        <div class="alert alert-info" role="alert">
+            ${successMessage}
+        </div>
+        <c:remove var="successMessage" scope="session"/>
+    </c:if>
+
+    <c:if test="${not empty errorMessage}">
+        <div class="alert alert-danger" role="alert">
+            ${errorMessage}
+        </div>
+        <c:remove var="errorMessage" scope="session"/>
+    </c:if>
 
 	<!-- 📺 검색 결과 -->
 	<c:choose>
@@ -60,12 +67,10 @@
 			<c:forEach var="video" items="${searchResult.videos}">
 				<div class="d-flex mb-4" style="height: 120px;">
 					<!-- 썸네일 -->
-					<div class="me-3 position-relative" style="flex-shrink: 0;">
-						<a href="https://www.youtube.com/watch?v=${video.videoId}"
-							target="_blank"> <img src="${video.thumbnail}" alt="썸네일"
-							style="width: 210px; height: 120px; object-fit: cover; border-radius: 8px;" />
-							<div class="video-duration">${video.formattedDuration}</div>
-						</a>
+					<div class="video-thumbnail me-3 position-relative" style="flex-shrink: 0;" data-video-id="${video.videoId}">
+					    <img src="${video.thumbnail}" alt="썸네일"
+					        style="width: 210px; height: 120px; object-fit: cover; border-radius: 8px;" />
+					        <div class="video-duration">${video.formattedDuration}</div>
 					</div>
 
 					<!-- 텍스트 영역 -->
@@ -111,8 +116,9 @@
 					        ${fn:escapeXml(video.description)}
 					    </div>
 					</div>
-
 				</div>
+				<!-- 플레이어 -->
+    			<div id="player-${video.videoId}" class="mt-3"></div>
 			</c:forEach>
 		</c:otherwise>
 	</c:choose>
@@ -161,14 +167,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-    function openPlaylistModal(videoId) {
-    	document.getElementById('modalVideoId').value = videoId;
-    	const modal = new bootstrap.Modal(document.getElementById('playlistModal'));
-    	modal.show();
-    }
-    </script>
-
+<script src="/resources/js/video.js"></script>  
 </body>
 </html>

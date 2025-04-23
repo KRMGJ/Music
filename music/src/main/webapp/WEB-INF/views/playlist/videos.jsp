@@ -42,17 +42,30 @@
 }
 </style>
 <title>video list</title>
-
 </head>
 <body>
 	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
+    <c:if test="${not empty successMessage}">
+        <div class="alert alert-info" role="alert">
+            ${successMessage}
+        </div>
+    </c:if>
+
+    <c:if test="${not empty errorMessage}">
+        <div class="alert alert-danger" role="alert">
+            ${errorMessage}
+        </div>
+    </c:if>
+
 	<!-- 플레이리스트 정보 -->
 	<div class="playlist-header mb-4">
-		<h2 class="text-dark">${playlist.name}</h2>
-		<p class="text-muted">${playlist.description}</p>
-		<img src="${playlist.thumbnail}" alt="플레이리스트 썸네일"
+		<h2 class="text-dark">${playlist.title}</h2>
+		<img src="${playlist.image}" alt="플레이리스트 썸네일"
 			style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
+        <p class="text-muted mt-2">${playlist.viewCount}</p>
+        <p class="text-muted">${playlist.likeCount}</p>
+        <p class="text-muted">${playlist.createdDate}</p>
 	</div>
 
 	<!-- 영상 목록 -->
@@ -91,7 +104,11 @@
 			                        </button>
 			                        <ul class="dropdown-menu dropdown-menu-end">
 			                            <li><a class="dropdown-item" href="https://www.youtube.com/watch?v=${video.videoId}" target="_blank">공유</a></li>
-			                            <li><button class="dropdown-item text-danger" onclick="removeFromPlaylist('${video.videoId}', '${playlist.id}')">플레이리스트에서 삭제</button></li>
+			                            <form action="/playlist/remove" method="post">
+                                            <input type="hidden" name="videoId" value="${video.videoId}" />
+                                            <input type="hidden" name="playlistId" value="${playlist.id}" />
+			                            <li><button class="dropdown-item text-danger">리스트에서 삭제</button></li>
+			                            </form>
 			                        </ul>
 			                    </div>
 			                </div>
@@ -117,9 +134,7 @@
 			        </div>
 			    </div>
 			</c:forEach>
-
 		</c:otherwise>
 	</c:choose>
-
 </body>
 </html>

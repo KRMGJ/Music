@@ -4,6 +4,7 @@ import com.example.music.dao.PlayListDao;
 import com.example.music.dao.PlayListVideoDao;
 import com.example.music.dao.VideoDao;
 import com.example.music.model.PlayList;
+import com.example.music.model.PlaylistVideo;
 import com.example.music.model.Video;
 import com.example.music.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,8 +57,13 @@ public class PlayListServiceImpl implements PlayListService {
     }
 
     @Override
-    public void deletePlayList(int id) {
+    public void deletePlaylistByPlaylistId(int id) {
         playListDao.delete(id);
+    }
+
+    @Override
+    public void deleteVideoFromPlayList(PlaylistVideo pv) {
+        playListVideoDao.deleteVideoFromPlaylist(pv);
     }
 
     @Override
@@ -72,8 +78,8 @@ public class PlayListServiceImpl implements PlayListService {
     }
 
     @Override
-    public PlayList getPlayListById(int id) {
-        PlayList playList = playListDao.getPlaylistById(id);
+    public PlayList getPlaylistByPlaylistId(int playlistId) {
+        PlayList playList = playListDao.getPlaylistByPlaylistId(playlistId);
         return playList;
     }
 

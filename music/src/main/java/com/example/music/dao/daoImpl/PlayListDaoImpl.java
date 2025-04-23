@@ -31,7 +31,7 @@ public class PlayListDaoImpl implements PlayListDao {
     }
 
     @Override
-    public PlayList getPlaylistById(int id) {
+    public PlayList getPlaylistByPlaylistId(int id) {
         PlayList playList = sqlSession.selectOne("playlist.getPlaylistById", id);
         return playList;
     }

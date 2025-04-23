@@ -12,7 +12,8 @@ import java.util.*;
 @Component
 public class YoutubeApiClient {
 
-    private static final String API_KEY = "AIzaSyBBNgTGf8f93anD6oYRWSFBJe388DBXBQg";
+//    private static final String API_KEY = "AIzaSyBBNgTGf8f93anD6oYRWSFBJe388DBXBQg";
+    private static final String API_KEY = "AIzaSyBEZw8L1Tfnmc0O_qlqtOltVDTV8JRZPRc";
     private static final String API_URL = "https://www.googleapis.com/youtube/v3";
     private static final String CHANNEL_URL = API_URL + "/channels";
     private static final String SEARCH_URL = API_URL + "/search";

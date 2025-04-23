@@ -1,9 +1,6 @@
 package com.example.music.controller;
 
-import com.example.music.model.PlayList;
-import com.example.music.model.SearchList;
-import com.example.music.model.User;
-import com.example.music.model.Video;
+import com.example.music.model.*;
 import com.example.music.service.PlayListService;
 import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
@@ -42,9 +39,9 @@ public class PlayListController {
         String message = playlistService.addVideoToPlayList(video, playlistId);
 
         if (message.equals("error")) {
-            redirectAttributes.addFlashAttribute("message", "이미 추가된 비디오입니다.");
+            MessageUtil.errorMessage("이미 추가된 비디오입니다.", redirectAttributes);
         } else {
-            redirectAttributes.addFlashAttribute("message", "비디오가 재생목록에 추가되었습니다.");
+            MessageUtil.successMessage("비디오가 재생목록에 추가되었습니다.", redirectAttributes);
         }
 
         // 리다이렉트 시 파라미터 유지
@@ -57,13 +54,26 @@ public class PlayListController {
         return "redirect:/video/search";
     }
 
-
     @GetMapping("/videos")
     public String getVideosByPlaylistId(@RequestParam("playlistId") int playlistId,
                                         Model model) {
         // 1. 재생목록에 포함된 비디오 목록 가져오기
         List<Video> playlistVideos  = playlistService.getVideosByPlaylistId(playlistId);
+        // 2. 재생목록 정보 가져오기
+        PlayList playlist = playlistService.getPlaylistByPlaylistId(playlistId);
         model.addAttribute("playlistVideos", playlistVideos );
+        model.addAttribute("playlist", playlist);
         return "playlist/videos";
+    }
+
+    @PostMapping("/remove")
+    public String removeVideoFromPlaylist(@RequestParam("playlistId") int playlistId,
+                                          @RequestParam("videoId") String videoId,
+                                          RedirectAttributes redirectAttributes) {
+        // 비디오 삭제
+        PlaylistVideo video = new PlaylistVideo(playlistId, videoId);
+        playlistService.deleteVideoFromPlayList(video);
+        MessageUtil.successMessage("비디오가 재생목록에서 삭제되었습니다.", redirectAttributes);
+        return "redirect:/playlist/videos?playlistId=" + playlistId;
     }
 }

@@ -3,16 +3,13 @@ package com.example.music.controller;
 import com.example.music.model.PlayList;
 import com.example.music.model.SearchList;
 import com.example.music.model.User;
-import com.example.music.model.Video;
 import com.example.music.service.PlayListService;
-import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
 import com.example.music.util.MessageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="playlistVideo">
 
-    <resultMap id="playlistVideoResultMap" type="com.example.music.model.PlaylistVideo">
+    <resultMap id="playlistVideoResultMap" type="PlaylistVideo">
         <result property="playlistId" column="playlist_id"/>
         <result property="videoId" column="video_id"/>
     </resultMap>
@@ -12,7 +12,15 @@
         VALUES (#{playlistId}, #{videoId})
     </insert>
 
+    <select id="getPlaylistByPlaylistId" resultMap="playlistVideoResultMap">
+        SELECT * FROM playlist_videos WHERE playlist_id = #{playlistId}
+    </select>
+
     <select id="getVideosByPlaylistId" resultType="String">
         SELECT video_id FROM playlist_videos WHERE playlist_id = #{playlistId}
     </select>
+
+    <delete id="deleteVideoFromPlaylist" parameterType="PlaylistVideo">
+        DELETE FROM playlist_videos WHERE playlist_id = #{playlistId} AND video_id = #{videoId}
+    </delete>
 </mapper>

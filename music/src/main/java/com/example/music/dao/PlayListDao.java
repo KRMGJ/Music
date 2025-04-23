@@ -7,8 +7,8 @@ import java.util.List;
 public interface PlayListDao {
     void insert(PlayList playList);
     void update(PlayList playList);
-    void delete(int id);
-    PlayList getPlaylistById(int id);
+    void delete(int playlistId);
+    PlayList getPlaylistByPlaylistId(int playlistId);
     List<PlayList> getAllPlaylists();
     List<PlayList> getPlaylistsByUserId(int userId);
     List<PlayList> getPlaylistsByTitle(String title);

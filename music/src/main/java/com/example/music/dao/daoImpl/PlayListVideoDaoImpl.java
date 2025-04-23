@@ -1,6 +1,7 @@
 package com.example.music.dao.daoImpl;
 
 import com.example.music.dao.PlayListVideoDao;
+import com.example.music.model.PlayList;
 import com.example.music.model.PlaylistVideo;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,19 @@ public class PlayListVideoDaoImpl implements PlayListVideoDao {
     }
 
     @Override
+    public PlayList getPlaylistByPlaylistId(int playlistId) {
+        PlayList playList = sqlSession.selectOne("playlistVideo.getPlaylistByPlaylistId", playlistId);
+        return playList;
+    }
+
+    @Override
     public List<String> getVideosByPlaylistId(int playlistId) {
         List<String> videoIds = sqlSession.selectList("playlistVideo.getVideosByPlaylistId", playlistId);
         return videoIds;
+    }
+
+    @Override
+    public void deleteVideoFromPlaylist(PlaylistVideo pv) {
+        sqlSession.delete("playlistVideo.deleteVideoFromPlaylist", pv);
     }
 }
