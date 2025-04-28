@@ -44,20 +44,6 @@
 <body class="container py-4">
 	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
-    <c:if test="${not empty successMessage}">
-        <div class="alert alert-info" role="alert">
-            ${successMessage}
-        </div>
-        <c:remove var="successMessage" scope="session"/>
-    </c:if>
-
-    <c:if test="${not empty errorMessage}">
-        <div class="alert alert-danger" role="alert">
-            ${errorMessage}
-        </div>
-        <c:remove var="errorMessage" scope="session"/>
-    </c:if>
-
 	<!-- 📺 검색 결과 -->
 	<c:choose>
 		<c:when test="${searchResult == null || empty searchResult.videos}">
@@ -139,13 +125,8 @@
     <div class="modal fade" id="playlistModal" tabindex="-1" aria-labelledby="playlistModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form id="addToPlaylistForm" method="post" action="/playlist/addVideo">
+                <form id="addToPlaylistForm">
 	                <input type="hidden" name="videoId" id="modalVideoId" required />
-	                <input type="hidden" name="query" value="${param.query}" />
-                    <input type="hidden" name="channel" value="${param.channel}" />
-                    <input type="hidden" name="filter" value="${param.filter}" />
-                    <input type="hidden" name="sort" value="${param.sort}" />
-                    <input type="hidden" name="page" value="${param.page}" />
 	                <div class="modal-header">
 	                    <h5 class="modal-title" id="playlistModalLabel">플레이리스트에 추가</h5>
 	                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
@@ -153,7 +134,7 @@
 	                <div class="modal-body">
 	                    <c:forEach var="playlist" items="${playlists}">
 	                        <div class="form-check">
-	                            <input class="form-check-input" type="radio" name="playlistId" id="pl-${playlist.id}" value="${playlist.id}" required>
+	                            <input class="form-check-input" type="radio" name="playlistId" id="playlistId" value="${playlist.id}" required>
 	                            <label class="form-check-label" for="pl-${playlist.id}">
 	                                ${playlist.title}
 	                            </label>
@@ -167,6 +148,6 @@
             </div>
         </div>
     </div>
-<script src="/resources/js/video.js"></script>  
+<script src="/resources/js/video/search.js"></script>
 </body>
 </html>

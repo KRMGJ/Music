@@ -15,19 +15,7 @@
 <body>
 	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
-	<c:if test="${not empty successMessage}">
-		<div class="alert alert-info" role="alert">${successMessage}</div>
-		<c:remove var="successMessage" scope="session" />
-	</c:if>
-
-	<c:if test="${not empty errorMessage}">
-		<div class="alert alert-danger" role="alert">${errorMessage}</div>
-		<c:remove var="errorMessage" scope="session" />
-	</c:if>
-
 	<div class="container">
-		<h2>Playlist list</h2>
-
 		<!-- 플레이리스트 추가모달 열기버튼 -->
 		<button type="button" class="btn btn-primary" data-bs-toggle="modal"
 			data-bs-target="#addPlaylistModal">Add Playlist</button>
@@ -44,8 +32,7 @@
 							aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						<form action="${pageContext.request.contextPath}/playlist/add"
-							method="post">
+						<form id="addPlaylistForm">
 							<div class="mb-3">
 								<label for="title" class="form-label">Title</label> <input
 									type="text" class="form-control" id="title" name="title"
@@ -73,10 +60,10 @@
 			<tbody>
 				<c:forEach var="playlist" items="${playlists}">
 					<tr>
-						<td>${playlist.id}</td>
-						<td><img src="${playlist.image}" alt="Thumbnail" width="120"
+						<td>${playlist.playlistId}</td>
+						<td><img src="${playlist.lastVideoThumbnail}" alt="Thumbnail" width="120"
 							height="90">
-						<td>${playlist.title}</td>
+						<td>${playlist.playlistTitle}</td>
 						<td>${playlist.viewCount}</td>
 						<td>${playlist.likeCount}</td>
 						<td>${playlist.createdDate}</td>
@@ -85,5 +72,6 @@
 			</tbody>
 		</table>
 	</div>
+	<script src="/resources/js/playlist/list.js"></script>
 </body>
 </html>

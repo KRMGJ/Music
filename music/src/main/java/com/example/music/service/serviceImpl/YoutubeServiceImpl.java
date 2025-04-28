@@ -36,7 +36,7 @@ public class YoutubeServiceImpl implements YoutubeService {
     ChannelInfoDao channelInfoDao;
 
     @Override
-    public SearchList searchVideos(String query, String channel, int page, String filter, String sort) {
+    public SearchList searchVideos(String query, int page, String sort) {
 
         try {
             String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
@@ -89,18 +89,12 @@ public class YoutubeServiceImpl implements YoutubeService {
                 String durationStr = videoDetails.get(videoId).get("contentDetails").get("duration").asText();
                 int durationSec = (int) Duration.parse(durationStr).getSeconds();
                 String formattedDuration = getFormattedDuration(durationSec);
-                boolean isShortsBool = isShortVideo(title, description, durationSec);
-                String isShorts = isShortsBool ? "Y" : "N";
 
 
                 String channelId = snippet.get("channelId").asText();
                 ChannelInfo channelInfo = channelInfoMap.get(channelId);
 
-                videos.add(new Video(videoId, channelId, title, thumbnail, description, isShorts, durationStr, durationSec, formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo));
-            }
-
-            if (channel != null && !channel.isEmpty()) {
-                videos.removeIf(v -> !v.getChannelInfo().getChannelTitle().equalsIgnoreCase(channel));
+                videos.add(new Video(videoId, channelId, title, thumbnail, description, durationStr, durationSec, formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo));
             }
 
             // 정렬 처리
@@ -124,13 +118,6 @@ public class YoutubeServiceImpl implements YoutubeService {
                     videos.sort(Comparator.comparing(Video::getPublishedDate).reversed());
                     break;
                 default:
-            }
-
-            // 쇼츠 필터링
-            if ("shorts".equals(filter)) {
-                videos = videos.stream().filter(v -> "Y".equalsIgnoreCase(v.getIsShorts())).collect(Collectors.toList());
-            } else if ("videos".equals(filter)) {
-                videos = videos.stream().filter(v -> !"Y".equalsIgnoreCase(v.getIsShorts())).collect(Collectors.toList());
             }
 
             int pageSize = 10;
@@ -179,9 +166,6 @@ public class YoutubeServiceImpl implements YoutubeService {
             int durationSec = (int) Duration.parse(durationStr).getSeconds();
             String formattedDuration = getFormattedDuration(durationSec);
 
-            boolean isShortsBool = isShortVideo(title, description, durationSec);
-            String isShorts = isShortsBool ? "Y" : "N";
-
             String channelId = snippet.get("channelId").asText();
             JsonNode channelData = apiClient.fetchChannelInfo(channelId);
             String channelTitle = channelData.get("snippet").get("title").asText();
@@ -189,7 +173,7 @@ public class YoutubeServiceImpl implements YoutubeService {
             long subscriberCount = channelData.get("statistics").get("subscriberCount").asLong();
             ChannelInfo channelInfo = new ChannelInfo(channelId, channelTitle, channelThumb, subscriberCount);
 
-            Video video = new Video(videoId, channelId, title, thumbnail, description, isShorts, durationStr, durationSec, formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo);
+            Video video = new Video(videoId, channelId, title, thumbnail, description, durationStr, durationSec, formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo);
 
             // 3.1. 채널 정보 DB에 저장
             ChannelInfo existingChannel = channelInfoDao.getChannelInfoById(channelId);
@@ -207,19 +191,6 @@ public class YoutubeServiceImpl implements YoutubeService {
             e.printStackTrace();
             throw new RuntimeException("영상 정보를 불러오는 중 오류 발생");
         }
-    }
-
-    /**
-     * @param title 제목
-     * @param desc 내용
-     * @param duration 영상 길이 (초 단위)
-     * @return 제목 또는 내용에 "short"가 포함되어 있거나, 영상 길이가 60초 이하인 경우 true
-     */
-    @Override
-    public boolean isShortVideo(String title, String desc, int duration) {
-        return duration <= 60 || title.contains("#shorts") || desc.contains("#shorts") || title.contains("#short") || desc.contains("#short")
-                || title.contains("short") || desc.contains("short") || title.contains("Short") || desc.contains("Short")
-                || title.contains("쇼츠") || desc.contains("쇼츠") || title.contains("Shorts") || desc.contains("Shorts");
     }
 
     @Override

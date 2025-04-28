@@ -31,9 +31,7 @@ public class VideoController {
 
     @GetMapping("/search")
     public String search(@RequestParam(value = "query", required = false) String query,
-                         @RequestParam(value = "channel", required = false) String channel,
                          @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-                         @RequestParam(value = "filter", defaultValue = "all") String filter,
                          @RequestParam(value = "sort", defaultValue = "relevance") String sort,
                          HttpSession session,
                          Model model) {
@@ -43,13 +41,11 @@ public class VideoController {
             return "common/error";
         }
         List<Playlist> playlists = playListService.getPlaylistsByUserId(user.getId());
-        SearchList result = youtubeService.searchVideos(query, channel, page, filter, sort);
+        SearchList result = youtubeService.searchVideos(query, page, sort);
 
         model.addAttribute("playlists", playlists);
         model.addAttribute("searchResult", result);
         model.addAttribute("query", query);
-        model.addAttribute("channel", channel);
-        model.addAttribute("filter", filter);
         return "video/search";
     }
 }

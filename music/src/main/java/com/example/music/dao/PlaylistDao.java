@@ -12,6 +12,7 @@ public interface PlaylistDao {
     List<Playlist> getAllPlaylists();
     List<Playlist> getPlaylistsByUserId(int userId);
     List<Playlist> getPlaylistsByTitle(String title);
+    List<Playlist> getPlaylistsWithLastThumbnailByUserId(int userId);
     void incrementViewCount(int id);
     void incrementLikeCount(int id);
     void decrementLikeCount(int id);

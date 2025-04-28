@@ -7,10 +7,10 @@
 	<title>Home</title>
 </head>
 <body>
+<jsp:include page="/WEB-INF/views/layout/header.jsp" />
 <h1>
 	Hello world!  
 </h1>
-<jsp:include page="/WEB-INF/views/layout/header.jsp" />
 <P>  The time on the server is ${serverTime}. </P>
 </body>
 </html>

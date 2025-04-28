@@ -14,6 +14,7 @@ public interface PlaylistService {
     void deleteVideoFromPlayList(PlaylistVideo pv);
     List<Video> getVideosByPlaylistId(int playlistId);
     Playlist getPlaylistByPlaylistId(int playlistId);
+    List<Playlist> getPlaylistsWithLastThumbnail(int userId);
     List<Playlist> getPlayListByTitle(String title);
     List<Playlist> getAllPlaylists();
     List<Playlist> getPlaylistsByUserId(int userId);

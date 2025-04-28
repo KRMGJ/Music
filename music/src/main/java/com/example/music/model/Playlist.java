@@ -20,4 +20,7 @@ public class Playlist {
 	private int viewCount;
 	private int likeCount;
 	private Timestamp createdDate;
+	private int playlistId;
+	private String playlistTitle;
+	private String lastVideoThumbnail;
 }

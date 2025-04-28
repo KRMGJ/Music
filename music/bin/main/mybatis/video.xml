@@ -7,7 +7,6 @@
         <result property="title" column="title"/>
         <result property="thumbnail" column="thumbnail"/>
         <result property="description" column="description"/>
-        <result property="isShorts" column="is_shorts"/>
         <result property="duration" column="duration"/>
         <result property="durationInSeconds" column="duration_in_seconds"/>
         <result property="formattedDuration" column="formatted_duration"/>
@@ -21,8 +20,8 @@
     </resultMap>
 
     <insert id="addVideo" parameterType="Video">
-        INSERT INTO videos (id, channel_id, title, thumbnail, description, is_shorts, duration, duration_in_seconds, formatted_duration, published_date, view_count)
-        VALUES (#{videoId}, #{channelId}, #{title}, #{thumbnail}, #{description}, #{isShorts}, #{duration}, #{durationInSeconds}, #{formattedDuration}, #{publishedDate}, #{viewCount})
+        INSERT INTO videos (id, channel_id, title, thumbnail, description, duration, duration_in_seconds, formatted_duration, published_date, view_count)
+        VALUES (#{videoId}, #{channelId}, #{title}, #{thumbnail}, #{description}, #{duration}, #{durationInSeconds}, #{formattedDuration}, #{publishedDate}, #{viewCount})
     </insert>
 
     <select id="getVideoById" resultMap="videoResultMap">

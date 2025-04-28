@@ -5,11 +5,12 @@
     <resultMap id="playlistVideoResultMap" type="PlaylistVideo">
         <result property="playlistId" column="playlist_id"/>
         <result property="videoId" column="video_id"/>
+        <result property="createdDate" column="created_date"/>
     </resultMap>
 
     <insert id="insert">
-        INSERT INTO playlist_videos (playlist_id, video_id)
-        VALUES (#{playlistId}, #{videoId})
+        INSERT INTO playlist_videos (playlist_id, video_id, created_date)
+        VALUES (#{playlistId}, #{videoId}, SYSDATE)
     </insert>
 
     <select id="getPlaylistByPlaylistId" resultMap="playlistVideoResultMap">

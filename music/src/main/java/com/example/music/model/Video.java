@@ -17,7 +17,6 @@ public class Video {
 	private String title;
 	private String thumbnail;
 	private String description;
-	private String isShorts;
 	private String duration;
 	private int durationInSeconds;
 	private String formattedDuration;

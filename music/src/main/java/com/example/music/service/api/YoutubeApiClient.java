@@ -31,7 +31,7 @@ public class YoutubeApiClient {
     }
 
     public JsonNode searchVideos(String encodedQuery) throws Exception {
-        String url = SEARCH_URL + "?part=snippet&type=video&maxResults=50&q=" + encodedQuery + "&key=" + API_KEY;
+        String url = SEARCH_URL + "?part=snippet&type=video&maxResults=20&q=" + encodedQuery + "&key=" + API_KEY;
         return mapper.readTree(sendGetRequest(url)).get("items");
     }
 

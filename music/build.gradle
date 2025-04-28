@@ -49,6 +49,8 @@ dependencies {
     // Test
     testImplementation 'junit:junit:4.7'
     
+    implementation "org.springframework:spring-web:$springVersion"
+    
     // Spring  AOP
     implementation "org.springframework:spring-tx:5.3.30"
 

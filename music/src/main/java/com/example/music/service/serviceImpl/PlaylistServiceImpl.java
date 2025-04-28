@@ -84,6 +84,12 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
+    public List<Playlist> getPlaylistsWithLastThumbnail(int userId) {
+        List<Playlist> playList = playListDao.getPlaylistsWithLastThumbnailByUserId(userId);
+        return playList;
+    }
+
+    @Override
     public List<Playlist> getPlayListByTitle(String title) {
         List<Playlist> playList = playListDao.getPlaylistsByTitle(title);
         return playList;

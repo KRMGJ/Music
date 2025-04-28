@@ -33,7 +33,7 @@ public class PlaylistController {
             return "common/error";
         }
         // 2. 사용자의 재생목록 가져오기
-        List<Playlist> playlists = playlistService.getPlaylistsByUserId(user.getId());
+        List<Playlist> playlists = playlistService.getPlaylistsWithLastThumbnail(user.getId());
         model.addAttribute("playlists", playlists);
         return "playlist/list";
     }
@@ -48,52 +48,6 @@ public class PlaylistController {
         }
         // 2. 재생목록 생성 폼으로 이동
         return "playlist/create";
-    }
-
-    @PostMapping("/create")
-    public String createPlaylist(@ModelAttribute Playlist playlist,
-                                 HttpSession session,
-                                 RedirectAttributes redirectAttributes) {
-        // 1. 로그인한 사용자 정보 가져오기
-        User user = (User) session.getAttribute("loginUser");
-        if (user == null) {
-            MessageUtil.errorMessage("로그인 후 이용해주세요.", "/auth/login", redirectAttributes);
-            return "common/error";
-        }
-        // 2. 재생목록 생성
-        playlist.setUserId(user.getId());
-        playlistService.addPlayList(playlist);
-        MessageUtil.successMessage("재생목록이 생성되었습니다.", redirectAttributes);
-        return "common/success";
-    };
-
-    @PostMapping("/addVideo")
-    public String addVideoToPlaylist(@RequestParam("playlistId") int playlistId,
-                                     @RequestParam("videoId") String videoId,
-                                     @RequestParam(value = "query") String query,
-                                     @RequestParam(value = "channel", required = false) String channel,
-                                     @RequestParam(value = "filter", defaultValue = "all") String filter,
-                                     @RequestParam(value = "sort", defaultValue = "relevance") String sort,
-                                     @RequestParam(value = "page", defaultValue = "1") int page,
-                                     RedirectAttributes redirectAttributes) {
-        // 비디오 저장
-        Video video = youtubeService.fetchAndSaveVideoById(videoId);
-        String message = playlistService.addVideoToPlayList(video, playlistId);
-
-        if (message.equals("error")) {
-            MessageUtil.errorMessage("이미 추가된 비디오입니다.", redirectAttributes);
-        } else {
-            MessageUtil.successMessage("비디오가 재생목록에 추가되었습니다.", redirectAttributes);
-        }
-
-        // 리다이렉트 시 파라미터 유지
-        redirectAttributes.addAttribute("query", query);
-        redirectAttributes.addAttribute("channel", channel);
-        redirectAttributes.addAttribute("filter", filter);
-        redirectAttributes.addAttribute("sort", sort);
-        redirectAttributes.addAttribute("page", page);
-
-        return "redirect:/video/search";
     }
 
     @GetMapping("/videos")
