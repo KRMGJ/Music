@@ -52,7 +52,7 @@
 					</c:when>
 					<c:otherwise>
 						<a href="/auth/login" class="btn btn-outline-secondary me-1">로그인</a>
-						<a href="/user/addUser" class="btn btn-outline-primary">회원가입</a>
+						<a href="/user/signUp" class="btn btn-outline-primary">회원가입</a>
 					</c:otherwise>
 				</c:choose>
 			</div>
@@ -60,6 +60,8 @@
 	</div>
 </header>
 <link rel="stylesheet" href="/resources/css/layout/header.css" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+	rel="stylesheet">
 <script src="/resources/js/layout/header.js"></script>
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"

@@ -21,8 +21,8 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
-	public User getUserByUserId(String userId) {
-        User user = userDao.getUserByUserId(userId);
+	public User getUserByEmail(String email) {
+        User user = userDao.getUserByEmail(email);
 		return user;
 	}
 
@@ -38,8 +38,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public boolean login(String userId, String password) {
-		User user = userDao.getUserByUserId(userId);
+	public boolean login(String email, String password) {
+		User user = userDao.getUserByEmail(email);
 		if (user != null) {
 			if (user.getPassword().equals(password)) {
 				return true;
@@ -49,8 +49,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public boolean isAdmin(String userId) {
-		User user = userDao.getUserByUserId(userId);
+	public boolean isAdmin(String email) {
+		User user = userDao.getUserByEmail(email);
 		if (user != null) {
 			return user.getRole().equals("admin");
 		}

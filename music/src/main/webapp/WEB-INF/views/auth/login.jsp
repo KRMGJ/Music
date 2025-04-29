@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <!DOCTYPE html>
 <html>
@@ -8,24 +8,99 @@
 <link
 	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
 	rel="stylesheet">
+<link rel="stylesheet" href="/resources/css/auth/login.css">
+<script src="https://kit.fontawesome.com/cb52f65530.js" crossorigin="anonymous"></script>
+<jsp:include page="/WEB-INF/views/layout/header.jsp" />
 <title>로그인</title>
 </head>
 <body>
-<jsp:include page="/WEB-INF/views/layout/header.jsp" />
+	<div class="auth-wrapper">
 
-	<div class="container">
-		<form action="<c:url value='/auth/login'/>" method="post">
-			<div class="mb-3">
-				<label for="userId" class="form-label">아이디</label> <input
-					type="text" class="form-control" id="userId" name="userId" required>
+		<div class="auth-container" id="auth-container">
+			<div class="auth-form-container auth-sign-up-container">
+				<form class="signUp-form" id="signUpForm">
+					<h1>Create Account</h1>
+					<div class="social-container">
+						<a href="#" class="social"><i class="fab fa-facebook-f"></i></a> <a
+							href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+						<a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+					</div>
+					<span>or use your email for registration</span>
+					<div class="custom-form-control">
+					    <input type="text" id="nickname" name="nickname" placeholder="Name" />
+					    <i class="custom-icon-success fas fa-check-circle"></i>
+					    <i class="custom-icon-error fas fa-exclamation-circle"></i>
+					    <small class="custom-error-message">Error message</small>
+					</div>
+					<div class="custom-form-control">
+						<input type="email" id="signUpEmail" name="email" placeholder="Email" />
+					    <i class="custom-icon-success fas fa-check-circle"></i>
+					    <i class="custom-icon-error fas fa-exclamation-circle"></i>
+						<small class="custom-error-message">Error message</small>
+					</div>
+					<div class="custom-form-control">
+						<input type="password" id="signUpPassword" name="password" placeholder="Password" />
+					    <i class="custom-icon-success fas fa-check-circle"></i>
+					    <i class="custom-icon-error fas fa-exclamation-circle"></i>
+						<small class="custom-error-message">Error message</small>
+					</div>
+					<button>Sign Up</button>
+				</form>
 			</div>
-			<div class="mb-3">
-				<label for="password" class="form-label">비밀번호</label> <input
-					type="password" class="form-control" id="password" name="password"
-					required>
+
+			<div class="auth-form-container auth-sign-in-container">
+				<form class="login-form" id="loginForm">
+					<h1>Sign in</h1>
+					<div class="social-container">
+						<a href="#" class="social"><i class="fab fa-facebook-f"></i></a> <a
+							href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+						<a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+					</div>
+					<span>or use your account</span> 
+					<div class="custom-form-control">
+						<input type="email" id="loginEmail" placeholder="email" /> 
+					    <i class="custom-icon-success fas fa-check-circle"></i>
+					    <i class="custom-icon-error fas fa-exclamation-circle"></i>
+						<small class="custom-error-message">Error message</small>
+					</div>
+					<div class="custom-form-control">
+						<input type="password" id="loginPassword" placeholder="Password" />
+					    <i class="custom-icon-success fas fa-check-circle"></i>
+					    <i class="custom-icon-error fas fa-exclamation-circle"></i>
+						<small class="custom-error-message">Error message</small>
+					</div>
+					<a href="#">Forgot your password?</a>
+					<button>Sign In</button>
+				</form>
 			</div>
-			<button type="submit" class="btn btn-primary">로그인</button>
-		</form>
+
+			<div class="auth-overlay-container">
+				<div class="auth-overlay">
+					<div class="auth-overlay-panel auth-overlay-left">
+						<h1>Welcome Back!</h1>
+						<p>To keep connected with us please login with your personal
+							info</p>
+						<button class="ghost" id="signIn">Sign In</button>
+					</div>
+					<div class="auth-overlay-panel auth-overlay-right">
+						<h1>Hello, Friend!</h1>
+						<p>Enter your personal details and start journey with us</p>
+						<button class="ghost" id="signUp">Sign Up</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<footer class="auth-footer">
+			<p>
+				Created with <i class="fa fa-heart"></i> by <a target="_blank"
+					href="https://florin-pop.com">Florin Pop</a> - Read how I created
+				this and how you can join the challenge <a target="_blank"
+					href="https://www.florin-pop.com/blog/2019/03/double-slider-sign-in-up-form/">here</a>.
+			</p>
+		</footer>
+		<script src="/resources/js/auth/login.js"></script>
 	</div>
 </body>
 </html>

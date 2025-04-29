@@ -39,3 +39,11 @@ button:hover, a.btn:hover {
         transform: translateY(0);
     }
 }
+
+header {
+  position: relative;
+  z-index: 1030;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

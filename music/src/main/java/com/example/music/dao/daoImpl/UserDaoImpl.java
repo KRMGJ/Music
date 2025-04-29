@@ -21,8 +21,8 @@ public class UserDaoImpl implements UserDao {
 	}
 
 	@Override
-	public User getUserByUserId(String userId) {
-        User user = sqlSession.selectOne("user.getUserByUserId", userId);
+	public User getUserByEmail(String email) {
+        User user = sqlSession.selectOne("user.getUserByEmail", email);
 		return user;
 	}
 
@@ -32,8 +32,8 @@ public class UserDaoImpl implements UserDao {
 	}
 
 	@Override
-	public void deleteUser(String userId) {
-		sqlSession.delete("user.deleteUser", userId);
+	public void deleteUser(String email) {
+		sqlSession.delete("user.deleteUser", email);
 	}
 
 	@Override

@@ -36,8 +36,8 @@ public class AdminController {
 		return "admin/userList";
 	}
 
-	@GetMapping("/updateUser/{userId}")
-	public String updateUser(@PathVariable String userId, HttpSession session, Model model) {
+	@GetMapping("/updateUser/{email}")
+	public String updateUser(@PathVariable String email, HttpSession session, Model model) {
 		Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
 		if (session.getAttribute("loginUser") == null) {
 			MessageUtil.errorMessage("로그인이 필요합니다.", "/auth/login", model);
@@ -47,7 +47,7 @@ public class AdminController {
 			MessageUtil.errorMessage("관리자 권한이 필요합니다.", model);
 			return "common/error";
 		}
-		User user = userService.getUserByUserId(userId);
+		User user = userService.getUserByEmail(email);
 		model.addAttribute("user", user);
 		return "user/updateUser";
 	}
@@ -64,8 +64,8 @@ public class AdminController {
 		}
 	}
 
-	@PostMapping("/deleteUser/{userId}")
-	public String deleteUser(@PathVariable String userId, HttpSession session, Model model) {
+	@PostMapping("/deleteUser/{email}")
+	public String deleteUser(@PathVariable String email, HttpSession session, Model model) {
 		Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
 		if (session.getAttribute("loginUser") == null) {
 			MessageUtil.errorMessage("로그인이 필요합니다.", "/auth/login", model);
@@ -76,7 +76,7 @@ public class AdminController {
 			return "common/error";
 		}
 		try {
-			userService.deleteUser(userId);
+			userService.deleteUser(email);
 			MessageUtil.successMessage("회원 정보가 삭제되었습니다.", "/admin/userList", model);
 			return "common/success";
 		} catch (Exception exception) {

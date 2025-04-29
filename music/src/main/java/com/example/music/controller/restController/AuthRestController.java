@@ -19,8 +19,8 @@ public class AuthRestController {
     UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String userId, @RequestParam String password, HttpSession session) {
-        User user = userService.getUserByUserId(userId);
+    public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password, HttpSession session) {
+        User user = userService.getUserByEmail(email);
         if (user == null) {
             return ResponseEntity.status(401).body("User not found");
         }

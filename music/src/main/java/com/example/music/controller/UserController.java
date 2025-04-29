@@ -18,23 +18,6 @@ public class UserController {
 	@Autowired
 	UserService userService;
 
-	@GetMapping("/addUser")
-	public String addUser() {
-		return "user/addUser";
-	}
-
-	@PostMapping("/addUser")
-	public String addUser(@ModelAttribute User user, Model model) {
-		try {
-			userService.addUser(user);
-			MessageUtil.successMessage("회원가입이 완료되었습니다.", "/auth/login", model);
-			return "common/success";
-		} catch (Exception exception) {
-			MessageUtil.errorMessage("회원가입 중 오류가 발생했습니다.", "/user/addUser", model);
-			return "common/error";
-		}
-	}
-
 	@GetMapping("/myPage")
 	public String myPage(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginUser");
@@ -42,8 +25,8 @@ public class UserController {
 			MessageUtil.errorMessage("로그인이 필요합니다.", "/auth/login", model);
 			return "common/error";
 		}
-		String userId = loginUser.getUserId();
-		User user = userService.getUserByUserId(userId);
+		String email = loginUser.getEmail();
+		User user = userService.getUserByEmail(email);
 		model.addAttribute("user", user);
 		return "user/myPage";
 	}
@@ -55,8 +38,8 @@ public class UserController {
 			MessageUtil.errorMessage("로그인이 필요합니다.", "/auth/login", model);
 			return "common/error";
 		}
-		String userId = loginUser.getUserId();
-		User user = userService.getUserByUserId(userId);
+		String email = loginUser.getEmail();
+		User user = userService.getUserByEmail(email);
 		model.addAttribute("user", user);
 		return "user/updateUser";
 	}
@@ -64,7 +47,7 @@ public class UserController {
 	@PostMapping("/updateUser")
 	public String updateUser(@ModelAttribute User user) {
 		userService.updateUser(user);
-		return "redirect:/user/myPage?userId=" + user.getUserId();
+		return "redirect:/user/myPage?email=" + user.getEmail();
 	}
 
 	@PostMapping("/deleteUser")
@@ -74,8 +57,8 @@ public class UserController {
 			MessageUtil.errorMessage("로그인이 필요합니다.", "/auth/login", model);
 			return "common/error";
 		}
-		String userId = loginUser.getUserId();
-		userService.deleteUser(userId);
+		String email = loginUser.getEmail();
+		userService.deleteUser(email);
 		session.invalidate();
 		MessageUtil.successMessage("회원탈퇴가 완료되었습니다.", "/", model);
 		return "common/success";

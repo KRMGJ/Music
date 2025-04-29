@@ -7,7 +7,7 @@ import com.example.music.model.User;
 public interface UserDao {
 	void addUser(User user);
 	List<User> getAllUsers();
-	User getUserByUserId(String userId);
+	User getUserByEmail(String email);
 	void updateUser(User user);
-	void deleteUser(String userId);
+	void deleteUser(String email);
 }
