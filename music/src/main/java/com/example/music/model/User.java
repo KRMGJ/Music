@@ -19,6 +19,7 @@ public class User implements Serializable {
 	private String email;
 	private String profileImage;
 	private String role;
+	private String provider;
 	private Timestamp createdDate;
 	private Timestamp updatedDate;
 }

@@ -19,7 +19,12 @@ public class UserServiceImpl implements UserService {
 	public void addUser(User user) {
 		userDao.addUser(user);
 	}
-	
+
+	@Override
+	public void addSocialUser(User user) {
+		userDao.addSocialUser(user);
+	}
+
 	@Override
 	public User getUserByEmail(String email) {
         User user = userDao.getUserByEmail(email);
@@ -29,7 +34,6 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void updateUser(User user) {
 		userDao.updateUser(user);
-		
 	}
 
 	@Override
@@ -41,9 +45,7 @@ public class UserServiceImpl implements UserService {
 	public boolean login(String email, String password) {
 		User user = userDao.getUserByEmail(email);
 		if (user != null) {
-			if (user.getPassword().equals(password)) {
-				return true;
-			}
+            return user.getPassword().equals(password);
 		}
 		return false;
 	}

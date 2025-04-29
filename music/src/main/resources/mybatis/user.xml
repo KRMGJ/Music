@@ -1,46 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="user">
-	<resultMap id="userResultMap" type="User">
-		<id property="id" column="id" />
-		<result property="password" column="password" />
-		<result property="nickname" column="nickname" />
-		<result property="email" column="email" />
-		<result property="profileImage" column="profile_image" />
-		<result property="role" column="role" />
-		<result property="createdDate" column="created_date" />
-		<result property="updatedDate" column="updated_date" />
-	</resultMap>
+    <resultMap id="userResultMap" type="User">
+        <id property="id" column="id"/>
+        <result property="password" column="password"/>
+        <result property="nickname" column="nickname"/>
+        <result property="email" column="email"/>
+        <result property="profileImage" column="profile_image"/>
+        <result property="role" column="role"/>
+        <result property="provider" column="provider"/>
+        <result property="createdDate" column="created_date"/>
+        <result property="updatedDate" column="updated_date"/>
+    </resultMap>
 
-	<insert id="addUser" parameterType="User">
-		INSERT INTO users (email,
-		password, nickname, role,
-		created_date,
-		updated_date)
-		VALUES
-		(#{email}, #{password}, #{nickname},
-		'USER',
-		SYSDATE,
-		SYSDATE)
-	</insert>
+    <insert id="addUser" parameterType="User">
+        INSERT INTO users (email,
+        password, nickname, role,
+        created_date,
+        updated_date)
+        VALUES
+        (#{email}, #{password}, #{nickname},
+        'USER',
+        SYSDATE,
+        SYSDATE)
+    </insert>
 
-	<select id="getAllUsers" resultMap="userResultMap">
-		SELECT * FROM users WHERE ROLE = 'USER'
-	</select>
+    <insert id="addSocialUser" parameterType="User">
+        INSERT INTO users (email,
+        password, nickname, profile_image, role,
+        provider,
+        created_date,
+        updated_date)
+        VALUES
+        (#{email}, #{password}, #{nickname}, #{profileImage},
+        'USER',
+        #{provider},
+        SYSDATE,
+        SYSDATE)
+    </insert>
 
-	<select id="getUserByEmail" resultMap="userResultMap">
-		SELECT * FROM users WHERE
-		email = #{email}
-	</select>
+    <select id="getAllUsers" resultMap="userResultMap">
+        SELECT * FROM users WHERE ROLE = 'USER'
+    </select>
 
-	<update id="updateUser" parameterType="User">
-		UPDATE users SET 
-		nickname = #{nickname}
-		updated_date = SYSDATE
-		WHERE email = #{email}
-	</update>
+    <select id="getUserByEmail" resultMap="userResultMap">
+        SELECT * FROM users WHERE
+        email = #{email}
+    </select>
 
-	<delete id="deleteUser">
-		DELETE FROM users WHERE email = #{email}
-	</delete>
+    <update id="updateUser" parameterType="User">
+        UPDATE users SET
+        nickname = #{nickname}
+        updated_date = SYSDATE
+        WHERE email = #{email}
+    </update>
+
+    <delete id="deleteUser">
+        DELETE FROM users WHERE email = #{email}
+    </delete>
 </mapper>

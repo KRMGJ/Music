@@ -21,6 +21,11 @@ public class UserDaoImpl implements UserDao {
 	}
 
 	@Override
+	public void addSocialUser(User user) {
+		sqlSession.insert("user.addSocialUser", user);
+	}
+
+	@Override
 	public User getUserByEmail(String email) {
         User user = sqlSession.selectOne("user.getUserByEmail", email);
 		return user;

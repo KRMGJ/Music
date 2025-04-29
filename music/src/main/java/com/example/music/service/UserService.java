@@ -6,6 +6,7 @@ import com.example.music.model.User;
 
 public interface UserService {
 	void addUser(User user);
+	void addSocialUser(User user);
 	List<User> getAllUsers();
 	User getUserByEmail(String email);
 	void updateUser(User user);
