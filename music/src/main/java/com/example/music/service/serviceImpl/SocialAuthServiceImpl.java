@@ -3,13 +3,10 @@ package com.example.music.service.serviceImpl;
 import com.example.music.model.*;
 import com.example.music.service.SocialAuthService;
 import com.example.music.service.api.SocialApiClient;
-import com.example.music.util.OAuthProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-
-import static com.example.music.service.api.SocialApiClient.*;
 
 @Service
 public class SocialAuthServiceImpl implements SocialAuthService {
@@ -29,15 +26,17 @@ public class SocialAuthServiceImpl implements SocialAuthService {
 
         User user = userService.getUserByEmail(googleUserInfo.getEmail());
         if (user == null) {
-            user = new User();
-            user.setEmail(googleUserInfo.getEmail());
-            user.setNickname(googleUserInfo.getName());
-            user.setPassword(UUID.randomUUID().toString()); // 임시 비밀번호
-            user.setProfileImage(googleUserInfo.getPicture());
-            user.setProvider("google");
+            user = new User(googleUserInfo.getEmail(), googleUserInfo.getName(), UUID.randomUUID().toString(), googleUserInfo.getPicture(), "google");
             userService.addSocialUser(user);
         }
-
+        if(user.getProvider().equals("google")) {
+            user.setNickname(googleUserInfo.getName());
+            user.setProfileImage(googleUserInfo.getPicture());
+            userService.updateUser(user);
+        }
+        if(user.getProvider().equals("LOCAL")) {
+            throw new RuntimeException("This email is already registered with a local account.");
+        }
         return user;
     }
 
@@ -49,13 +48,16 @@ public class SocialAuthServiceImpl implements SocialAuthService {
 
         User user = userService.getUserByEmail(naverUserInfo.getEmail());
         if (user == null) {
-            user = new User();
-            user.setEmail(naverUserInfo.getEmail());
-            user.setNickname(naverUserInfo.getNickname());
-            user.setPassword(UUID.randomUUID().toString());
-            user.setProfileImage(naverUserInfo.getProfileImage());
-            user.setProvider("naver");
+            user = new User(naverUserInfo.getEmail(), naverUserInfo.getNickname(), UUID.randomUUID().toString(), naverUserInfo.getProfileImage(), "naver");
             userService.addSocialUser(user);
+        }
+        if(user.getProvider().equals("naver")) {
+            user.setNickname(naverUserInfo.getNickname());
+            user.setProfileImage(naverUserInfo.getProfileImage());
+            userService.updateUser(user);
+        }
+        if(user.getProvider().equals("LOCAL")) {
+            throw new RuntimeException("This email is already registered with a local account.");
         }
         return user;
     }
@@ -68,13 +70,16 @@ public class SocialAuthServiceImpl implements SocialAuthService {
 
         User user = userService.getUserByEmail(kakaoUserInfo.getEmail());
         if (user == null) {
-            user = new User();
-            user.setEmail(kakaoUserInfo.getEmail());
-            user.setNickname(kakaoUserInfo.getNickname());
-            user.setPassword(UUID.randomUUID().toString());
-            user.setProfileImage(kakaoUserInfo.getProfileImage());
-            user.setProvider("kakao");
+            user = new User(kakaoUserInfo.getEmail(), kakaoUserInfo.getNickname(), UUID.randomUUID().toString(), kakaoUserInfo.getProfileImage(), "kakao");
             userService.addSocialUser(user);
+        }
+        if(user.getProvider().equals("kakao")) {
+            user.setNickname(kakaoUserInfo.getNickname());
+            user.setProfileImage(kakaoUserInfo.getProfileImage());
+            userService.updateUser(user);
+        }
+        if(user.getProvider().equals("LOCAL")) {
+            throw new RuntimeException("This email is already registered with a local account.");
         }
         return user;
     }

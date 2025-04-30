@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			const email = signUpEmail.value.trim();
 			const password = signUpPassword.value.trim();
 
-			fetch("/user/signUp", {
+			fetch("/auth/signUp", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/x-www-form-urlencoded"

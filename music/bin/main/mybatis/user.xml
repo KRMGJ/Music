@@ -49,8 +49,10 @@
     </select>
 
     <update id="updateUser" parameterType="User">
-        UPDATE users SET
-        nickname = #{nickname}
+        UPDATE users
+        SET
+        nickname = #{nickname},
+        profile_image = #{profileImage},
         updated_date = SYSDATE
         WHERE email = #{email}
     </update>

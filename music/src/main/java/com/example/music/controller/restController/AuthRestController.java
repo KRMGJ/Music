@@ -4,6 +4,7 @@ import com.example.music.model.User;
 import com.example.music.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +18,16 @@ public class AuthRestController {
 
     @Autowired
     UserService userService;
+    
+	@PostMapping("/signUp")
+	public ResponseEntity<?> addUser(@ModelAttribute User user) {
+		try {
+			userService.addUser(user);
+			return ResponseEntity.ok("회원가입 성공");
+		} catch (Exception exception) {
+			return ResponseEntity.status(401).body("회원가입 실패");
+		}
+	}
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password, HttpSession session) {

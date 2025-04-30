@@ -18,6 +18,9 @@ public class OAuthProperties {
     @Value("${oauth.google.redirect-uri}")
     private String googleRedirectUri;
 
+    @Value("${oauth.google.scope}")
+    private String googleScope;
+
     // Naver
     @Value("${oauth.naver.client-id}")
     private String naverClientId;
@@ -34,4 +37,7 @@ public class OAuthProperties {
 
     @Value("${oauth.kakao.redirect-uri}")
     private String kakaoRedirectUri;
+
+    @Value("${oauth.kakao.scope}")
+    private String kakaoScope;
 }

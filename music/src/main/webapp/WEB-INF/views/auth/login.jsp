@@ -12,14 +12,19 @@
 </head>
 <body>
 	<div class="auth-wrapper">
+	    <c:if test="${not empty errorMessage}">
+            <script>
+                alert("${errorMessage}");
+            </script>
+        </c:if>
 		<div class="auth-container" id="auth-container">
 			<div class="auth-form-container auth-sign-up-container">
 				<form class="signUp-form" id="signUpForm">
 					<h1>Create Account</h1>
 					<div class="social-container">
-						<a href="#" class="social"><img src="https://cdn.simpleicons.org/google/4285F4" width="24"/></a>
-						<a href="#" class="social"><img src="https://cdn.simpleicons.org/naver/03C75A" width="24"/></a>
-						<a href="#" class="social"><img src="https://cdn.simpleicons.org/kakao/FFCD00" width="24"/></a>
+						<a href="/oauth2/login/google" class="social"><img src="https://cdn.simpleicons.org/google/4285F4" width="24"/></a>
+						<a href="/oauth2/login/naver" class="social"><img src="https://cdn.simpleicons.org/naver/03C75A" width="24"/></a>
+						<a href="/oauth2/login/kakao" class="social"><img src="https://cdn.simpleicons.org/kakao/FFCD00" width="24"/></a>
 					</div>
 					<span>or use your email for registration</span>
 					<div class="custom-form-control">
