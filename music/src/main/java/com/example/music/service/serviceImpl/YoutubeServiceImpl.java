@@ -12,13 +12,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.net.*;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class YoutubeServiceImpl implements YoutubeService {
@@ -36,12 +35,12 @@ public class YoutubeServiceImpl implements YoutubeService {
     ChannelInfoDao channelInfoDao;
 
     @Override
-    public SearchList searchVideos(String query, int page, String sort) {
-
+    public SearchList searchVideos(String query, int page, String sort, String duration, String upload, String regionCode) {
         try {
             String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
-            JsonNode items = apiClient.searchVideos(encodedQuery);
+            JsonNode items = apiClient.searchVideos(encodedQuery, duration, upload, regionCode);
 
+            // 채널 정보 수집
             Set<String> channelIds = new HashSet<>();
             for (JsonNode item : items) {
                 String channelId = item.get("snippet").get("channelId").asText();
@@ -57,6 +56,7 @@ public class YoutubeServiceImpl implements YoutubeService {
                 channelInfoMap.put(channelId, new ChannelInfo(channelId, title, thumbnailUrl, subscriberCount));
             }
 
+            // videoId 리스트 수집
             List<String> videoIds = new ArrayList<>();
             for (JsonNode item : items) {
                 if (item.get("id").has("videoId")) {
@@ -66,6 +66,7 @@ public class YoutubeServiceImpl implements YoutubeService {
 
             Map<String, JsonNode> videoDetails = apiClient.fetchVideoDetails(videoIds);
 
+            // Video 객체 리스트 구성
             List<Video> videos = new ArrayList<>();
             for (JsonNode item : items) {
                 JsonNode idNode = item.get("id");
@@ -79,17 +80,17 @@ public class YoutubeServiceImpl implements YoutubeService {
                         videoDetail.get("statistics") == null || videoDetail.get("contentDetails") == null) {
                     continue;
                 }
+
                 String title = snippet.get("title").asText();
                 String description = snippet.get("description").asText();
                 String thumbnail = snippet.get("thumbnails").get("medium").get("url").asText();
                 Timestamp publishedDate = Timestamp.from(OffsetDateTime.parse(snippet.get("publishedAt").asText()).toInstant());
-                long viewCount = videoDetails.get(videoId).get("statistics").get("viewCount").asLong();
+                long viewCount = videoDetail.get("statistics").get("viewCount").asLong();
                 String formattedViewCount = formatViewCount(viewCount);
 
-                String durationStr = videoDetails.get(videoId).get("contentDetails").get("duration").asText();
+                String durationStr = videoDetail.get("contentDetails").get("duration").asText();
                 int durationSec = (int) Duration.parse(durationStr).getSeconds();
                 String formattedDuration = getFormattedDuration(durationSec);
-
 
                 String channelId = snippet.get("channelId").asText();
                 ChannelInfo channelInfo = channelInfoMap.get(channelId);
@@ -97,29 +98,21 @@ public class YoutubeServiceImpl implements YoutubeService {
                 videos.add(new Video(videoId, channelId, title, thumbnail, description, durationStr, durationSec, formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo));
             }
 
-            // 정렬 처리
+            // 정렬
             switch (sort) {
                 case "oldest":
                     videos.sort(Comparator.comparing(Video::getPublishedDate));
                     break;
-                case "length_short":
-                    videos.sort(Comparator.comparingInt(Video::getDurationInSeconds)); // 짧은 순
-                    break;
-                case "length_long":
-                    videos.sort(Comparator.comparingInt(Video::getDurationInSeconds).reversed()); // 긴 순
-                    break;
-                case "title":
-                    videos.sort(Comparator.comparing(Video::getTitle));
+                case "latest":
+                    videos.sort(Comparator.comparing(Video::getPublishedDate).reversed());
                     break;
                 case "views":
                     videos.sort(Comparator.comparing(Video::getViewCount).reversed());
                     break;
-                case "latest":
-                    videos.sort(Comparator.comparing(Video::getPublishedDate).reversed());
-                    break;
                 default:
             }
 
+            // 페이징
             int pageSize = 10;
             int totalCount = videos.size();
             int totalPages = (int) Math.ceil((double) totalCount / pageSize);

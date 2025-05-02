@@ -1,70 +1,94 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
-<header class="bg-white sticky-top shadow-sm py-3"
-	style="z-index: 1030; transition: all 0.3s ease;">
-	<div class="container">
-		<div class="row g-2 align-items-center">
-			<!-- 로고 -->
-			<div>
-				<a href="/playlist/list" class="col-md-2 text-center"> <img
-					src="/resources/images/logo.png" alt="Logo"
-					class="img-fluid logo-shake" style="max-width: 150px;" />
+<header class="youtube-header">
+	<!-- 로고 -->
+	<div class="left-section">
+		<a href="/playlist/list" class="youtube-logo">
+			<img src="<c:url value='/resources/images/youtube-logo.svg' />" alt="YouTube Logo" />
+		</a>
+	</div>
+
+	<!-- 검색창 -->
+	<div class="center-section">
+		<form method="get" action="/video/search" class="search-form">
+			<input type="text" name="query" placeholder="검색" value="${param.query}" />
+			<button type="submit"><i class="fas fa-search"></i></button>
+			<label class="region-only">
+				<input type="checkbox" name="regionCode" value="KR" ${param.regionCode == 'KR' ? 'checked' : ''} />
+				<span>국내 영상만 보기</span>
+			</label>
+		</form>
+	</div>
+
+	<!-- 필터 버튼 -->
+	<div class="filter-btn-wrapper">
+		<button id="filterBtn" class="filter-btn"><i class="fas fa-sliders-h"></i> 필터</button>
+	</div>
+
+	<!-- 로그인 영역 -->
+	<div class="right-section">
+		<button class="mic-btn"><i class="fas fa-microphone"></i></button>
+		<c:choose>
+			<c:when test="${not empty sessionScope.loginUser}">
+				<button id="logoutButton" class="login-btn">로그아웃</button>
+			</c:when>
+			<c:otherwise>
+				<a href="/auth/login" class="login-button">
+					<i class="fa-regular fa-circle-user icon"></i> 로그인
 				</a>
-			</div>
-
-			<!-- 검색창 -->
-			<form method="get" action="/video/search"
-				class="col-md-8 row g-2 align-items-center search-form">
-				<div class="col-md-4">
-					<input type="text" name="query" placeholder="검색어"
-						class="form-control" value="${param.query}" />
-				</div>
-				<div class="col-md-3">
-					<select name="sort" class="form-select">
-						<option value="relevance"
-							${param.sort == 'relevance' ? 'selected' : ''}>관련도순</option>
-						<option value="latest" ${param.sort == 'latest' ? 'selected' : ''}>최신순</option>
-						<option value="oldest" ${param.sort == 'oldest' ? 'selected' : ''}>오래된순</option>
-						<option value="length_short"
-							${param.sort == 'length_short' ? 'selected' : ''}>짧은순</option>
-						<option value="length_long"
-							${param.sort == 'length_long' ? 'selected' : ''}>긴순</option>
-						<option value="views" ${param.sort == 'views' ? 'selected' : ''}>조회수순</option>
-						<option value="title" ${param.sort == 'title' ? 'selected' : ''}>이름순</option>
-					</select>
-				</div>
-				<div class="col-md-2 text-center">
-					<button type="submit" class="btn btn-light">
-						<i class="fas fa-search"></i>
-						<!-- 돋보기 아이콘 -->
-					</button>
-				</div>
-			</form>
-
-			<!-- 로그인/로그아웃 -->
-			<div class="col-md-2 text-end">
-				<c:choose>
-					<c:when test="${not empty sessionScope.loginUser}">
-						<button id="logoutButton" class="btn btn-outline-secondary">로그아웃</button>
-					</c:when>
-					<c:otherwise>
-						<a href="/auth/login" class="btn btn-outline-secondary me-1">로그인</a>
-						<a href="/user/signUp" class="btn btn-outline-primary">회원가입</a>
-					</c:otherwise>
-				</c:choose>
-			</div>
-		</div>
+			</c:otherwise>
+		</c:choose>
 	</div>
 </header>
+
+<!-- 필터 모달 -->
+<div class="filter-modal" id="filterModal">
+	<div class="filter-modal-content">
+		<form method="get" action="/video/search">
+			<input type="hidden" name="query" value="${param.query}" />
+			<c:set var="uploadKeys" value="1h,today,week,month,year" />
+			<c:set var="uploadValues" value="1시간,오늘,이번 주,이번 달,올해" />
+			
+			<div class="filter-section">
+				<h4>업로드 날짜</h4>
+				<c:forEach var="key" items="${fn:split(uploadKeys, ',')}" varStatus="status">
+					<label>
+						<input type="radio" name="upload" value="${key}" ${param.upload == key ? 'checked' : ''} onclick="toggleRadio(this)" />
+						<span>${fn:split(uploadValues, ',')[status.index]}</span>
+					</label>
+				</c:forEach>
+			</div>
+
+			<div class="filter-section">
+				<h4>길이</h4>
+				<label><input type="radio" name="duration" value="short" ${param.duration == 'short' ? 'checked' : ''} onclick="toggleRadio(this)"><span>4분 미만</span></label>
+				<label><input type="radio" name="duration" value="medium" ${param.duration == 'medium' ? 'checked' : ''} onclick="toggleRadio(this)"><span>4~20분</span></label>
+				<label><input type="radio" name="duration" value="long" ${param.duration == 'long' ? 'checked' : ''} onclick="toggleRadio(this)"><span>20분 초과</span></label>
+			</div>
+
+			<div class="filter-section">
+				<h4>정렬 기준</h4>
+				<label><input type="radio" name="sort" value="relevance" ${param.sort == 'relevance' ? 'checked' : ''} onclick="toggleRadio(this)"><span>관련성</span></label>
+				<label><input type="radio" name="sort" value="latest" ${param.sort == 'latest' ? 'checked' : ''} onclick="toggleRadio(this)"><span>최신</span></label>
+				<label><input type="radio" name="sort" value="oldest" ${param.sort == 'oldest' ? 'checked' : ''} onclick="toggleRadio(this)"><span>과거</span></label>
+				<label><input type="radio" name="sort" value="views" ${param.sort == 'views' ? 'checked' : ''} onclick="toggleRadio(this)"><span>조회수</span></label>
+				<label><input type="radio" name="sort" value="rating" ${param.sort == 'rating' ? 'checked' : ''} onclick="toggleRadio(this)"><span>평점</span></label>
+			</div>
+
+			<div class="filter-action">
+				<button type="submit" class="btn btn-primary">적용</button>
+				<span class="close-btn" id="closeModal">&times;</span>
+			</div>
+		</form>
+	</div>
+</div>
+
+
 <link rel="stylesheet" href="/resources/css/layout/header.css" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-	rel="stylesheet">
-<script src="/resources/js/layout/header.js"></script>
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 	crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-
+<script src="/resources/js/layout/header.js"></script>

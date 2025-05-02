@@ -6,7 +6,7 @@ import com.example.music.model.Video;
 import java.util.List;
 
 public interface YoutubeService {
-    SearchList searchVideos(String query, int page, String sort);
+    SearchList searchVideos(String query, int page, String sort, String duration, String upload, String regionCode);
     Video fetchAndSaveVideoById(String videoId);
     List<Video> paginate(List<Video> videos, int page, int pageSize);
 }

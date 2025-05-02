@@ -1,49 +1,223 @@
-/* 스크롤 시 헤더 스타일 변화 */
-header.scrolled {
-    background-color: #f8f9fa;
-    padding: 10px 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* YouTube 스타일 헤더 CSS */
+tbody, html {
+	margin: 0;
+	padding: 0; -
+	-yt-spec-10-percent-layer: var(- -yt-spec-outline); -
+	-yt-spec-outline: rgba(0, 0, 0, 0.1); -
+	-yt-spec-text-primary: #0f0f0f;
 }
 
-/* 버튼 부드러운 효과 */
-button, a.btn {
-    transition: all 0.3s ease;
+.youtube-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 16px;
+	background-color: white;
+	border-bottom: 1px solid #e5e5e5;
+	position: sticky;
+	top: 0;
+	z-index: 1030;
 }
 
-button:hover, a.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.left-section {
+	height: 24px;
 }
 
-/* 로고 살짝 흔들리는 효과 */
-.logo-shake {
-    animation: shake 4s infinite;
+.center-section {
+	flex: 1;
+	display: flex;
+	justify-content: center;
 }
 
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(2px); }
-}
-
-/* 검색창 부드럽게 나타나는 효과 */
 .search-form {
-    opacity: 0;
-    transform: translateY(-20px);
-    animation: fadeInDown 0.6s forwards;
-    animation-delay: 0.3s;
+	display: flex;
+	width: 100%;
+	max-width: 900px;
 }
 
-@keyframes fadeInDown {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.search-form input[type="text"] {
+	flex: 1;
+	padding: 8px 12px;
+	border: 1px solid #ccc;
+	border-right: none;
+	border-radius: 20px 0 0 20px;
+	outline: none;
 }
 
-header {
-  position: relative;
-  z-index: 1030;
-  background-color: #fff;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.search-form button {
+	padding: 0 16px;
+	border: 1px solid #ccc;
+	background-color: #f8f8f8;
+	border-radius: 0 20px 20px 0;
+	cursor: pointer;
+}
+
+.search-form label {
+	display: flex;
+	align-items: center;
+	margin-left: 10px;
+}
+
+.right-section {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.mic-btn, .login-btn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-size: 14px;
+	color: #333;
+}
+
+.search-filter {
+	padding: 10px 16px;
+	background-color: #fafafa;
+	border-bottom: 1px solid #e0e0e0;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.login-button {
+	display: inline-flex;
+	align-items: center;
+	background-color: white;
+	color: #0066cc;
+	border: 2px solid #d9d9d9;
+	border-radius: 50px;
+	padding: 5px 10px;
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: bold;
+	transition: background-color 0.3s ease;
+}
+
+.login-button .icon {
+	text-align: center;
+	margin-right: 8px;
+}
+
+.login-button:hover {
+	background-color: #e6f2ff; /* 연한 하늘색 */
+}
+
+.filter-btn {
+	padding: 8px 12px;
+	/*background-color: #eee;*/
+	background-color: white;
+	border: 1px solid #ccc;
+	border-radius: 50px;
+	cursor: pointer;
+	margin-right: 10px;
+}
+
+.filter-modal {
+	display: none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 600px;
+	max-height: 80%;
+	overflow-y: auto;
+	background-color: #fff;
+	border-radius: 10px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+	z-index: 1000;
+	padding: 20px;
+}
+
+.filter-modal form {
+	display: flex;
+	gap: 40px;
+}
+
+.filter-modal.show {
+	display: block;
+}
+
+.modal-content .close-btn {
+	position: absolute;
+	right: 0px;
+	top: -20px;
+	font-size: 30px;
+	cursor: pointer;
+}
+
+.filter-section {
+	margin-bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	width: 120px;
+}
+
+.filter-section label {
+	display: flex;
+	align-items: center; /* 세로 정렬 */
+	padding-top: 15px;
+}
+
+.filter-section span {
+	font-size: 12px;
+	margin-left: 5px; /* 라디오 버튼과 간격 조절 */
+	padding: 0; /* 위로 치우친 원인 제거 */
+}
+
+
+.filter-section h4 {
+	color: var(- -yt-spec-text-primary);
+	border-bottom: 1px solid var(- -yt-spec-10-percent-layer);
+	margin: 5px 0;
+	padding: 15px 0;
+	text-transform: uppercase;
+	font-family: "Roboto", "Arial", sans-serif;
+	font-size: 16px;
+	line-height: 1.8rem;
+	font-weight: 500;
+}
+
+.filter-options {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.filter-options label {
+	padding: 6px 10px;
+	border: 1px solid #ccc;
+	border-radius: 20px;
+	background-color: #f9f9f9;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.filter-options input[type="radio"], .filter-options input[type="checkbox"]
+	{
+	display: none;
+}
+
+.filter-options input[type="radio"]:checked+label, .filter-options input[type="checkbox"]:checked+label
+	{
+	background-color: #c00;
+	color: white;
+	border-color: #c00;
+}
+
+.filter-action {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.close-btn {
+	font-size: 24px;
+}
+
+.close-btn:hover {
+	cursor: pointer;
 }

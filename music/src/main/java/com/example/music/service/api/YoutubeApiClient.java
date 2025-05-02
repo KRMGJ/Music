@@ -4,10 +4,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class YoutubeApiClient {
@@ -30,10 +38,50 @@ public class YoutubeApiClient {
         return response.get("items").get(0); // 단일 채널 정보
     }
 
-    public JsonNode searchVideos(String encodedQuery) throws Exception {
-        String url = SEARCH_URL + "?part=snippet&type=video&maxResults=20&q=" + encodedQuery + "&key=" + API_KEY;
-        return mapper.readTree(sendGetRequest(url)).get("items");
+    public JsonNode searchVideos(String encodedQuery, String duration, String upload, String regionCode) throws Exception {
+        StringBuilder url = new StringBuilder(SEARCH_URL + "?part=snippet&type=video&maxResults=20&q=" + encodedQuery + "&key=" + API_KEY);
+
+        // 영상 길이 필터링 (API 지원: short, medium, long)
+        if (duration != null && (duration.equals("short") || duration.equals("medium") || duration.equals("long"))) {
+            url.append("&videoDuration=").append(duration);
+        }
+
+        // 지역 코드 필터링
+        if (regionCode != null && !regionCode.isEmpty()) {
+            url.append("&regionCode=").append(regionCode);
+        }
+
+        // 업로드 날짜 필터링 (publishedAfter 사용)
+        if (upload != null) {
+            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+            ZonedDateTime cutoff = null;
+            switch (upload) {
+                case "1h":
+                    cutoff = now.minusHours(1);
+                    break;
+                case "today":
+                    cutoff = now.toLocalDate().atStartOfDay(ZoneOffset.UTC);
+                    break;
+                case "week":
+                    cutoff = now.minusDays(7);
+                    break;
+                case "month":
+                    cutoff = now.minusDays(30);
+                    break;
+                case "year":
+                    cutoff = now.minusDays(365);
+                    break;
+            }
+            if (cutoff != null) {
+                String isoTime = cutoff.format(DateTimeFormatter.ISO_INSTANT);
+                url.append("&publishedAfter=").append(isoTime);
+            }
+        }
+
+        return mapper.readTree(sendGetRequest(url.toString())).get("items");
     }
+
+
 
     public Map<String, JsonNode> fetchVideoDetails(List<String> videoIds) throws Exception {
         if (videoIds.isEmpty()) return Collections.emptyMap();
