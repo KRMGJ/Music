@@ -12,6 +12,7 @@
         <result property="formattedDuration" column="formatted_duration"/>
         <result property="publishedDate" column="published_date"/>
         <result property="viewCount" column="view_count"/>
+        <result property="formattedViewCount" column="formatted_view_count"/>
         <association property="channelInfo" javaType="ChannelInfo">
             <result property="channelTitle" column="channel_title"/>
             <result property="channelThumbnail" column="channel_thumbnail"/>
@@ -20,8 +21,8 @@
     </resultMap>
 
     <insert id="addVideo" parameterType="Video">
-        INSERT INTO videos (id, channel_id, title, thumbnail, description, duration, duration_in_seconds, formatted_duration, published_date, view_count)
-        VALUES (#{videoId}, #{channelId}, #{title}, #{thumbnail}, #{description}, #{duration}, #{durationInSeconds}, #{formattedDuration}, #{publishedDate}, #{viewCount})
+        INSERT INTO videos (id, channel_id, title, thumbnail, description, duration, duration_in_seconds, formatted_duration, published_date, view_count, formatted_view_count)
+        VALUES (#{videoId}, #{channelId}, #{title}, #{thumbnail}, #{description}, #{duration}, #{durationInSeconds}, #{formattedDuration}, #{publishedDate}, #{viewCount}, #{formattedViewCount})
     </insert>
 
     <select id="getVideoById" resultMap="videoResultMap">
@@ -57,7 +58,8 @@
             duration_in_seconds = #{durationInSeconds},
             formatted_duration = #{formattedDuration},
             published_date = #{publishedDate},
-            view_count = #{viewCount}
+            view_count = #{viewCount},
+            formatted_view_count = #{formattedViewCount}
         WHERE id = #{videoId}
     </update>
 

@@ -7,11 +7,17 @@
 
 	<!-- Root Context: defines shared resources visible to all other web components -->
 
-	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+   <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
 		<property name="driverClassName" value="oracle.jdbc.OracleDriver" />
-		<property name="url" value="jdbc:oracle:thin:@localhost:1521/xe" />
+		<property name="jdbcUrl" value="jdbc:oracle:thin:@localhost:1521/xe" />
 		<property name="username" value="root" />
 		<property name="password" value="1234" />
+	    <!-- 커넥션 풀 설정 -->
+	    <property name="maximumPoolSize" value="20" />
+	    <property name="minimumIdle" value="5" />
+	    <property name="idleTimeout" value="30000" />
+	    <property name="connectionTimeout" value="30000" />
+	    <property name="maxLifetime" value="1800000" />
 	</bean>
 
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">

@@ -1,4 +1,3 @@
-/* YouTube 스타일 헤더 CSS */
 tbody, html {
 	margin: 0;
 	padding: 0; -
@@ -215,7 +214,7 @@ tbody, html {
 }
 
 .close-btn {
-	font-size: 24px;
+	font-size: 20px;
 }
 
 .close-btn:hover {

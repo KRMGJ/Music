@@ -7,134 +7,129 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<link rel="stylesheet"
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-<script
-	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<style>
-.video-duration {
-	position: absolute;
-	bottom: 5px;
-	right: 8px;
-	background-color: rgba(0, 0, 0, 0.75);
-	color: white;
-	font-size: 0.75rem;
-	padding: 2px 5px;
-	border-radius: 4px;
-}
-
-.badge-shorts {
-	background-color: red;
-	color: white;
-	font-size: 0.7rem;
-	height: fit-content;
-	margin-left: 10px;
-}
-
-.video-description {
-	font-size: 0.85rem;
-	max-height: 2.6em; /* 두 줄 제한 */
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
-}
-</style>
+<link rel="stylesheet" href="/resources/css/playlist/videos.css">
+<script src="/resources/js/playlist/videos.js"></script>
 <title>video list</title>
 </head>
 <body>
 	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
-    <c:if test="${not empty successMessage}">
-        <div class="alert alert-info" role="alert">
-            ${successMessage}
-        </div>
-    </c:if>
+	<c:if test="${not empty successMessage}">
+		<div class="message success">${successMessage}</div>
+	</c:if>
 
-    <c:if test="${not empty errorMessage}">
-        <div class="alert alert-danger" role="alert">
-            ${errorMessage}
-        </div>
-    </c:if>
+	<c:if test="${not empty errorMessage}">
+		<div class="message error">${errorMessage}</div>
+	</c:if>
 
-	<!-- 플레이리스트 정보 -->
-	<div class="playlist-header mb-4">
-		<h2 class="text-dark">${playlist.title}</h2>
-		<img src="${playlist.image}" alt="플레이리스트 썸네일"
-			style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
-        <p class="text-muted mt-2">${playlist.viewCount}</p>
-        <p class="text-muted">${playlist.likeCount}</p>
-        <p class="text-muted">${playlist.createdDate}</p>
+	<div class="playlist-container">
+		<div class="playlist-left">
+			<div class="playlist-card">
+				<c:choose>
+					<c:when test="${not empty playlist.image}">
+						<img class="playlist-thumbnail" src="${playlist.image}" />
+					</c:when>
+					<c:when test="${not empty playlist.lastVideoThumbnail}">
+						<img class="playlist-thumbnail"
+							src="${playlist.lastVideoThumbnail}" />
+					</c:when>
+					<c:otherwise>
+						<img class="playlist-thumbnail"
+							src="/resources/images/default-video-thumbnail.jpg" />
+					</c:otherwise>
+				</c:choose>
+
+
+				<div class="playlist-info">
+					<h5>${playlist.title}</h5>
+					<p>게시자: ${playlist.userId}</p>
+					<p>영상 ${fn:length(playlistVideos)}개</p>
+					<p>조회수 ${playlist.viewCount}</p>
+					<p>좋아요 ${playlist.likeCount}</p>
+					<p>생성일 ${playlist.createdDate}</p>
+					<div class="playlist-buttons">
+						<button class="btn dark">▶ 모두 재생</button>
+						<button class="btn light">+ 추가</button>
+						<button class="btn light">✏️ 편집</button>
+						<button class="btn light">↗ 공유</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="playlist-right">
+			<div class="sort-bar">
+				<h5>정렬</h5>
+				<select onchange="location.href=this.value" class="sort-select">
+					<option value="?sort=custom"
+						${selectedSortLabel == '직접' ? 'selected' : ''}>직접</option>
+					<option value="?sort=addedDesc"
+						${selectedSortLabel == '추가된 날짜(최신순)' ? 'selected' : ''}>추가된
+						날짜(최신순)</option>
+					<option value="?sort=addedAsc"
+						${selectedSortLabel == '추가된 날짜(오래된순)' ? 'selected' : ''}>추가된
+						날짜(오래된순)</option>
+					<option value="?sort=popular"
+						${selectedSortLabel == '인기순' ? 'selected' : ''}>인기순</option>
+					<option value="?sort=dateDesc"
+						${selectedSortLabel == '게시일(최신순)' ? 'selected' : ''}>게시일(최신순)</option>
+					<option value="?sort=dateAsc"
+						${selectedSortLabel == '게시일(오래된순)' ? 'selected' : ''}>게시일(오래된순)</option>
+				</select>
+			</div>
+
+			<c:choose>
+				<c:when test="${playlistVideos == null || empty playlistVideos}">
+					<p class="no-videos">이 플레이리스트에 영상이 없습니다.</p>
+				</c:when>
+				<c:otherwise>
+					<c:forEach var="video" items="${playlistVideos}">
+						<div class="video-card">
+							<div class="video-thumbnail-container">
+								<a href="https://www.youtube.com/watch?v=${video.videoId}"
+									target="_blank"> <img src="${video.thumbnail}" alt="썸네일"
+									class="video-thumbnail" />
+									<div class="video-duration">${video.formattedDuration}</div>
+								</a>
+							</div>
+							<div class="video-info">
+								<div class="video-title-container">
+									<a href="https://www.youtube.com/watch?v=${video.videoId}"
+										target="_blank" class="video-title">
+										${fn:escapeXml(video.title)} </a>
+									<div class="options-wrapper">
+										<button class="more-btn" onclick="toggleMenu(this)">⋮</button>
+										<div class="dropdown-menu">
+											<form action="/playlist/remove" method="post">
+												<input type="hidden" name="videoId" value="${video.videoId}" />
+												<input type="hidden" name="playlistId"
+													value="${playlist.id}" />
+												<button type="submit" class="menu-item">리스트에서 삭제</button>
+											</form>
+											<button class="menu-item"
+												onclick="shareVideo('${video.videoId}')">공유</button>
+										</div>
+									</div>
+								</div>
+								<div class="video-meta">
+									조회수 ${video.formattedViewCount} ·
+									<fmt:formatDate value="${video.publishedDate}"
+										pattern="yyyy년 M월 d일" />
+								</div>
+								<div class="video-channel">
+									<img src="${video.channelInfo.channelThumbnail}"
+										class="channel-thumbnail" /> <span>${video.channelInfo.channelTitle}</span>
+								</div>
+								<div class="video-description">
+									${fn:escapeXml(video.description)}</div>
+							</div>
+						</div>
+					</c:forEach>
+
+				</c:otherwise>
+			</c:choose>
+		</div>
 	</div>
 
-	<!-- 영상 목록 -->
-	<c:choose>
-		<c:when test="${playlistVideos == null || empty playlistVideos}">
-			<p class="text-muted">이 플레이리스트에 영상이 없습니다.</p>
-		</c:when>
-		<c:otherwise>
-			<c:forEach var="video" items="${playlistVideos}">
-			    <div class="card mb-3 shadow-sm">
-			        <div class="row g-0">
-			            <!-- 썸네일 -->
-			            <div class="col-auto position-relative">
-			                <a href="https://www.youtube.com/watch?v=${video.videoId}" target="_blank">
-			                    <img src="${video.thumbnail}" alt="썸네일"
-			                         style="width: 210px; height: 120px; object-fit: cover; border-radius: 8px; margin: 10px;" />
-			                    <div class="video-duration">${video.formattedDuration}</div>
-			                </a>
-			            </div>
-			
-			            <!-- 내용 -->
-			            <div class="col d-flex flex-column justify-content-between p-2">
-			                <div class="d-flex justify-content-between align-items-start">
-			                    <!-- 제목 -->
-			                    <a href="https://www.youtube.com/watch?v=${video.videoId}"
-			                       target="_blank"
-			                       class="text-decoration-none text-dark fw-bold"
-			                       style="font-size: 1rem; flex: 1;">
-			                       ${fn:escapeXml(video.title)}
-			                    </a>
-			
-			                    <!-- 더보기 버튼 -->
-			                    <div class="dropdown ms-2">
-			                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-			                            ⋮
-			                        </button>
-			                        <ul class="dropdown-menu dropdown-menu-end">
-			                            <li><a class="dropdown-item" href="https://www.youtube.com/watch?v=${video.videoId}" target="_blank">공유</a></li>
-			                            <form action="/playlist/remove" method="post">
-                                            <input type="hidden" name="videoId" value="${video.videoId}" />
-                                            <input type="hidden" name="playlistId" value="${playlist.id}" />
-			                            <li><button class="dropdown-item text-danger">리스트에서 삭제</button></li>
-			                            </form>
-			                        </ul>
-			                    </div>
-			                </div>
-			
-			                <!-- 조회수, 업로드일 -->
-			                <div class="text-muted mt-1" style="font-size: 0.85rem;">
-			                    조회수 ${video.formattedViewCount} ·
-			                    <fmt:formatDate value="${video.publishedDate}" pattern="yyyy년 M월 d일" />
-			                </div>
-			
-			                <!-- 채널 정보 -->
-			                <div class="d-flex align-items-center my-1" style="font-size: 0.9rem;">
-			                    <img src="${video.channelInfo.channelThumbnail}" alt="채널썸네일"
-			                         style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-right: 8px;" />
-			                    <span>${video.channelInfo.channelTitle}</span>
-			                </div>
-			
-			                <!-- 설명 -->
-			                <div class="text-muted video-description">
-			                    ${fn:escapeXml(video.description)}
-			                </div>
-			            </div>
-			        </div>
-			    </div>
-			</c:forEach>
-		</c:otherwise>
-	</c:choose>
 </body>
 </html>

@@ -23,4 +23,5 @@ public class Playlist {
 	private int playlistId;
 	private String playlistTitle;
 	private String lastVideoThumbnail;
+	private String videoCount;
 }

@@ -9,6 +9,7 @@
         <result property="viewCount" column="view_count"/>
         <result property="likeCount" column="like_count"/>
         <result property="createdDate" column="created_date"/>
+        <result property="videoCount" column="video_count"/>
 
         <result property="playlistId" column="playlist_id" />
         <result property="playlistTitle" column="playlist_title" />
@@ -22,7 +23,8 @@
         last_videos.thumbnail AS last_video_thumbnail,
         p.view_count,
         p.like_count,
-        p.created_date
+        p.created_date,
+        NVL(video_counts.video_count, 0) AS video_count
         FROM playlists p
         LEFT JOIN (
         SELECT
@@ -31,34 +33,12 @@
         ROW_NUMBER() OVER (PARTITION BY pv.playlist_id ORDER BY pv.created_date DESC) AS rn
         FROM playlist_videos pv
         JOIN videos v ON pv.video_id = v.id
-        ) last_videos
-        ON p.id = last_videos.playlist_id
-        AND last_videos.rn = 1
-        WHERE p.user_id = #{userId}
-        ORDER BY p.created_date DESC
-    </select>
-
-    <select id="getPlaylistsWithLastThumbnailByUserId" resultMap="playlistResultMap">
-        SELECT
-        p.id AS playlist_id,
-        p.user_id AS user_id,
-        p.title AS playlist_title,
-        p.image AS image,
-        p.view_count AS view_count,
-        p.like_count AS like_count,
-        p.created_date AS created_date,
-        last_videos.thumbnail AS last_video_thumbnail
-        FROM playlists p
+        ) last_videos ON p.id = last_videos.playlist_id AND last_videos.rn = 1
         LEFT JOIN (
-        SELECT
-        pv.playlist_id,
-        v.thumbnail,
-        ROW_NUMBER() OVER (PARTITION BY pv.playlist_id ORDER BY pv.created_date DESC) AS rn
-        FROM playlist_videos pv
-        JOIN videos v ON pv.video_id = v.id
-        ) last_videos
-        ON p.id = last_videos.playlist_id
-        AND last_videos.rn = 1
+        SELECT playlist_id, COUNT(*) AS video_count
+        FROM playlist_videos
+        GROUP BY playlist_id
+        ) video_counts ON p.id = video_counts.playlist_id
         WHERE p.user_id = #{userId}
         ORDER BY p.created_date DESC
     </select>
@@ -89,8 +69,22 @@
         WHERE id = #{id}
     </update>
 
-    <select id="getPlaylistById" resultMap="playlistResultMap">
-        SELECT * FROM playlists WHERE id = #{id}
+    <select id="getPlaylistById" resultMap="playlistResultMap" parameterType="int">
+        SELECT
+        p.*,
+        v.thumbnail AS last_video_thumbnail
+        FROM playlists p
+        LEFT JOIN (
+        SELECT sub.playlist_id, sub.thumbnail
+        FROM (
+        SELECT pv.playlist_id, v.thumbnail,
+        ROW_NUMBER() OVER (PARTITION BY pv.playlist_id ORDER BY pv.created_date DESC) AS rn
+        FROM playlist_videos pv
+        JOIN videos v ON pv.video_id = v.id
+        ) sub
+        WHERE sub.rn = 1
+        ) v ON p.id = v.playlist_id
+        WHERE p.id = #{id}
     </select>
 
     <select id="getAllPlaylists" resultMap="playlistResultMap">

@@ -74,6 +74,9 @@ dependencies {
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
     
+    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
+	implementation 'com.zaxxer:HikariCP:6.3.0'
+    
     implementation 'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE'
 }
 
