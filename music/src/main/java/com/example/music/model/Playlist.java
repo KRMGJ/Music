@@ -13,8 +13,8 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class Playlist {
 	
-	private int id;
-	private int userId;
+	private String id;
+	private String userId;
 	private String title;
 	private String image;
 	private int viewCount;

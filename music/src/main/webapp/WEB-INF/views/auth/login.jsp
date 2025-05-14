@@ -6,7 +6,9 @@
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="/resources/css/auth/login.css">
+
 <script src="https://kit.fontawesome.com/cb52f65530.js" crossorigin="anonymous"></script>
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 <title>로그인</title>
 </head>
@@ -31,19 +33,19 @@
 					    <input type="text" id="nickname" name="nickname" placeholder="Name" />
 					    <i class="custom-icon-success fas fa-check-circle"></i>
 					    <i class="custom-icon-error fas fa-exclamation-circle"></i>
-					    <small class="custom-error-message">Error message</small>
+					    <small class="custom-error-message"></small>
 					</div>
 					<div class="custom-form-control">
 						<input type="email" id="signUpEmail" name="email" placeholder="Email" />
 					    <i class="custom-icon-success fas fa-check-circle"></i>
 					    <i class="custom-icon-error fas fa-exclamation-circle"></i>
-						<small class="custom-error-message">Error message</small>
+						<small class="custom-error-message"></small>
 					</div>
 					<div class="custom-form-control">
 						<input type="password" id="signUpPassword" name="password" placeholder="Password" />
 					    <i class="custom-icon-success fas fa-check-circle"></i>
 					    <i class="custom-icon-error fas fa-exclamation-circle"></i>
-						<small class="custom-error-message">Error message</small>
+						<small class="custom-error-message"></small>
 					</div>
 					<button>Sign Up</button>
 				</form>
@@ -62,13 +64,13 @@
 						<input type="email" id="loginEmail" placeholder="email" /> 
 					    <i class="custom-icon-success fas fa-check-circle"></i>
 					    <i class="custom-icon-error fas fa-exclamation-circle"></i>
-						<small class="custom-error-message">Error message</small>
+						<small class="custom-error-message"></small>
 					</div>
 					<div class="custom-form-control">
 						<input type="password" id="loginPassword" placeholder="Password" />
 					    <i class="custom-icon-success fas fa-check-circle"></i>
 					    <i class="custom-icon-error fas fa-exclamation-circle"></i>
-						<small class="custom-error-message">Error message</small>
+						<small class="custom-error-message"></small>
 					</div>
 					<a href="#">Forgot your password?</a>
 					<button>Sign In</button>

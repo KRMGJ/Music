@@ -7,12 +7,21 @@
 <meta charset="UTF-8">
 <title>My Playlists</title>
 <link rel="stylesheet" href="/resources/css/playlist/list.css">
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
 </head>
 <body>
 	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
 	<div class="playlist-container">
 		<div class="playlist-grid">
+		    <c:choose>
+                <c:when test="${empty playlists}">
+                    <p class="text-muted">재생목록이 없습니다.</p>
+                </c:when>
+                <c:otherwise>
+                    <p class="text-muted">총 ${playlists.size()}개의 재생목록이 있습니다.</p>
+                </c:otherwise>
+            </c:choose>
 			<c:forEach var="playlist" items="${playlists}">
 				<div class="playlist-card">
 					<div class="thumbnail-wrapper">

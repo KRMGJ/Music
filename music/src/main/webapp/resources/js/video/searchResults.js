@@ -1,28 +1,23 @@
-// 플레이리스트에 비디오 추가
-document.getElementById("addToPlaylistForm").addEventListener("submit", function(event) {
-	event.preventDefault();  // 폼 제출을 막고 Ajax 요청을 보냄
+// 플레이리스트에 비디오 추가 (jQuery)
+$('#addToPlaylistForm').on('submit', function(event) {
+	event.preventDefault(); // 기본 제출 막기
 
-	var videoId = document.getElementById('modalVideoId').value;
-	var playlistId = document.getElementById('playlistId').value;
+	const videoId = $('#modalVideoId').val();
+	const playlistId = $('#playlistId').val();
 
-
-	fetch("/playlist/addVideo", {
+	$.ajax({
+		url: '/playlist/addVideo',
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded'
-		},
-		body: new URLSearchParams({
+		contentType: 'application/x-www-form-urlencoded',
+		data: {
 			playlistId: playlistId,
 			videoId: videoId
-		})
-	}).then(response => {
-		if (response.ok) {
-			return response.text();  // 서버에서 보낸 성공 메시지를 반환
+		},
+		success: function(response) {
+			alert(response); // 서버에서 전달된 메시지 출력
+		},
+		error: function(xhr, status, error) {
+			alert('Error adding video to playlist');
 		}
-		return Promise.reject('Failed to add video');
-	}).then(successMessage => {
-		alert(successMessage);  // "Video added to playlist successfully" 메시지
-	}).catch(error => {
-		alert(error);  // "Error adding video to playlist" 메시지
 	});
 });

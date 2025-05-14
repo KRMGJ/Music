@@ -2,6 +2,7 @@
 <%@ page session="false" %>
 <html>
 <head>
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 	<title>Home</title>
 </head>

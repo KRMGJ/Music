@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PlaylistVideo {
-    private int playlistId;
+    private String playlistId;
     private String videoId;
 }

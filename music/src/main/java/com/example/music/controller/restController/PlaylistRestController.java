@@ -5,15 +5,11 @@ import com.example.music.model.User;
 import com.example.music.model.Video;
 import com.example.music.service.PlaylistService;
 import com.example.music.service.YoutubeService;
-import com.example.music.util.MessageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/playlist")
@@ -26,7 +22,7 @@ public class PlaylistRestController {
     PlaylistService playlistService;
 
     @PostMapping("/addVideo")
-    public ResponseEntity<?> addVideoToPlaylist(@RequestParam int playlistId,
+    public ResponseEntity<?> addVideoToPlaylist(@RequestParam String playlistId,
                                                 @RequestParam String videoId) {
         // 비디오 저장
         Video video = youtubeService.fetchAndSaveVideoById(videoId);

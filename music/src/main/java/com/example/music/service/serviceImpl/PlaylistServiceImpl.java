@@ -31,7 +31,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     VideoService videoService;
 
     @Override
-    public String addVideoToPlayList(Video video, int playlistId) {
+    public String addVideoToPlayList(Video video, String playlistId) {
         // 1. videos 테이블에 없으면 저장
         Video existing = videoDao.getVideoById(video.getVideoId());
         if (existing == null) {
@@ -57,7 +57,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
-    public void deletePlaylistByPlaylistId(int id) {
+    public void deletePlaylistByPlaylistId(String id) {
         playListDao.delete(id);
     }
 
@@ -67,7 +67,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
-    public List<Video> getVideosByPlaylistId(int playlistId) {
+    public List<Video> getVideosByPlaylistId(String playlistId) {
         List<String> videoIds = playListVideoDao.getVideosByPlaylistId(playlistId);
         System.out.println("videoIds: " + videoIds);
         if (videoIds != null && !videoIds.isEmpty()) {
@@ -78,13 +78,13 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
-    public Playlist getPlaylistByPlaylistId(int playlistId) {
+    public Playlist getPlaylistByPlaylistId(String playlistId) {
         Playlist playList = playListDao.getPlaylistByPlaylistId(playlistId);
         return playList;
     }
 
     @Override
-    public List<Playlist> getPlaylistsWithLastThumbnail(int userId) {
+    public List<Playlist> getPlaylistsWithLastThumbnail(String userId) {
         List<Playlist> playList = playListDao.getPlaylistsWithLastThumbnailByUserId(userId);
         return playList;
     }
@@ -102,7 +102,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
-    public List<Playlist> getPlaylistsByUserId(int userId) {
+    public List<Playlist> getPlaylistsByUserId(String userId) {
         List<Playlist> playList = playListDao.getPlaylistsByUserId(userId);
         return playList;
     }

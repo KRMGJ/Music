@@ -8,6 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="/resources/css/playlist/videos.css">
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
 <script src="/resources/js/playlist/videos.js"></script>
 <title>video list</title>
 </head>

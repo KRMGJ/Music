@@ -16,19 +16,19 @@ public class PlaylistVideoDaoImpl implements PlaylistVideoDao {
     SqlSession sqlSession;
 
     @Override
-    public void insert(int playlistId, String videoId) {
+    public void insert(String playlistId, String videoId) {
         PlaylistVideo pv = new PlaylistVideo(playlistId, videoId);
         sqlSession.insert("playlistVideo.insert", pv);
     }
 
     @Override
-    public Playlist getPlaylistByPlaylistId(int playlistId) {
+    public Playlist getPlaylistByPlaylistId(String playlistId) {
         Playlist playList = sqlSession.selectOne("playlistVideo.getPlaylistByPlaylistId", playlistId);
         return playList;
     }
 
     @Override
-    public List<String> getVideosByPlaylistId(int playlistId) {
+    public List<String> getVideosByPlaylistId(String playlistId) {
         List<String> videoIds = sqlSession.selectList("playlistVideo.getVideosByPlaylistId", playlistId);
         return videoIds;
     }

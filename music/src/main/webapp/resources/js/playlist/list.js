@@ -1,28 +1,22 @@
-document.getElementById("addPlaylistForm").addEventListener("submit", function(event) {
-	event.preventDefault();  // 폼 제출을 막고 Ajax 요청을 보냄
+$(document).ready(function () {
+	$("#addPlaylistForm").on("submit", function (event) {
+		event.preventDefault(); // 기본 폼 제출 막기
 
-	fetch("/playlist/create", {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded'
-		},
-		body: new URLSearchParams({
-			title: document.getElementById('title').value
-		})
-	}).then(response => {
-		if (response.ok) {
-			return response.text().then(data => {
+		const title = $("#title").val();
+
+		$.ajax({
+			type: "POST",
+			url: "/playlist/create",
+			contentType: "application/x-www-form-urlencoded",
+			data: { title: title },
+			success: function (data) {
 				alert("플레이리스트 생성 성공");
-				window.location.reload();  // 페이지 새로고침
-			}
-			);
-		} else {
-			return response.text().then(errorMessage => {
+				location.reload();
+			},
+			error: function (xhr, status, error) {
+				console.error("에러 발생:", error);
 				alert("플레이리스트 생성 실패");
-			});
-		}
-	}).catch(error => {
-		console.error("Error:", error);
-		alert("플레이리스트 생성 중 오류 발생");
+			}
+		});
 	});
 });

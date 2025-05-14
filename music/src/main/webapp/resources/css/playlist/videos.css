@@ -6,15 +6,28 @@
 	margin-left: 10px;
 }
 
-.video-description {
+/*.video-description {
 	font-size: 0.85rem;
-	max-height: 2.6em; /* 두 줄 제한 */
+	max-height: 2.6em;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
+}*/
+
+.video-description {
+  font-size: 0.9rem;
+  color: #606060; /* YouTube 스타일에 가까운 회색 */
+  margin-top: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
 }
+
 
 body {
   font-family: sans-serif;
@@ -28,10 +41,12 @@ body {
   margin: 10px;
   border-radius: 6px;
 }
+
 .message.success {
   background-color: #d1e7dd;
   color: #0f5132;
 }
+
 .message.error {
   background-color: #f8d7da;
   color: #842029;
@@ -178,12 +193,6 @@ body {
   border-radius: 50%;
   margin-right: 6px;
   object-fit: cover;
-}
-
-.video-description {
-  font-size: 0.9rem;
-  color: #555;
-  margin-top: 6px;
 }
 
 .no-videos {

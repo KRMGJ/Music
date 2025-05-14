@@ -1,9 +1,11 @@
 function toggleMenu(button) {
-    const menu = button.nextElementSibling;
-    const isVisible = menu.style.display === 'block';
-    
-    document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
-    menu.style.display = isVisible ? 'none' : 'block';
+    const $menu = $(button).next('.dropdown-menu');
+    const isVisible = $menu.is(':visible');
+
+    $('.dropdown-menu').hide(); // 다른 메뉴 닫기
+    if (!isVisible) {
+        $menu.show(); // 현재 메뉴만 열기
+    }
 }
 
 function shareVideo(videoId) {
@@ -14,8 +16,8 @@ function shareVideo(videoId) {
 }
 
 // 외부 클릭 시 드롭다운 닫기
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.options-wrapper')) {
-        document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
+$(document).on('click', function (e) {
+    if (!$(e.target).closest('.options-wrapper').length) {
+        $('.dropdown-menu').hide();
     }
 });

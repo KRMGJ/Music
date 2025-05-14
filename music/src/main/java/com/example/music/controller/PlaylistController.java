@@ -1,10 +1,12 @@
 package com.example.music.controller;
 
-import com.example.music.model.*;
+import com.example.music.model.Playlist;
+import com.example.music.model.PlaylistVideo;
+import com.example.music.model.User;
+import com.example.music.model.Video;
 import com.example.music.service.PlaylistService;
 import com.example.music.service.YoutubeService;
 import com.example.music.util.MessageUtil;
-import oracle.jdbc.proxy.annotation.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -51,7 +53,7 @@ public class PlaylistController {
     }
 
     @GetMapping("/videos")
-    public String getVideosByPlaylistId(@RequestParam("playlistId") int playlistId,
+    public String getVideosByPlaylistId(@RequestParam("playlistId") String playlistId,
                                         Model model) {
         // 1. 재생목록에 포함된 비디오 목록 가져오기
         List<Video> playlistVideos  = playlistService.getVideosByPlaylistId(playlistId);
@@ -63,7 +65,7 @@ public class PlaylistController {
     }
 
     @PostMapping("/remove")
-    public String removeVideoFromPlaylist(@RequestParam("playlistId") int playlistId,
+    public String removeVideoFromPlaylist(@RequestParam("playlistId") String playlistId,
                                           @RequestParam("videoId") String videoId,
                                           RedirectAttributes redirectAttributes) {
         // 비디오 삭제

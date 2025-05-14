@@ -26,12 +26,12 @@ public class PlaylistDaoImpl implements PlaylistDao {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(String id) {
         sqlSession.delete("playlist.deletePlaylist", id);
     }
 
     @Override
-    public Playlist getPlaylistByPlaylistId(int id) {
+    public Playlist getPlaylistByPlaylistId(String id) {
         Playlist playList = sqlSession.selectOne("playlist.getPlaylistById", id);
         return playList;
     }
@@ -43,7 +43,7 @@ public class PlaylistDaoImpl implements PlaylistDao {
     }
 
     @Override
-    public List<Playlist> getPlaylistsByUserId(int userId) {
+    public List<Playlist> getPlaylistsByUserId(String userId) {
         List<Playlist> playList = sqlSession.selectList("playlist.getPlaylistsByUserId", userId);
         return playList;
     }
@@ -55,23 +55,23 @@ public class PlaylistDaoImpl implements PlaylistDao {
     }
 
     @Override
-    public List<Playlist> getPlaylistsWithLastThumbnailByUserId(int userId) {
+    public List<Playlist> getPlaylistsWithLastThumbnailByUserId(String userId) {
         List<Playlist> playList = sqlSession.selectList("playlist.findPlaylistsWithLastThumbnail", userId);
         return playList;
     }
 
     @Override
-    public void incrementViewCount(int id) {
+    public void incrementViewCount(String id) {
         sqlSession.update("playlist.incrementViewCount", id);
     }
 
     @Override
-    public void incrementLikeCount(int id) {
+    public void incrementLikeCount(String id) {
         sqlSession.update("playlist.incrementLikeCount", id);
     }
 
     @Override
-    public void decrementLikeCount(int id) {
+    public void decrementLikeCount(String id) {
         sqlSession.update("playlist.decrementLikeCount", id);
     }
 }

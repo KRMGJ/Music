@@ -1,89 +1,73 @@
-document.addEventListener("DOMContentLoaded", function() {
-	const signUpForm = document.getElementById('signUpForm');
-	const username = document.getElementById('nickname');
-	const signUpEmail = document.getElementById('signUpEmail');
-	const signUpPassword = document.getElementById('signUpPassword');
+$(document).ready(function () {
+	const $signUpForm = $('#signUpForm');
+	const $username = $('#nickname');
+	const $signUpEmail = $('#signUpEmail');
+	const $signUpPassword = $('#signUpPassword');
 
-	const loginForm = document.getElementById('loginForm');
-	const loginEmail = document.getElementById('loginEmail');
-	const loginPassword = document.getElementById('loginPassword');
+	const $loginForm = $('#loginForm');
+	const $loginEmail = $('#loginEmail');
+	const $loginPassword = $('#loginPassword');
 
-	const signUpButton = document.getElementById('signUp');
-	const signInButton = document.getElementById('signIn');
-	const container = document.getElementById('auth-container');
+	const $signUpButton = $('#signUp');
+	const $signInButton = $('#signIn');
+	const $container = $('#auth-container');
 
-	signUpButton.addEventListener('click', () => {
-		container.classList.add("right-panel-active");
+	$signUpButton.on('click', function () {
+		$container.addClass("right-panel-active");
 	});
 
-	signInButton.addEventListener('click', () => {
-		container.classList.remove("right-panel-active");
+	$signInButton.on('click', function () {
+		$container.removeClass("right-panel-active");
 	});
 
 	// 회원가입 처리
-	signUpForm.addEventListener('submit', function(e) {
+	$signUpForm.on('submit', function (e) {
 		e.preventDefault();
 		if (checkInputs()) {
-			const nickname = username.value.trim();
-			const email = signUpEmail.value.trim();
-			const password = signUpPassword.value.trim();
+			const nickname = $username.val().trim();
+			const email = $signUpEmail.val().trim();
+			const password = $signUpPassword.val().trim();
 
-			fetch("/auth/signUp", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded"
-				},
-				body: new URLSearchParams({
+			$.ajax({
+				type: "POST",
+				url: "/auth/signUp",
+				data: {
 					nickname: nickname,
 					email: email,
 					password: password
-				})
-			}).then(response => {
-				if (!response.ok) {
-					return response.text().then(errorMessage => {
-						alert("회원가입 실패");
-					});
-				}
-				return response.text().then(successMessage => {
+				},
+				success: function () {
 					alert("회원가입 성공");
 					window.location.href = "/auth/login";
-				});
-			}).catch(error => {
-				console.error("회원가입 중 오류 발생:", error);
-				alert("회원가입 중 오류가 발생했습니다.");
+				},
+				error: function () {
+					alert("회원가입 실패");
+				}
 			});
 		}
 	});
 
 	// 로그인 처리
-	loginForm.addEventListener("submit", function(event) {
-		event.preventDefault();
+	$loginForm.on('submit', function (e) {
+		e.preventDefault();
 		if (checkLoginInputs()) {
-			const email = loginEmail.value.trim();
-			const password = loginPassword.value.trim();
+			const email = $loginEmail.val().trim();
+			const password = $loginPassword.val().trim();
 
-			fetch("/auth/login", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded"
-				},
-				body: new URLSearchParams({
+			$.ajax({
+				type: "POST",
+				url: "/auth/login",
+				data: {
 					email: email,
 					password: password
-				})
-			}).then(response => {
-				if (!response.ok) {
-					return response.text().then(errorMessage => {
-						alert("로그인 실패");
-					});
-				}
-				return response.text().then(successMessage => {
+				},
+				success: function () {
 					alert("로그인 성공");
 					window.location.href = "/";
-				});
-			}).catch(error => {
-				console.error("로그인 중 오류 발생:", error);
-				alert("로그인 중 오류가 발생했습니다.");
+				},
+				error: function () {
+					alert("로그인 실패");
+				}
 			});
 		}
 	});
@@ -92,32 +76,32 @@ document.addEventListener("DOMContentLoaded", function() {
 	function checkInputs() {
 		let isValid = true;
 
-		const usernameValue = username.value.trim();
-		const emailValue = signUpEmail.value.trim();
-		const passwordValue = signUpPassword.value.trim();
+		const usernameValue = $username.val().trim();
+		const emailValue = $signUpEmail.val().trim();
+		const passwordValue = $signUpPassword.val().trim();
 
 		if (usernameValue === '') {
-			setErrorFor(username, 'Username cannot be blank');
+			setErrorFor($username, '이름을 입력하세요.');
 			isValid = false;
 		} else {
-			setSuccessFor(username);
+			setSuccessFor($username);
 		}
 
 		if (emailValue === '') {
-			setErrorFor(signUpEmail, 'Email cannot be blank');
+			setErrorFor($signUpEmail, '이메일을 입력하세요.');
 			isValid = false;
 		} else if (!isEmail(emailValue)) {
-			setErrorFor(signUpEmail, 'Not a valid email');
+			setErrorFor($signUpEmail, '이메일 형식이 아닙니다.');
 			isValid = false;
 		} else {
-			setSuccessFor(signUpEmail);
+			setSuccessFor($signUpEmail);
 		}
 
 		if (passwordValue === '') {
-			setErrorFor(signUpPassword, 'Password cannot be blank');
+			setErrorFor($signUpPassword, '비밀번호를 입력하세요.');
 			isValid = false;
 		} else {
-			setSuccessFor(signUpPassword);
+			setSuccessFor($signUpPassword);
 		}
 
 		return isValid;
@@ -127,41 +111,40 @@ document.addEventListener("DOMContentLoaded", function() {
 	function checkLoginInputs() {
 		let isValid = true;
 
-		const emailValue = loginEmail.value.trim();
-		const passwordValue = loginPassword.value.trim();
+		const emailValue = $loginEmail.val().trim();
+		const passwordValue = $loginPassword.val().trim();
 
 		if (emailValue === '') {
-			setErrorFor(loginEmail, 'Email cannot be blank');
+			setErrorFor($loginEmail, '이메일을 입력하세요.');
 			isValid = false;
 		} else if (!isEmail(emailValue)) {
-			setErrorFor(loginEmail, 'Not a valid email');
+			setErrorFor($loginEmail, '이메일 형식이 아닙니다.');
 			isValid = false;
 		} else {
-			setSuccessFor(loginEmail);
+			setSuccessFor($loginEmail);
 		}
 
 		if (passwordValue === '') {
-			setErrorFor(loginPassword, 'Password cannot be blank');
+			setErrorFor($loginPassword, '비밀번호를 입력하세요.');
 			isValid = false;
 		} else {
-			setSuccessFor(loginPassword);
+			setSuccessFor($loginPassword);
 		}
 
 		return isValid;
 	}
 
 	// 에러 표시
-	function setErrorFor(input, message) {
-		const formControl = input.parentElement;
-		const small = formControl.querySelector('small');
-		formControl.className = 'custom-form-control error';
-		small.innerText = message;
+	function setErrorFor($input, message) {
+		const $formControl = $input.parent();
+		$formControl.removeClass('success').addClass('error');
+		$formControl.find('small').text(message);
 	}
 
 	// 성공 표시
-	function setSuccessFor(input) {
-		const formControl = input.parentElement;
-		formControl.className = 'custom-form-control success';
+	function setSuccessFor($input) {
+		const $formControl = $input.parent();
+		$formControl.removeClass('error').addClass('success');
 	}
 
 	// 이메일 형식 체크

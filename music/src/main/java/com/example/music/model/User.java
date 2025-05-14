@@ -1,14 +1,13 @@
 package com.example.music.model;
 
 
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Date;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
 
 @Getter
 @Setter
@@ -17,7 +16,7 @@ import lombok.Setter;
 public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
-	private int id;
+	private String id;
 	private String password;
 	private String nickname;
 	private String email;

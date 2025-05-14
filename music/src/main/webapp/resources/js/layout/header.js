@@ -1,72 +1,60 @@
 const selectedRadios = {};
 
-function toggleRadio(radio) {
-	const name = radio.name;
-
-	// 이미 선택된 radio를 다시 클릭하면 해제
-	if (selectedRadios[name] === radio) {
-		radio.checked = false;
-		selectedRadios[name] = null;
-	} else {
-		selectedRadios[name] = radio;
-	}
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-
+$(document).ready(function () {
 	// 페이지 로드 시 현재 선택된 라디오 저장
-	window.addEventListener('DOMContentLoaded', () => {
-		document.querySelectorAll('input[type=radio]').forEach(radio => {
-			if (radio.checked) {
-				selectedRadios[radio.name] = radio;
-			}
-		});
+	$('input[type=radio]:checked').each(function () {
+		selectedRadios[this.name] = this;
 	});
 
-	const logoutButton = document.getElementById("logoutButton");
-	console.log("Logout button:", logoutButton);
-	if (logoutButton) {
-		logoutButton.addEventListener("click", function() {
-			fetch("/auth/logout", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded"
-				}
-			}).then(response => {
-				if (response.ok) {
+	// 라디오 버튼 클릭 시 toggle 동작 설정
+	$('input[type=radio]').on('click', function () {
+		const name = this.name;
+
+		if (selectedRadios[name] === this) {
+			$(this).prop('checked', false);
+			selectedRadios[name] = null;
+		} else {
+			selectedRadios[name] = this;
+		}
+	});
+
+	// 로그아웃 처리
+	const $logoutButton = $('#logoutButton');
+	if ($logoutButton.length) {
+		$logoutButton.on('click', function () {
+			$.ajax({
+				type: "POST",
+				url: "/auth/logout",
+				contentType: "application/x-www-form-urlencoded",
+				success: function () {
 					alert("로그아웃 성공");
 					window.location.href = "/";
-				} else {
+				},
+				error: function () {
 					alert("로그아웃 실패");
 				}
-			}).catch(error => {
-				console.error("로그아웃 중 오류 발생:", error);
-				alert("로그아웃 중 오류가 발생했습니다.");
 			});
 		});
 	}
 
 	// 스크롤 시 헤더 스타일 변경
-	const header = document.querySelector('header');
-	if (header) {
-		window.addEventListener('scroll', function() {
-			if (window.scrollY > 50) {
-				header.classList.add('scrolled');
+	const $header = $('header');
+	if ($header.length) {
+		$(window).on('scroll', function () {
+			if ($(window).scrollTop() > 50) {
+				$header.addClass('scrolled');
 			} else {
-				header.classList.remove('scrolled');
+				$header.removeClass('scrolled');
 			}
 		});
 	}
 
-	const filterBtn = document.getElementById("filterBtn");
-	const filterModal = document.getElementById("filterModal");
-	const closeModal = document.getElementById("closeModal");
-
-	filterBtn.addEventListener("click", () => {
-		filterModal.classList.add("show");
+	// 필터 모달 열고 닫기
+	$('#filterBtn').on('click', function () {
+		$('#filterModal').addClass('show');
 	});
 
-	closeModal.addEventListener("click", () => {
-		filterModal.classList.remove("show");
+	$('#closeModal').on('click', function () {
+		$('#filterModal').removeClass('show');
 	});
 });

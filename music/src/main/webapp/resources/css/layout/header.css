@@ -32,6 +32,7 @@ tbody, html {
 	display: flex;
 	width: 100%;
 	max-width: 900px;
+	margin: 10px;
 }
 
 .search-form input[type="text"] {

@@ -5,16 +5,15 @@
 <html>
 <head>
     <title>YouTube 검색</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/resources/css/video/search.css">
     <!-- Bootstrap JS + Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body class="container py-4">
+<body>
     <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
+	<div class="container py-4">
     <!-- 📺 검색 결과 -->
     <jsp:include page="/WEB-INF/views/video/searchResultsFragment.jsp" />
 
@@ -29,6 +28,7 @@
             </c:forEach>
         </div>
     </c:if>
+    </div>
     <script src="/resources/js/video/search.js"></script>
 </body>
 </html>

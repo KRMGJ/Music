@@ -6,8 +6,8 @@ import com.example.music.model.PlaylistVideo;
 import java.util.List;
 
 public interface PlaylistVideoDao {
-    void insert(int playlistId, String videoId);
-    Playlist getPlaylistByPlaylistId(int playlistId);
-    List<String> getVideosByPlaylistId(int playlistId);
+    void insert(String playlistId, String videoId);
+    Playlist getPlaylistByPlaylistId(String playlistId);
+    List<String> getVideosByPlaylistId(String playlistId);
     void deleteVideoFromPlaylist(PlaylistVideo pv);
 }
