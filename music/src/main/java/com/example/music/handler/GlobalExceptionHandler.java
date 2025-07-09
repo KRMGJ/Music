@@ -1,77 +1,77 @@
 package com.example.music.handler;
 
-import java.sql.SQLIntegrityConstraintViolationException;
-
-import org.mybatis.spring.MyBatisSystemException;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.core.NestedCheckedException;
+import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.transaction.TransactionException;
+import org.springframework.validation.BindException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+
+@SuppressWarnings("unused")
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
-	/**
-	 * @param e: DataIntegrityViolationException
-	 * @return ResponseEntity 409 Conflict
-	 */
-	@ExceptionHandler(DataIntegrityViolationException.class)
-	public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-		log.error("데이터 무결성 위반: {}", e.getMessage());
-		return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 존재하는 데이터입니다.");
+    /**
+     * 예외의 최상위 원인 메시지를 반환합니다.
+     * @param e 발생한 예외
+     * @return 최상위 원인 메시지
+     */
+	private String getRootCauseMessage(Throwable e) {
+	    Throwable cause = e;
+	    while (cause.getCause() != null) {
+	        cause = cause.getCause();
+	    }
+	    return Optional.ofNullable(cause.getMessage()).orElse(cause.toString());
 	}
 
-	/**
-	 * @param e: SQLIntegrityConstraintViolationException
-	 * @return ResponseEntity 409 Conflict
-	 */
-	@ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-	public ResponseEntity<?> handleSqlIntegrityException(SQLIntegrityConstraintViolationException e) {
-		log.error("SQL 무결성 제약 조건 위반: {}", e.getMessage());
-		return ResponseEntity.status(HttpStatus.CONFLICT).body("제약 조건 위반: 중복된 값이 존재합니다.");
-	}
-
-	/**
-	 * @param e: IllegalArgumentException
-	 * @return ResponseEntity 400 Bad Request
-	 */
-	@ExceptionHandler(IllegalArgumentException.class)
-	public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException e) {
-		log.error("잘못된 인자: {}", e.getMessage());
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("잘못된 요청입니다.");
-	}
-
-	/**
-	 * @param e: NullPointerException
-	 * @return ResponseEntity 500 Internal Server Error
-	 */
-	@ExceptionHandler(NullPointerException.class)
-	public ResponseEntity<?> handleNullPointerException(NullPointerException e) {
-		log.error("Null Pointer Exception: {}", e.getMessage());
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 에러가 발생했습니다.");
-	}
-
-	/**
-	 * @param e: MyBatisSystemException
-	 * @return ResponseEntity 500 Internal Server Error
-	 */
-	@ExceptionHandler(MyBatisSystemException.class)
-	public ResponseEntity<?> handleMyBatisSystemException(MyBatisSystemException e) {
-		log.error("MyBatis System Exception: {}", e.getMessage());
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 에러가 발생했습니다.");
-	}
-
-	/**
-	 * @param e: Exception
-	 * @return ResponseEntity 500 Internal Server Error
-	 */
-	@ExceptionHandler(Exception.class)
-	public ResponseEntity<?> handleException(Exception e) {
-		log.error("처리되지 않은 예외: {}", e.getMessage());
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 에러가 발생했습니다.");
-	}
+    @ExceptionHandler({
+            Exception.class,
+            NullPointerException.class,
+            IllegalArgumentException.class,
+            IllegalStateException.class,
+            MethodArgumentNotValidException.class,
+            BindException.class,
+            MethodArgumentTypeMismatchException.class,
+            MissingServletRequestParameterException.class,
+            HttpMessageNotReadableException.class,
+            HttpRequestMethodNotSupportedException.class,
+            NoHandlerFoundException.class,
+            MaxUploadSizeExceededException.class,
+            MultipartException.class,
+            ConversionFailedException.class,
+            TransactionException.class,
+            AuthenticationException.class,
+            AccessDeniedException.class,
+            DataAccessException.class,
+            HttpRequestMethodNotSupportedException.class,
+            HttpMessageNotReadableException.class,
+            JsonProcessingException.class,
+            BeanCreationException.class
+    })
+    public ResponseEntity<String> handleAll(Exception e) {
+        String msg = getRootCauseMessage(e);
+        log.error("예외 발생: {}", Optional.ofNullable(e.getMessage()).orElse(e.toString()));
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(msg);
+    }
 }

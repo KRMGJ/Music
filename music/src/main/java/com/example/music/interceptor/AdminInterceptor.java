@@ -5,16 +5,16 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.example.music.util.MessageUtil;
+
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import com.example.music.model.User;
 
 @Component
 public class AdminInterceptor implements HandlerInterceptor {
 
 	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+	public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler)
 	        throws Exception {
 	    HttpSession session = request.getSession(false);
 

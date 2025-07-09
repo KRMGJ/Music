@@ -13,7 +13,8 @@ public class NaverUserInfo {
     private String nickname;
     private String profileImage;
 
-    public NaverUserInfo(Map<String, Object> attributes) {
+    @SuppressWarnings("unchecked")
+	public NaverUserInfo(Map<String, Object> attributes) {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
         this.email = (String) response.get("email");
         this.nickname = (String) response.get("nickname");

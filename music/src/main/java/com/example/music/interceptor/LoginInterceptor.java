@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -13,7 +14,7 @@ import com.example.music.util.MessageUtil;
 public class LoginInterceptor implements HandlerInterceptor {
 
 	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+	public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler)
 			throws Exception {
 
 		HttpSession session = request.getSession();

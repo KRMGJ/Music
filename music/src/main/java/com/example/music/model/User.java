@@ -24,7 +24,7 @@ public class User implements Serializable {
 	private String role;
 	private String provider;
 	private Timestamp createdDate;
-	private Timestamp updatedDate;
+	private Timestamp modifiedDate;
 
 	public User(String email, String nickname, String password, String profileImage, String provider) {
 		this.email = email;

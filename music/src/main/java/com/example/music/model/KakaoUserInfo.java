@@ -13,7 +13,8 @@ public class KakaoUserInfo {
     private String nickname;
     private String profileImage;
 
-    public KakaoUserInfo(Map<String, Object> attributes) {
+    @SuppressWarnings("unchecked")
+	public KakaoUserInfo(Map<String, Object> attributes) {
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
         Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
 

@@ -42,6 +42,7 @@ public class SocialAuthController {
             session.setAttribute("loginUser", user);
             return "redirect:/";
         } catch (RuntimeException e) {
+        	e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMessage", "이미 등록된 이메일입니다.");
             return "redirect:/auth/login";
         }

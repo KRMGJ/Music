@@ -21,7 +21,8 @@ public class SocialApiClient {
     @Autowired
     OAuthProperties properties;
 
-    public String getAccessTokenFromGoogle(String code) {
+    @SuppressWarnings("rawtypes")
+	public String getAccessTokenFromGoogle(String code) {
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://oauth2.googleapis.com/token";
 
@@ -41,7 +42,8 @@ public class SocialApiClient {
         return (String) Objects.requireNonNull(response.getBody()).get("access_token");
     }
 
-    public Map<String, Object> getUserInfoFromGoogle(String accessToken) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public Map<String, Object> getUserInfoFromGoogle(String accessToken) {
         String url = "https://www.googleapis.com/oauth2/v2/userinfo";
 
         HttpHeaders headers = new HttpHeaders();
@@ -53,7 +55,8 @@ public class SocialApiClient {
         return response.getBody();
     }
 
-    public String getAccessTokenFromNaver(String code) {
+    @SuppressWarnings("rawtypes")
+	public String getAccessTokenFromNaver(String code) {
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://nid.naver.com/oauth2.0/token";
 
@@ -73,7 +76,8 @@ public class SocialApiClient {
         return (String) Objects.requireNonNull(response.getBody()).get("access_token");
     }
 
-    public Map<String, Object> getUserInfoFromNaver(String accessToken) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public Map<String, Object> getUserInfoFromNaver(String accessToken) {
         String url = "https://openapi.naver.com/v1/nid/me";
 
         HttpHeaders headers = new HttpHeaders();
@@ -85,7 +89,8 @@ public class SocialApiClient {
         return response.getBody();
     }
 
-    public String getAccessTokenFromKakao(String code) {
+    @SuppressWarnings("rawtypes")
+	public String getAccessTokenFromKakao(String code) {
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://kauth.kakao.com/oauth/token";
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -104,7 +109,9 @@ public class SocialApiClient {
         return (String) Objects.requireNonNull(response.getBody()).get("access_token");
     }
 
-    public Map<String, Object> getUserInfoFromKakao(String accessToken) {
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Map<String, Object> getUserInfoFromKakao(String accessToken) {
         String url = "https://kapi.kakao.com/v2/user/me";
 
         HttpHeaders headers = new HttpHeaders();

@@ -25,6 +25,7 @@ public class AuthRestController {
 			userService.addUser(user);
 			return ResponseEntity.ok("회원가입 성공");
 		} catch (Exception exception) {
+			exception.printStackTrace();
 			return ResponseEntity.status(401).body("회원가입 실패");
 		}
 	}
