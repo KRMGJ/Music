@@ -15,23 +15,20 @@ repositories { mavenCentral() }
 
 ext {
     springVersion   = '5.3.30'
-    securityVersion = '5.7.6'     // Spring 5.3 호환
-    aspectjVersion  = '1.9.21'    // 1.6.x → 너무 구식, 업그레이드
+    securityVersion = '5.7.6'   
+    aspectjVersion  = '1.9.21'  
 }
 
 dependencies {
-    // --- Spring Core / MVC
     implementation "org.springframework:spring-context:${springVersion}"
     implementation "org.springframework:spring-web:${springVersion}"
     implementation "org.springframework:spring-webmvc:${springVersion}"
     implementation "org.springframework:spring-tx:${springVersion}"
     implementation "org.springframework:spring-jdbc:${springVersion}"
 
-    // --- Spring Security (core만 있으면 부족함: web/config도 필요)
     implementation "org.springframework.security:spring-security-core:${securityVersion}"
     implementation "org.springframework.security:spring-security-web:${securityVersion}"
     implementation "org.springframework.security:spring-security-config:${securityVersion}"
-    // (구식) spring-security-oauth2 2.x는 EOL 수준. 꼭 필요할 때만 유지.
     implementation 'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE'
 
     // --- MyBatis
@@ -40,7 +37,7 @@ dependencies {
 
     // --- JDBC / Pool
     implementation 'com.oracle.database.jdbc:ojdbc11:23.7.0.25.01'
-    implementation 'com.zaxxer:HikariCP:6.3.0'  // JDK11 OK
+    implementation 'com.zaxxer:HikariCP:6.3.0'
 
     // --- JSON
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
@@ -48,11 +45,9 @@ dependencies {
     // --- AOP
     implementation "org.aspectj:aspectjrt:${aspectjVersion}"
 
-    // --- Logging (Logback 권장; Log4j 1.x 제거)
     implementation 'ch.qos.logback:logback-classic:1.5.8'
     implementation 'org.slf4j:slf4j-api:2.0.16'
 
-    // --- Servlet/JSP/JSTL (외부 Tomcat에 제공되므로 compileOnly=provided)
     compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
     compileOnly 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
     implementation 'javax.servlet:jstl:1.2'
@@ -62,7 +57,10 @@ dependencies {
 
     // --- Lombok
     compileOnly 'org.projectlombok:lombok:1.18.28'
-    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'  
+    
+	implementation 'org.springframework:spring-context-support:5.3.30'
+	implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 
     // --- Test
     testImplementation 'junit:junit:4.13.2'
@@ -70,8 +68,6 @@ dependencies {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
-    // 필요시 경고 줄이고 싶으면 -Xlint 빼도 됨
-    // options.compilerArgs << '-Xlint:all'
 }
 
 war {
