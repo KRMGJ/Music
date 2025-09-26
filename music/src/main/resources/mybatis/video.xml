@@ -1,70 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="video">
-    <resultMap id="videoResultMap" type="Video">
-        <id property="videoId" column="id"/>
-        <result property="channelId" column="channel_id"/>
-        <result property="title" column="title"/>
-        <result property="thumbnail" column="thumbnail"/>
-        <result property="description" column="description"/>
-        <result property="duration" column="duration"/>
-        <result property="durationInSeconds" column="duration_in_seconds"/>
-        <result property="formattedDuration" column="formatted_duration"/>
-        <result property="publishedDate" column="published_date"/>
-        <result property="viewCount" column="view_count"/>
-        <result property="formattedViewCount" column="formatted_view_count"/>
-        <association property="channelInfo" javaType="ChannelInfo">
-            <result property="channelTitle" column="channel_title"/>
-            <result property="channelThumbnail" column="channel_thumbnail"/>
-            <result property="subscriberCount" column="subscriber_count"/>
-        </association>
-    </resultMap>
+	<resultMap id="videoResultMap" type="Video">
+		<id property="videoId" column="id" />
+		<result property="channelId" column="channel_id" />
+		<result property="title" column="title" />
+		<result property="thumbnail" column="thumbnail" />
+		<result property="description" column="description" />
+		<result property="duration" column="duration" />
+		<result property="durationInSeconds" column="duration_in_seconds" />
+		<result property="formattedDuration" column="formatted_duration" />
+		<result property="publishedDate" column="published_date" />
+		<result property="viewCount" column="view_count" />
+		<result property="formattedViewCount" column="formatted_view_count" />
+		<association property="channelInfo" javaType="ChannelInfo">
+			<result property="channelTitle" column="channel_title" />
+			<result property="channelThumbnail" column="channel_thumbnail" />
+			<result property="subscriberCount" column="subscriber_count" />
+		</association>
+	</resultMap>
 
-    <insert id="addVideo" parameterType="Video">
-        INSERT INTO videos (id, channel_id, title, thumbnail, description, duration, duration_in_seconds, formatted_duration, published_date, view_count, formatted_view_count)
-        VALUES (#{videoId}, #{channelId}, #{title}, #{thumbnail}, #{description}, #{duration}, #{durationInSeconds}, #{formattedDuration}, #{publishedDate}, #{viewCount}, #{formattedViewCount})
-    </insert>
+	<resultMap id="VideoSummaryMap" type="com.example.music.model.VideoSummary">
+		<id property="id" column="id" />
+		<result property="title" column="title" />
+		<result property="thumbnail" column="thumbnail" />
+		<result property="description" column="description" />
+		<result property="formattedDuration" column="formatted_duration" />
+		<result property="viewCount" column="view_count" />
+		<result property="formattedViewCount" column="formatted_view_count" />
+		<result property="publishedDate" column="published_date" />
+		<result property="channelTitle" column="channel_title" />
+		<result property="channelThumbnail" column="channel_thumbnail" />
+	</resultMap>
 
-    <select id="getVideoById" resultMap="videoResultMap">
-        SELECT * FROM videos WHERE id = #{videoId}
-    </select>
+	<insert id="addVideo" parameterType="Video">
+		INSERT INTO videos (id, channel_id, title, thumbnail, description, duration,
+		duration_in_seconds, formatted_duration, published_date, view_count,
+		formatted_view_count)
+		VALUES (#{videoId}, #{channelId}, #{title}, #{thumbnail}, #{description},
+		#{duration}, #{durationInSeconds}, #{formattedDuration},
+		#{publishedDate}, #{viewCount}, #{formattedViewCount})
+	</insert>
 
-    <select id="getAllVideos" resultMap="videoResultMap">
-        SELECT * FROM videos
-    </select>
+	<select id="getVideoById" resultMap="videoResultMap">
+		SELECT * FROM videos WHERE id = #{videoId}
+	</select>
 
-    <select id="getVideosByChannel" resultMap="videoResultMap">
-        SELECT * FROM videos WHERE channel_title = #{channelTitle}
-    </select>
+	<select id="getAllVideos" resultMap="videoResultMap">
+		SELECT * FROM videos
+	</select>
 
-    <select id="getVideosByVideoIds" resultMap="videoResultMap">
-        SELECT * FROM videos v
-        JOIN channel_info c ON v.channel_id = c.channel_id
-        WHERE id IN
-        <foreach item="videoId" open="(" separator="," close=")" collection="list">
-            #{videoId}
-        </foreach>
-    </select>
+	<select id="getVideosByChannel" resultMap="videoResultMap">
+		SELECT * FROM videos WHERE channel_title = #{channelTitle}
+	</select>
+
+	<select id="getVideosByVideoIds" resultMap="videoResultMap">
+		SELECT * FROM videos v
+		JOIN channel_info c ON v.channel_id = c.channel_id
+		WHERE id IN
+		<foreach item="videoId" open="(" separator="," close=")"
+			collection="list">
+			#{videoId}
+		</foreach>
+	</select>
 
 
-    <update id="updateVideo" parameterType="String">
-        UPDATE videos
-        SET title = #{title},
-            thumbnail = #{thumbnail},
-            channel_title = #{channelTitle},
-            description = #{description},
-            is_shorts = #{isShorts},
-            duration = #{duration},
-            duration_in_seconds = #{durationInSeconds},
-            formatted_duration = #{formattedDuration},
-            published_date = #{publishedDate},
-            view_count = #{viewCount},
-            formatted_view_count = #{formattedViewCount}
-        WHERE id = #{videoId}
-    </update>
+	<update id="updateVideo" parameterType="String">
+		UPDATE videos
+		SET title = #{title},
+		thumbnail = #{thumbnail},
+		channel_title = #{channelTitle},
+		description = #{description},
+		is_shorts = #{isShorts},
+		duration = #{duration},
+		duration_in_seconds = #{durationInSeconds},
+		formatted_duration = #{formattedDuration},
+		published_date = #{publishedDate},
+		view_count = #{viewCount},
+		formatted_view_count = #{formattedViewCount}
+		WHERE id = #{videoId}
+	</update>
 
-    <delete id="deleteVideo">
-        DELETE FROM videos WHERE id = #{id}
-    </delete>
+	<delete id="deleteVideo">
+		DELETE FROM videos WHERE id = #{id}
+	</delete>
 
 </mapper>
