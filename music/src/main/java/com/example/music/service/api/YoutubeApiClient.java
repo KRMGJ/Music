@@ -175,6 +175,27 @@ public class YoutubeApiClient {
 		return out;
 	}
 
+	public Map<String, JsonNode> fetchChannelsDetails(java.util.List<String> channelIds) throws Exception {
+		if (channelIds == null || channelIds.isEmpty()) {
+			return java.util.Collections.emptyMap();
+		}
+		Map<String, JsonNode> out = new java.util.HashMap<>();
+		final int chunk = 50;
+		for (int i = 0; i < channelIds.size(); i += chunk) {
+			int end = Math.min(i + chunk, channelIds.size());
+			String ids = String.join(",", channelIds.subList(i, end));
+			String url = CHANNEL_URL + "?part=snippet,statistics" + "&id=" + ids + "&key=" + API_KEY;
+			JsonNode items = mapper.readTree(sendGetRequest(url)).get("items");
+			if (items == null) {
+				continue;
+			}
+			for (JsonNode it : items) {
+				out.put(it.get("id").asText(), it);
+			}
+		}
+		return out;
+	}
+
 	private String bestThumbUrl(JsonNode thumbs) {
 		if (thumbs == null || thumbs.isMissingNode()) {
 			return null;

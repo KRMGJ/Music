@@ -13,6 +13,10 @@ $(document).ready(function() {
 					loadLatest();
 				}
 			}
+			if (btn.dataset.target === 'tab-channels') {
+				const $panel = $('#tab-channels');
+				if (!$panel.data('loaded')) loadPopularChannels();
+			}
 		});
 	});
 
@@ -29,7 +33,7 @@ $(document).ready(function() {
 	// ---- AJAX 로더 ----
 	function loadLatest() {
 		const $panel = $('#tab-latest');
-		const $grid  = $('#latest-grid');
+		const $grid = $('#latest-grid');
 		if (!$grid.length) { console.error('#latest-grid not found'); return; }
 		const $btn = $panel.find('.more-inline');
 
@@ -117,6 +121,70 @@ $(document).ready(function() {
 			frag.appendChild(article);
 		});
 		$container.empty()[0].appendChild(frag);
+	}
+
+	function loadPopularChannels() {
+		const $panel = $('#tab-channels');
+		const $row = $('#channels-row');
+		if (!$row.length) return;
+
+		const $loading = $('<div class="ajax-loading" style="padding:8px;color:#666;">로드 중…</div>');
+		$panel.prepend($loading);
+
+		$.getJSON('/api/home/channels', { region: 'KR', limit: 16 })
+			.done(function(items) {
+				console.log('Popular channels loaded:', items);
+				renderChannelCards($row, items || []);
+				$panel.data('loaded', true);
+			})
+			.fail(function() {
+				$row.append('<div class="message error">인기 채널을 불러오지 못했습니다.</div>');
+			})
+			.always(function() { $loading.remove(); });
+	}
+
+	function renderChannelCards($container, items) {
+		const frag = document.createDocumentFragment();
+		(items || []).forEach(function(ch) {
+			const a = document.createElement('a');
+			a.className = 'channel-card';
+			a.href = '/channel/' + (ch.channelId || '');
+			a.style.cssText = 'flex:0 0 240px; background:#fff; border:1px solid #ddd; border-radius:12px; padding:12px; display:flex; gap:10px; align-items:center;';
+
+			const img = document.createElement('img');
+			img.src = ch.channelThumbnail || '';
+			img.alt = ch.channelTitle || '';
+			img.style.cssText = 'width:48px;height:48px;border-radius:50%;object-fit:cover;';
+			a.appendChild(img);
+
+			const box = document.createElement('div');
+			box.style.minWidth = '0';
+
+			const title = document.createElement('div');
+			title.className = 'channel-title';
+			title.title = ch.channelTitle || '';
+			title.textContent = ch.channelTitle || '';
+			title.style.cssText = 'font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;';
+			box.appendChild(title);
+
+			const meta = document.createElement('div');
+			meta.className = 'channel-meta';
+			meta.style.cssText = 'font-size:12px;color:#666;';
+			const subs = (ch.subscriberCount && ch.subscriberCount > 0) ? numberKR(ch.subscriberCount) + '명' : '구독자 비공개';
+			meta.textContent = '구독자 ' + subs;
+			box.appendChild(meta);
+
+			a.appendChild(box);
+			frag.appendChild(a);
+		});
+		$container.empty().append(frag);
+	}
+
+	function numberKR(n) {
+		if (!n) return '0';
+		if (n >= 100000000) return Math.floor(n / 100000000) + '억';
+		if (n >= 10000) return Math.floor(n / 10000) + '만';
+		return n.toLocaleString();
 	}
 
 	function formatDate(iso) {

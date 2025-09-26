@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.example.music.model.ChannelSummary;
 import com.example.music.model.VideoSummary;
 import com.example.music.service.HomeFeedService;
 import com.example.music.service.api.YoutubeApiClient;
@@ -126,6 +127,60 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 			return list.subList(0, limit);
 		}
 		return list;
+	}
+
+	@Override
+	public List<ChannelSummary> getPopularChannels(String regionCode, int limit) throws Exception {
+		int pool = Math.max(limit * 3, 50);
+		var trending = youtube.fetchMostPopular(regionCode, pool, null);
+
+		java.util.Set<String> channelIds = new java.util.LinkedHashSet<>();
+		for (JsonNode item : trending) {
+			String chId = item.path("snippet").path("channelId").asText(null);
+			if (chId != null) {
+				channelIds.add(chId);
+			}
+		}
+
+		var details = youtube.fetchChannelsDetails(new java.util.ArrayList<>(channelIds));
+
+		List<ChannelSummary> list = new java.util.ArrayList<>();
+		for (String chId : channelIds) {
+			JsonNode d = details.get(chId);
+			if (d == null) {
+				continue;
+			}
+			JsonNode sn = d.path("snippet");
+			JsonNode st = d.path("statistics");
+
+			ChannelSummary cs = new ChannelSummary();
+			cs.setChannelId(chId);
+			cs.setChannelTitle(sn.path("title").asText(""));
+			JsonNode thumbs = sn.path("thumbnails");
+			String thumb = thumbs.has("high") ? thumbs.get("high").get("url").asText()
+					: thumbs.has("medium") ? thumbs.get("medium").get("url").asText()
+							: thumbs.has("default") ? thumbs.get("default").get("url").asText() : null;
+			cs.setChannelThumbnail(thumb);
+			// 비공개면 필드가 없을 수 있음
+			cs.setSubscriberCount(st.has("subscriberCount") ? st.get("subscriberCount").asLong() : 0L);
+//			cs.setVideoCount(st.has("videoCount") ? st.get("videoCount").asLong() : null);
+
+			list.add(cs);
+		}
+
+		// 구독자수 기준 내림차순 정렬 (동률이면 videoCount)
+		list.sort((a, b) -> {
+			long sa = a.getSubscriberCount() == null ? 0 : a.getSubscriberCount();
+			long sb = b.getSubscriberCount() == null ? 0 : b.getSubscriberCount();
+			if (sa != sb) {
+				return Long.compare(sb, sa);
+			}
+			long va = a.getVideoCount() == null ? 0 : a.getVideoCount();
+			long vb = b.getVideoCount() == null ? 0 : b.getVideoCount();
+			return Long.compare(vb, va);
+		});
+
+		return list.size() > limit ? list.subList(0, limit) : list;
 	}
 
 	private String formatIsoDuration(String iso) {

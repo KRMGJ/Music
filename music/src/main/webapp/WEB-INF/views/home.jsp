@@ -69,7 +69,7 @@
 
 			<!-- 최신 업로드 -->
 			<div id="tab-latest" class="tab-panel">
-				<div class="video-grid" id="latest-grid">
+				<div id="latest-grid" class="video-grid">
 					<c:forEach var="v" items="${latestVideos}" varStatus="s">
 						<article class="video-card ${s.index >= 6 ? 'hidden-item' : ''}">
 							<div class="video-thumbnail-container">
@@ -102,7 +102,7 @@
 
 			<!-- 인기 채널: 가로 스크롤(세로 길이 최소화) -->
 			<div id="tab-channels" class="tab-panel">
-				<div class="channel-row"
+				<div id="channels-row" class="channel-row"
 					style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px;">
 					<c:forEach var="ch" items="${popularChannels}">
 						<a class="channel-card" href="/channel/${ch.channelId}"
