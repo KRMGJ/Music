@@ -9,11 +9,11 @@ $(document).ready(function () {
 			url: "/playlist/create",
 			contentType: "application/x-www-form-urlencoded",
 			data: { title: title },
-			success: function (data) {
+			success: function () {
 				alert("플레이리스트 생성 성공");
 				location.reload();
 			},
-			error: function (xhr, status, error) {
+			error: function (error) {
 				console.error("에러 발생:", error);
 				alert("플레이리스트 생성 실패");
 			}

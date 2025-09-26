@@ -2,15 +2,15 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:tx="http://www.springframework.org/schema/tx"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
-                           http://www.springframework.org/schema/tx https://www.springframework.org/schema/tx/spring-tx.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 	<!-- Root Context: defines shared resources visible to all other web components -->
 
    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
 		<property name="driverClassName" value="oracle.jdbc.OracleDriver" />
 		<property name="jdbcUrl" value="jdbc:oracle:thin:@localhost:1521/xe" />
-		<property name="username" value="root" />
+		<property name="username" value="music" />
 		<property name="password" value="1234" />
 	    <!-- 커넥션 풀 설정 -->
 	    <property name="maximumPoolSize" value="20" />
@@ -29,7 +29,6 @@
 		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
 	</bean>
 
-	<!-- 트랜잭션 설정 : 여러 테이블을 함께 다루기 위해 필요한 설정 -->
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource" />
 	</bean>

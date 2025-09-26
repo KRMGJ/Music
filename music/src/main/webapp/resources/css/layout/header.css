@@ -166,7 +166,6 @@ tbody, html {
 	padding: 0; /* 위로 치우친 원인 제거 */
 }
 
-
 .filter-section h4 {
 	color: var(- -yt-spec-text-primary);
 	border-bottom: 1px solid var(- -yt-spec-10-percent-layer);
@@ -208,10 +207,10 @@ tbody, html {
 }
 
 .filter-action {
-    display: flex;
-    flex-direction: column-reverse;
-    justify-content: space-between;
-    align-items: flex-end;
+	display: flex;
+	flex-direction: column-reverse;
+	justify-content: space-between;
+	align-items: flex-end;
 }
 
 .close-btn {

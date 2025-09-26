@@ -16,8 +16,9 @@ $('#addToPlaylistForm').on('submit', function(event) {
 		success: function(response) {
 			alert(response); // 서버에서 전달된 메시지 출력
 		},
-		error: function(xhr, status, error) {
+		error: function(error) {
 			alert('Error adding video to playlist');
+			console.error('Error details:', error);
 		}
 	});
 });
