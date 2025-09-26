@@ -69,7 +69,6 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 	}
 
 	private String formatIsoDuration(String iso) {
-		// 아주 간단한 포맷터 (정확히 하려면 java.time.Duration.parse 사용)
 		Duration d = Duration.parse(iso);
 		long s = d.getSeconds();
 		long h = s / 3600;
