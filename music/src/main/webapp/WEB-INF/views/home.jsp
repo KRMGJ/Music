@@ -13,9 +13,8 @@
 <link rel="stylesheet" href="/resources/css/playlist/videos.css" />
 <link rel="stylesheet" href="/resources/css/video/searchResult.css" />
 <link rel="stylesheet" href="/resources/css/home.css" />
-<style>
-/* 레이아웃 유틸 */
-</style>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/resources/js/home.js"></script>
 </head>
 <body>
 	<!-- 상단 헤더 -->
@@ -70,7 +69,7 @@
 
 			<!-- 최신 업로드 -->
 			<div id="tab-latest" class="tab-panel">
-				<div class="video-grid">
+				<div class="video-grid" id="latest-grid">
 					<c:forEach var="v" items="${latestVideos}" varStatus="s">
 						<article class="video-card ${s.index >= 6 ? 'hidden-item' : ''}">
 							<div class="video-thumbnail-container">
@@ -126,32 +125,6 @@
 			</div>
 		</section>
 	</div>
-
-	<!-- 탭 전환 + 더보기 토글 스크립트 -->
-	<script>
-    // 탭 전환
-    document.querySelectorAll('.tab-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.target).classList.add('active');
-      });
-    });
-
-    // 더보기: 해당 패널 내부의 hidden-item 해제
-    document.querySelectorAll('.more-inline[data-more]').forEach(btn=>{
-      const sel = btn.getAttribute('data-more');
-      if(!sel) return;
-      // 초기: 숨겨진 항목이 없으면 버튼 감춤
-      if(document.querySelectorAll(sel+' .hidden-item').length === 0) btn.style.display = 'none';
-
-      btn.addEventListener('click', ()=>{
-        document.querySelectorAll(sel+' .hidden-item').forEach(el=>el.classList.remove('hidden-item'));
-        btn.remove();
-      });
-    });
-  </script>
 </body>
 
 </html>

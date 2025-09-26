@@ -203,12 +203,10 @@
 	display: block;
 }
 
-/* 카드 여백 살짝 축소 */
 .video-card {
 	margin-bottom: 10px;
 }
 
-/* 홈은 한 줄 … 유지 */
 .home-container .video-title, .home-container .video-description,
 	.home-container .video-channel span {
 	display: block;
@@ -220,7 +218,7 @@
 
 .video-info {
 	min-width: 0;
-} /* flex 수축 허용: ellipsis 필수 */
+}
 .hidden-item {
 	display: none;
 }
