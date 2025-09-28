@@ -32,4 +32,10 @@ public class HomeRestController {
 		return homeFeedService.getPopularChannels(region, limit);
 	}
 
+	@GetMapping("/popular")
+	public List<VideoSummary> popular(@RequestParam(defaultValue = "KR") String region,
+			@RequestParam(defaultValue = "12") int limit) throws Exception {
+		return homeFeedService.getPopularForHome(region, limit);
+	}
+
 }

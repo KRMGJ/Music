@@ -21,9 +21,7 @@ import com.example.music.service.PlaylistService;
 import com.example.music.service.YoutubeService;
 import com.example.music.util.MessageUtil;
 
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Controller
 @RequestMapping("/playlist")
 public class PlaylistController {

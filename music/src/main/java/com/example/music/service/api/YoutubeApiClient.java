@@ -111,14 +111,10 @@ public class YoutubeApiClient {
 		StringBuilder url = new StringBuilder(DETAILS_URL).append("?part=snippet,contentDetails,statistics")
 				.append("&chart=mostPopular").append("&maxResults=").append(maxResults > 0 ? maxResults : 20)
 				.append("&key=").append(API_KEY);
-
-		if (regionCode != null && !regionCode.isEmpty()) {
+		if (regionCode != null && !regionCode.isEmpty())
 			url.append("&regionCode=").append(regionCode);
-		}
-		if (pageToken != null && !pageToken.isEmpty()) {
+		if (pageToken != null && !pageToken.isEmpty())
 			url.append("&pageToken=").append(pageToken);
-		}
-
 		return mapper.readTree(sendGetRequest(url.toString())).get("items");
 	}
 
@@ -141,35 +137,26 @@ public class YoutubeApiClient {
 		return mapper.readTree(sendGetRequest(url.toString())).get("items");
 	}
 
-	public Map<String, String> fetchChannelThumbnails(List<String> channelIds) throws Exception {
-		if (channelIds == null || channelIds.isEmpty()) {
-			return Collections.emptyMap();
-		}
-
-		Map<String, String> out = new HashMap<>();
-
-		// channels.list는 한 요청에 최대 50개 id 권장
+	public Map<String, String> fetchChannelThumbnails(java.util.List<String> channelIds) throws Exception {
+		if (channelIds == null || channelIds.isEmpty())
+			return java.util.Collections.emptyMap();
+		java.util.Map<String, String> out = new java.util.HashMap<>();
 		final int chunkSize = 50;
 		for (int i = 0; i < channelIds.size(); i += chunkSize) {
 			int end = Math.min(i + chunkSize, channelIds.size());
 			String idsParam = String.join(",", channelIds.subList(i, end));
-
-			String url = CHANNEL_URL + "?part=snippet" + "&id=" + idsParam + "&fields=items(id,snippet/thumbnails)" // 응답
-																													// 최소화(선택)
-					+ "&key=" + API_KEY;
-
+			String url = CHANNEL_URL + "?part=snippet&id=" + idsParam + "&key=" + API_KEY;
 			JsonNode items = mapper.readTree(sendGetRequest(url)).get("items");
-			if (items == null) {
+			if (items == null)
 				continue;
-			}
-
 			for (JsonNode it : items) {
 				String id = it.get("id").asText();
 				JsonNode thumbs = it.path("snippet").path("thumbnails");
-				String thumbUrl = bestThumbUrl(thumbs); // high → medium → default 우선
-				if (thumbUrl != null) {
-					out.put(id, thumbUrl);
-				}
+				String thumb = thumbs.has("high") ? thumbs.get("high").get("url").asText()
+						: thumbs.has("medium") ? thumbs.get("medium").get("url").asText()
+								: thumbs.has("default") ? thumbs.get("default").get("url").asText() : null;
+				if (thumb != null)
+					out.put(id, thumb);
 			}
 		}
 		return out;
@@ -196,6 +183,7 @@ public class YoutubeApiClient {
 		return out;
 	}
 
+	@SuppressWarnings("unused")
 	private String bestThumbUrl(JsonNode thumbs) {
 		if (thumbs == null || thumbs.isMissingNode()) {
 			return null;
@@ -212,6 +200,7 @@ public class YoutubeApiClient {
 		return null;
 	}
 
+	@SuppressWarnings("deprecation")
 	private String sendGetRequest(String urlStr) throws Exception {
 		HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
 		conn.setRequestMethod("GET");
