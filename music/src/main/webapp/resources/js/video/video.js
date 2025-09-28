@@ -46,41 +46,39 @@ $(document).on('click', '#btnSave', function() {
 // 추천 영상 더보기
 $(document).on('click', '#btnMore', function() {
 	var $btn = $(this);
-	var page = parseInt($btn.data('page'), 10) || 2;
-	var size = 12;
-	var url = location.pathname + '/related?page=' + page + '&size=' + size;
+	var token = $btn.data('token') || '';
+	var url = location.pathname + '/related?size=12';
+	if (token) url += '&pageToken=' + token;
 
 	$btn.prop('disabled', true).text('불러오는 중…');
 
 	$.getJSON(url)
-		.done(function(items) {
-			if (!items || items.length === 0) {
-				$btn.hide();
-				return;
-			}
+		.done(function(resp) {
+			var items = resp.items || [];
+			if (items.length === 0) { $btn.hide(); return; }
 
 			for (var i = 0; i < items.length; i++) {
 				var r = items[i];
-				var html = '' +
-					'<a class="rel-item text-decoration-none text-reset" href="/video/' + r.id + '">' +
-					'  <div class="rel-thumb">' +
-					'    <img src="' + (r.thumbnail || '') + '" alt="' + (r.title || '') + '"/>';
-				if (r.formattedDuration) {
-					html += '<span class="rel-dur">' + r.formattedDuration + '</span>';
-				}
-				html += '  </div>' +
-					'  <div>' +
-					'    <div style="font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">'
-					+ (r.title || '') + '</div>' +
-					'    <div class="rel-meta">' + (r.channelTitle || '') + '</div>' +
-					'    <div class="rel-meta">조회수 ' + (r.formattedViewCount || '') + ' · ' + (r.publishedDate || '') + '</div>' +
-					'  </div>' +
-					'</a>';
+				var html = ''
+					+ '<a class="rel-item text-decoration-none text-reset" href="/video/' + r.id + '">'
+					+ '  <div class="rel-thumb"><img src="' + (r.thumbnail || '') + '" alt="' + (r.title || '') + '"/>';
+				if (r.formattedDuration) html += '<span class="rel-dur">' + r.formattedDuration + '</span>';
+				html += '  </div>'
+					+ '  <div>'
+					+ '    <div style="font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">'
+					+ (r.title || '') + '</div>'
+					+ '    <div class="rel-meta">' + (r.channelTitle || '') + '</div>'
+					+ '    <div class="rel-meta">조회수 ' + (r.formattedViewCount || '') + ' · ' + (r.publishedDate || '') + '</div>'
+					+ '  </div>'
+					+ '</a>';
 				$('#relList').append(html);
 			}
 
-			$btn.data('page', page + 1);
-			$btn.prop('disabled', false).text('더보기');
+			if (resp.nextPageToken) {
+				$btn.data('token', resp.nextPageToken).prop('disabled', false).text('더보기');
+			} else {
+				$btn.hide();
+			}
 		})
 		.fail(function() {
 			$btn.prop('disabled', false).text('다시 시도');

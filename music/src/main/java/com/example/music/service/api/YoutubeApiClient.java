@@ -18,6 +18,9 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class YoutubeApiClient {
 
@@ -220,6 +223,7 @@ public class YoutubeApiClient {
 
 	/**
 	 * 채널 상세 정보 가져오기
+	 * 
 	 * @param channelIds
 	 * @return
 	 * @throws Exception
@@ -253,24 +257,25 @@ public class YoutubeApiClient {
 	 * @return 관련 동영상 JsonNode 배열
 	 * @throws Exception
 	 */
-	public JsonNode fetchRelatedByTitle(String title, int maxResults) throws Exception {
-	    if (title == null || title.isEmpty()) {
-	        return mapper.createArrayNode(); // 제목 없으면 빈 배열
-	    }
+	public JsonNode fetchRelatedByTitle(String title, int maxResults, String pageToken) throws Exception {
+		if (title == null || title.isEmpty()) {
+			return mapper.createObjectNode().putArray("items"); // 빈 items 반환
+		}
 
-	    // 제목 앞부분 40~60자 정도만 사용 (쿼리 길이 제한 대응)
-	    String query = title.length() > 60 ? title.substring(0, 60) : title;
+		String query = title.length() > 60 ? title.substring(0, 60) : title;
 
-	    StringBuilder url = new StringBuilder(SEARCH_URL)
-	            .append("?part=snippet")
-	            .append("&type=video")
-	            .append("&maxResults=").append(maxResults > 0 ? maxResults : 12)
-	            .append("&q=").append(java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8))
-	            .append("&key=").append(API_KEY);
+		StringBuilder url = new StringBuilder(SEARCH_URL).append("?part=snippet").append("&type=video")
+				.append("&maxResults=").append(maxResults > 0 ? maxResults : 12).append("&q=")
+				.append(java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8)).append("&key=")
+				.append(API_KEY);
 
-	    return mapper.readTree(sendGetRequest(url.toString())).get("items");
+		if (pageToken != null && !pageToken.isEmpty()) {
+			url.append("&pageToken=").append(pageToken);
+		}
+
+		log.info("Related by title URL: {}", url.toString());
+		return mapper.readTree(sendGetRequest(url.toString()));
 	}
-
 
 	@SuppressWarnings("unused")
 	private String bestThumbUrl(JsonNode thumbs) {

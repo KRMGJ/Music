@@ -19,6 +19,10 @@ import com.example.music.service.VideoService;
 import com.example.music.service.api.YoutubeApiClient;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -69,7 +73,6 @@ public class VideoServiceImpl implements VideoService {
 	@Cacheable(cacheNames = "videoDetail", key = "#id")
 	public VideoDetail getDetail(String id) {
 		try {
-			// 1) snippet
 			JsonNode snippet = youtubeApiClient.fetchSnippetById(id);
 			if (snippet == null || snippet.isMissingNode()) {
 				throw new RuntimeException("video snippet not found");
@@ -83,7 +86,6 @@ public class VideoServiceImpl implements VideoService {
 			String publishedAtIso = optText(snippet, "publishedAt");
 			String publishedDate = formatDate(publishedAtIso);
 
-			// 2) contentDetails + statistics
 			Map<String, JsonNode> details = youtubeApiClient.fetchVideoDetails(Collections.singletonList(id));
 			JsonNode detailNode = details.get(id);
 			String isoDuration = detailNode != null ? optText(detailNode.path("contentDetails"), "duration") : null;
@@ -91,16 +93,13 @@ public class VideoServiceImpl implements VideoService {
 			long viewCount = detailNode != null ? optLong(detailNode.path("statistics"), "viewCount") : 0L;
 			String formattedViewCount = formatViewCountKR(viewCount);
 
-			// 3) channel info
 			String channelThumb = null;
 			String formattedSubs = "비공개";
 			if (channelId != null && !channelId.isEmpty()) {
 				JsonNode ch = youtubeApiClient.fetchChannelInfo(channelId);
 				if (ch != null && !ch.isMissingNode()) {
-					JsonNode chSn = ch.path("snippet");
-					JsonNode chStats = ch.path("statistics");
-					channelThumb = bestThumbUrl(chSn.path("thumbnails"));
-					long subs = optLong(chStats, "subscriberCount");
+					channelThumb = bestThumbUrl(ch.path("snippet").path("thumbnails"));
+					long subs = optLong(ch.path("statistics"), "subscriberCount");
 					if (subs > 0) {
 						formattedSubs = formatSubscribersKR(subs);
 					}
@@ -113,6 +112,7 @@ public class VideoServiceImpl implements VideoService {
 					.formattedDuration(formattedDuration).build();
 
 		} catch (Exception e) {
+			log.error("getDetail failed for id=" + id, e);
 			return VideoDetail.builder().id(id).title("정보를 불러올 수 없습니다").description("").channelTitle("")
 					.channelThumbnail(null).formattedSubscriberCount("비공개").formattedViewCount("0회").publishedDate("")
 					.thumbnail(null).formattedDuration("").build();
@@ -122,77 +122,80 @@ public class VideoServiceImpl implements VideoService {
 	@Override
 	@Cacheable(cacheNames = "videoRelated", key = "#id + ':' + #limit")
 	public List<VideoListItem> getRelated(String id, int limit) {
-	    try {
-	        // 1) 우선 영상 상세를 가져와서 제목 확보
-	        VideoDetail base = getDetail(id);
-	        if (base == null || base.getTitle() == null) {
-	            return Collections.emptyList();
-	        }
-
-	        // 2) 제목 기반 검색
-	        JsonNode items = youtubeApiClient.fetchRelatedByTitle(base.getTitle(), limit);
-	        if (items == null || !items.isArray() || items.size() == 0) {
-	            return Collections.emptyList();
-	        }
-
-	        List<String> ids = new ArrayList<>();
-	        List<RelSeed> seeds = new ArrayList<>();
-
-	        for (JsonNode it : items) {
-	            String vid = optText(it.path("id"), "videoId");
-	            if (vid == null || vid.isEmpty() || vid.equals(id)) continue; // 자기 자신 제외
-
-	            JsonNode sn = it.path("snippet");
-	            String vTitle = optText(sn, "title");
-	            String vThumb = bestThumbUrl(sn.path("thumbnails"));
-	            String vChannelTitle = optText(sn, "channelTitle");
-	            String vPublished = formatDate(optText(sn, "publishedAt"));
-
-	            ids.add(vid);
-	            seeds.add(new RelSeed(vid, vTitle, vThumb, vChannelTitle, vPublished));
-	        }
-
-	        if (ids.isEmpty()) return Collections.emptyList();
-
-	        // 3) 상세 조회로 duration + viewCount 채우기
-	        Map<String, JsonNode> map = youtubeApiClient.fetchVideoDetails(ids);
-
-	        List<VideoListItem> result = new ArrayList<>();
-	        for (RelSeed s : seeds) {
-	            JsonNode d = map.get(s.id);
-	            String dur = d != null ? formatDuration(optText(d.path("contentDetails"), "duration")) : "";
-	            long vc = d != null ? optLong(d.path("statistics"), "viewCount") : 0L;
-	            result.add(VideoListItem.builder()
-	                    .id(s.id)
-	                    .title(s.title)
-	                    .thumbnail(s.thumb)
-	                    .channelTitle(s.channelTitle)
-	                    .publishedDate(s.published)
-	                    .formattedDuration(dur)
-	                    .formattedViewCount(formatViewCountKR(vc))
-	                    .build());
-	        }
-	        return result;
-
-	    } catch (Exception e) {
-	        return Collections.emptyList();
-	    }
+		RelatedResponse resp = getRelatedPage(id, null, limit);
+		return resp.getItems();
 	}
 
 	@Override
-	public List<VideoListItem> getRelatedPage(String id, int page, int size) {
-		// pageToken 활용하려면 YoutubeApiClient 확장 필요
-		return getRelated(id, size);
+	@Cacheable(cacheNames = "videoRelatedPage", key = "#id + ':' + #pageToken + ':' + #size")
+	public RelatedResponse getRelatedPage(String id, String pageToken, int size) {
+		log.info("Fetching related videos for id={}, pageToken={}, size={}", id, pageToken, size);
+		try {
+			VideoDetail base = getDetail(id);
+			if (base == null || base.getTitle() == null) {
+				return new RelatedResponse(Collections.emptyList(), null);
+			}
+
+			JsonNode response = youtubeApiClient.fetchRelatedByTitle(base.getTitle(), size, pageToken);
+			if (response == null || response.isMissingNode()) {
+				return new RelatedResponse(Collections.emptyList(), null);
+			}
+
+			String nextToken = response.has("nextPageToken") ? response.get("nextPageToken").asText() : null;
+			JsonNode items = response.path("items");
+			if (items == null || !items.isArray() || items.size() == 0) {
+				return new RelatedResponse(Collections.emptyList(), nextToken);
+			}
+
+			List<VideoListItem> result = parseItems(items, id);
+			return new RelatedResponse(result, nextToken);
+
+		} catch (Exception e) {
+			log.error("getRelatedPage failed for id=" + id, e);
+			return new RelatedResponse(Collections.emptyList(), null);
+		}
 	}
 
 	// -------------------- helpers --------------------
 
+	private List<VideoListItem> parseItems(JsonNode items, String excludeId) throws Exception {
+		List<String> ids = new ArrayList<>();
+		List<RelSeed> seeds = new ArrayList<>();
+
+		for (JsonNode it : items) {
+			String vid = optText(it.path("id"), "videoId");
+			if (vid == null || vid.isEmpty() || vid.equals(excludeId))
+				continue;
+
+			JsonNode sn = it.path("snippet");
+			String vTitle = optText(sn, "title");
+			String vThumb = bestThumbUrl(sn.path("thumbnails"));
+			String vChannelTitle = optText(sn, "channelTitle");
+			String vPublished = formatDate(optText(sn, "publishedAt"));
+
+			ids.add(vid);
+			seeds.add(new RelSeed(vid, vTitle, vThumb, vChannelTitle, vPublished));
+		}
+
+		if (ids.isEmpty())
+			return Collections.emptyList();
+
+		Map<String, JsonNode> map = youtubeApiClient.fetchVideoDetails(ids);
+
+		List<VideoListItem> result = new ArrayList<>();
+		for (RelSeed s : seeds) {
+			JsonNode d = map.get(s.id);
+			String dur = d != null ? formatDuration(optText(d.path("contentDetails"), "duration")) : "";
+			long vc = d != null ? optLong(d.path("statistics"), "viewCount") : 0L;
+			result.add(VideoListItem.builder().id(s.id).title(s.title).thumbnail(s.thumb)
+					.channelTitle(s.channelTitle).publishedDate(s.published).formattedDuration(dur)
+					.formattedViewCount(formatViewCountKR(vc)).build());
+		}
+		return result;
+	}
+
 	private static class RelSeed {
-		String id;
-		String title;
-		String thumb;
-		String channelTitle;
-		String published;
+		String id, title, thumb, channelTitle, published;
 
 		RelSeed(String id, String title, String thumb, String channelTitle, String published) {
 			this.id = id;
@@ -201,6 +204,15 @@ public class VideoServiceImpl implements VideoService {
 			this.channelTitle = channelTitle;
 			this.published = published;
 		}
+	}
+	
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class RelatedResponse {
+	    private List<VideoListItem> items;
+	    private String nextPageToken;
 	}
 
 	private static String optText(JsonNode node, String field) {

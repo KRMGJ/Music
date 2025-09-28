@@ -1,5 +1,19 @@
 package com.example.music.controller;
 
+import java.util.List;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.example.music.model.Playlist;
 import com.example.music.model.SearchList;
 import com.example.music.model.User;
@@ -8,15 +22,8 @@ import com.example.music.model.VideoListItem;
 import com.example.music.service.PlaylistService;
 import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
+import com.example.music.service.serviceImpl.VideoServiceImpl.RelatedResponse;
 import com.example.music.util.MessageUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpSession;
-import java.util.List;
 
 @Controller
 @RequestMapping("/video")
@@ -73,18 +80,19 @@ public class VideoController {
 	public String detail(@PathVariable("id") String id, Model model) {
 		VideoDetail video = videoService.getDetail(id);
 		List<VideoListItem> related = videoService.getRelated(id, 12);
+		RelatedResponse resp = videoService.getRelatedPage(id, null, 12);
 
 		model.addAttribute("video", video);
 		model.addAttribute("related", related);
+		model.addAttribute("nextPageToken", resp.getNextPageToken());
 
 		return "video/video";
 	}
 
-	@GetMapping(value = "/{id}/related", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping("/{id}/related")
 	@ResponseBody
-	public List<VideoListItem> moreRelated(@PathVariable("id") String id, @RequestParam(defaultValue = "2") int page,
+	public RelatedResponse moreRelated(@PathVariable String id, @RequestParam(required = false) String pageToken,
 			@RequestParam(defaultValue = "12") int size) {
-
-		return videoService.getRelatedPage(id, page, size);
+		return videoService.getRelatedPage(id, pageToken, size);
 	}
 }
