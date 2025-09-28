@@ -12,12 +12,17 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.example.music.dao.VideoDao;
+import com.example.music.model.Comments;
 import com.example.music.model.Video;
 import com.example.music.model.VideoDetail;
 import com.example.music.model.VideoListItem;
 import com.example.music.service.VideoService;
 import com.example.music.service.api.YoutubeApiClient;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.api.services.youtube.model.Comment;
+import com.google.api.services.youtube.model.CommentSnippet;
+import com.google.api.services.youtube.model.CommentThread;
+import com.google.api.services.youtube.model.CommentThreadListResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -156,6 +161,67 @@ public class VideoServiceImpl implements VideoService {
 		}
 	}
 
+	@Override
+	@Cacheable(cacheNames = "videoComments", key = "#videoId + ':' + #pageToken + ':' + #order + ':' + #pageSize")
+	public Comments.Page getComments(String videoId, String pageToken, String order, Integer pageSize) {
+		try {
+			CommentThreadListResponse resp = youtubeApiClient.fetchCommentThreads(videoId, pageToken, order, pageSize);
+
+			List<Comments.Comment> list = new ArrayList<>();
+			if (resp.getItems() != null) {
+				for (CommentThread thread : resp.getItems()) {
+					// 최상위 댓글
+					Comment top = thread.getSnippet() != null ? thread.getSnippet().getTopLevelComment() : null;
+					CommentSnippet topSn = top != null ? top.getSnippet() : null;
+
+					Comments.Comment.CommentBuilder cb = Comments.Comment.builder().id(top != null ? top.getId() : null)
+							.authorDisplayName(topSn != null ? topSn.getAuthorDisplayName() : null)
+							.authorProfileImageUrl(topSn != null ? topSn.getAuthorProfileImageUrl() : null)
+							.textDisplay(topSn != null ? topSn.getTextDisplay() : null)
+							.publishedAt(topSn != null && topSn.getPublishedAt() != null
+									? topSn.getPublishedAt().toStringRfc3339()
+									: null)
+							.updatedAt(topSn != null && topSn.getUpdatedAt() != null
+									? topSn.getUpdatedAt().toStringRfc3339()
+									: null)
+							.likeCount(topSn != null ? topSn.getLikeCount() : null)
+							.totalReplyCount(thread.getSnippet() != null ? thread.getSnippet().getTotalReplyCount() : 0);
+
+					// 대댓글 (일부만 포함될 수 있음)
+					List<Comments.Reply> replies = new ArrayList<>();
+					if (thread.getReplies() != null && thread.getReplies().getComments() != null) {
+						for (Comment r : thread.getReplies().getComments()) {
+							CommentSnippet rs = r.getSnippet();
+							replies.add(Comments.Reply.builder().id(r.getId())
+									.authorDisplayName(rs != null ? rs.getAuthorDisplayName() : null)
+									.authorProfileImageUrl(rs != null ? rs.getAuthorProfileImageUrl() : null)
+									.textDisplay(rs != null ? rs.getTextDisplay() : null)
+									.publishedAt(topSn != null && topSn.getPublishedAt() != null
+											? topSn.getPublishedAt().toStringRfc3339()
+											: null)
+									.updatedAt(topSn != null && topSn.getUpdatedAt() != null
+											? topSn.getUpdatedAt().toStringRfc3339()
+											: null)
+									.likeCount(rs != null ? rs.getLikeCount() : null).build());
+						}
+					}
+					cb.replies(replies);
+					list.add(cb.build());
+				}
+			}
+
+			Integer resultsPerPage = resp.getPageInfo() != null ? resp.getPageInfo().getResultsPerPage() : null;
+			Integer totalResults = resp.getPageInfo() != null ? resp.getPageInfo().getTotalResults() : null;
+
+			return Comments.Page.builder().items(list).nextPageToken(resp.getNextPageToken())
+					.resultsPerPage(resultsPerPage).totalResults(totalResults).build();
+
+		} catch (Exception e) {
+			log.error("getComments failed for videoId=" + videoId, e);
+			throw new RuntimeException("YouTube 댓글 조회 실패: " + e.getMessage(), e);
+		}
+	}
+
 	// -------------------- helpers --------------------
 
 	private List<VideoListItem> parseItems(JsonNode items, String excludeId) throws Exception {
@@ -187,9 +253,9 @@ public class VideoServiceImpl implements VideoService {
 			JsonNode d = map.get(s.id);
 			String dur = d != null ? formatDuration(optText(d.path("contentDetails"), "duration")) : "";
 			long vc = d != null ? optLong(d.path("statistics"), "viewCount") : 0L;
-			result.add(VideoListItem.builder().id(s.id).title(s.title).thumbnail(s.thumb)
-					.channelTitle(s.channelTitle).publishedDate(s.published).formattedDuration(dur)
-					.formattedViewCount(formatViewCountKR(vc)).build());
+			result.add(VideoListItem.builder().id(s.id).title(s.title).thumbnail(s.thumb).channelTitle(s.channelTitle)
+					.publishedDate(s.published).formattedDuration(dur).formattedViewCount(formatViewCountKR(vc))
+					.build());
 		}
 		return result;
 	}
@@ -205,14 +271,14 @@ public class VideoServiceImpl implements VideoService {
 			this.published = published;
 		}
 	}
-	
+
 	@Getter
 	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class RelatedResponse {
-	    private List<VideoListItem> items;
-	    private String nextPageToken;
+		private List<VideoListItem> items;
+		private String nextPageToken;
 	}
 
 	private static String optText(JsonNode node, String field) {

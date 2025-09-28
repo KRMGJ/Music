@@ -13,16 +13,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.CommentThreadListResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 public class YoutubeApiClient {
+	
+	@Autowired
+	YouTube Youtube;
 
 //    private static final String API_KEY = "AIzaSyBBNgTGf8f93anD6oYRWSFBJe388DBXBQg";
 	private static final String API_KEY = "AIzaSyBEZw8L1Tfnmc0O_qlqtOltVDTV8JRZPRc";
@@ -275,6 +281,31 @@ public class YoutubeApiClient {
 
 		log.info("Related by title URL: {}", url.toString());
 		return mapper.readTree(sendGetRequest(url.toString()));
+	}
+
+	/**
+	 * 댓글 스레드 조회
+	 * 
+	 * @param videoId   대상 영상 ID
+	 * @param pageToken 다음 페이지 토큰 (없으면 null)
+	 * @param order     "time" | "relevance" (null이면 time)
+	 * @param pageSize  1~100 (null 또는 범위 밖이면 20)
+	 */
+	public CommentThreadListResponse fetchCommentThreads(String videoId, String pageToken, String order,
+			Integer pageSize) throws java.io.IOException {
+		if (order == null || order.isBlank())
+			order = "time";
+		long max = 20;
+		if (pageSize != null && pageSize >= 1 && pageSize <= 100)
+			max = pageSize;
+
+		YouTube.CommentThreads.List req = Youtube.commentThreads().list("snippet,replies").setVideoId(videoId)
+				.setOrder(order).setMaxResults(max).setKey(API_KEY);
+
+		if (pageToken != null && !pageToken.isBlank()) {
+			req.setPageToken(pageToken);
+		}
+		return req.execute();
 	}
 
 	@SuppressWarnings("unused")

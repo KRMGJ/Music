@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.music.model.Comments;
 import com.example.music.model.Playlist;
 import com.example.music.model.SearchList;
 import com.example.music.model.User;
@@ -94,5 +95,15 @@ public class VideoController {
 	public RelatedResponse moreRelated(@PathVariable String id, @RequestParam(required = false) String pageToken,
 			@RequestParam(defaultValue = "12") int size) {
 		return videoService.getRelatedPage(id, pageToken, size);
+	}
+
+	@GetMapping("/{id}/comments")
+	@ResponseBody
+	public Comments.Page getComments(@PathVariable("id") String videoId,
+			@RequestParam(value = "pageToken", required = false) String pageToken,
+			@RequestParam(value = "order", required = false) String order, // "time" | "relevance"
+			@RequestParam(value = "size", required = false) Integer pageSize // 1~100
+	) {
+		return videoService.getComments(videoId, pageToken, order, pageSize);
 	}
 }
