@@ -14,7 +14,6 @@
 <link rel="stylesheet" href="/resources/css/video/searchResult.css" />
 <link rel="stylesheet" href="/resources/css/home.css" />
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="/resources/js/home.js"></script>
 </head>
 <body>
 	<!-- 상단 헤더 -->

@@ -29,6 +29,13 @@ public class YoutubeApiClient {
 	private static final String DETAILS_URL = API_URL + "/videos";
 	private static final ObjectMapper mapper = new ObjectMapper();
 
+	/**
+	 * 채널 정보 가져오기
+	 * 
+	 * @param channelId 채널 ID
+	 * @return 채널 정보 JsonNode
+	 * @throws Exception
+	 */
 	public JsonNode fetchChannelInfo(String channelId) throws Exception {
 		String url = CHANNEL_URL + "?part=snippet,statistics" + "&id=" + channelId + "&key=" + API_KEY;
 
@@ -36,6 +43,16 @@ public class YoutubeApiClient {
 		return response.get("items").get(0); // 단일 채널 정보
 	}
 
+	/**
+	 * 동영상 검색
+	 * 
+	 * @param encodedQuery 검색어 (URL 인코딩된 상태)
+	 * @param duration     영상 길이 필터 (short, medium, long) 또는 null
+	 * @param upload       업로드 날짜 필터 (1h, today, week, month, year) 또는 null
+	 * @param regionCode   지역 코드 필터 (예: US, KR) 또는 null
+	 * @return 검색 결과 JsonNode 배열
+	 * @throws Exception
+	 */
 	public JsonNode searchVideos(String encodedQuery, String duration, String upload, String regionCode)
 			throws Exception {
 		StringBuilder url = new StringBuilder(
@@ -81,6 +98,13 @@ public class YoutubeApiClient {
 		return mapper.readTree(sendGetRequest(url.toString())).get("items");
 	}
 
+	/**
+	 * 여러 비디오의 상세 정보 가져오기
+	 * 
+	 * @param videoIds 비디오 ID 리스트
+	 * @return 비디오ID -> 상세정보(JsonNode) 맵
+	 * @throws Exception
+	 */
 	public Map<String, JsonNode> fetchVideoDetails(List<String> videoIds) throws Exception {
 		if (videoIds.isEmpty()) {
 			return Collections.emptyMap();
@@ -99,6 +123,13 @@ public class YoutubeApiClient {
 		return result;
 	}
 
+	/**
+	 * 단일 비디오의 스니펫 정보 가져오기
+	 * 
+	 * @param videoId 비디오 ID
+	 * @return 스니펫 정보 JsonNode
+	 * @throws Exception
+	 */
 	public JsonNode fetchSnippetById(String videoId) throws Exception {
 		String url = DETAILS_URL + "?part=snippet" + "&id=" + videoId + "&key=" + API_KEY;
 
@@ -106,7 +137,15 @@ public class YoutubeApiClient {
 		return response.get("items").get(0).get("snippet");
 	}
 
-	// 인기(트렌딩): videos.list + chart=mostPopular
+	/**
+	 * 인기 동영상 가져오기
+	 * 
+	 * @param regionCode 지역 코드 (예: US, KR) 또는 null
+	 * @param maxResults 최대 결과 수 (기본 20)
+	 * @param pageToken  페이지 토큰 (다음 페이지 요청 시 사용) 또는 null
+	 * @return 인기 동영상 JsonNode 배열
+	 * @throws Exception
+	 */
 	public JsonNode fetchMostPopular(String regionCode, int maxResults, String pageToken) throws Exception {
 		StringBuilder url = new StringBuilder(DETAILS_URL).append("?part=snippet,contentDetails,statistics")
 				.append("&chart=mostPopular").append("&maxResults=").append(maxResults > 0 ? maxResults : 20)
@@ -118,7 +157,17 @@ public class YoutubeApiClient {
 		return mapper.readTree(sendGetRequest(url.toString())).get("items");
 	}
 
-	// 최신: search.list + order=date (필요 시 publishedAfter 병행)
+	/**
+	 * 최신 동영상 가져오기
+	 * 
+	 * @param maxResults        최대 결과 수 (기본 20)
+	 * @param regionCode        지역 코드 (예: US, KR) 또는 null
+	 * @param pageToken         페이지 토큰 (다음 페이지 요청 시 사용) 또는 null
+	 * @param publishedAfterIso ISO 8601 형식의 날짜 문자열 (예: 2023-01-01T00:00:00Z) 또는
+	 *                          null
+	 * @return 최신 동영상 JsonNode 배열
+	 * @throws Exception
+	 */
 	public JsonNode fetchLatest(int maxResults, String regionCode, String pageToken, String publishedAfterIso)
 			throws Exception {
 		StringBuilder url = new StringBuilder(SEARCH_URL).append("?part=snippet&type=video").append("&order=date")
@@ -137,6 +186,13 @@ public class YoutubeApiClient {
 		return mapper.readTree(sendGetRequest(url.toString())).get("items");
 	}
 
+	/**
+	 * 채널 썸네일 URL 맵 가져오기
+	 * 
+	 * @param channelIds
+	 * @return 채널ID -> 썸네일URL 맵
+	 * @throws Exception
+	 */
 	public Map<String, String> fetchChannelThumbnails(java.util.List<String> channelIds) throws Exception {
 		if (channelIds == null || channelIds.isEmpty())
 			return java.util.Collections.emptyMap();
@@ -162,6 +218,12 @@ public class YoutubeApiClient {
 		return out;
 	}
 
+	/**
+	 * 채널 상세 정보 가져오기
+	 * @param channelIds
+	 * @return
+	 * @throws Exception
+	 */
 	public Map<String, JsonNode> fetchChannelsDetails(java.util.List<String> channelIds) throws Exception {
 		if (channelIds == null || channelIds.isEmpty()) {
 			return java.util.Collections.emptyMap();
@@ -182,6 +244,33 @@ public class YoutubeApiClient {
 		}
 		return out;
 	}
+
+	/**
+	 * 제목 기반으로 관련 동영상 검색
+	 * 
+	 * @param title      기준 제목
+	 * @param maxResults 최대 결과 수 (기본 12)
+	 * @return 관련 동영상 JsonNode 배열
+	 * @throws Exception
+	 */
+	public JsonNode fetchRelatedByTitle(String title, int maxResults) throws Exception {
+	    if (title == null || title.isEmpty()) {
+	        return mapper.createArrayNode(); // 제목 없으면 빈 배열
+	    }
+
+	    // 제목 앞부분 40~60자 정도만 사용 (쿼리 길이 제한 대응)
+	    String query = title.length() > 60 ? title.substring(0, 60) : title;
+
+	    StringBuilder url = new StringBuilder(SEARCH_URL)
+	            .append("?part=snippet")
+	            .append("&type=video")
+	            .append("&maxResults=").append(maxResults > 0 ? maxResults : 12)
+	            .append("&q=").append(java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8))
+	            .append("&key=").append(API_KEY);
+
+	    return mapper.readTree(sendGetRequest(url.toString())).get("items");
+	}
+
 
 	@SuppressWarnings("unused")
 	private String bestThumbUrl(JsonNode thumbs) {

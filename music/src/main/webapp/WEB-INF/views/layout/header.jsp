@@ -6,7 +6,7 @@
 <header class="youtube-header">
 	<!-- 로고 -->
 	<div class="left-section">
-		<a href="/playlist/list" class="youtube-logo">
+		<a href="/" class="youtube-logo">
 			<img src="<c:url value='/resources/images/youtube-logo.svg' />" alt="YouTube Logo" />
 		</a>
 	</div>

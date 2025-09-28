@@ -3,10 +3,14 @@ package com.example.music.controller;
 import com.example.music.model.Playlist;
 import com.example.music.model.SearchList;
 import com.example.music.model.User;
+import com.example.music.model.VideoDetail;
+import com.example.music.model.VideoListItem;
 import com.example.music.service.PlaylistService;
+import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
 import com.example.music.util.MessageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,47 +22,69 @@ import java.util.List;
 @RequestMapping("/video")
 public class VideoController {
 
-    @Autowired
-    PlaylistService playListService;
+	@Autowired
+	PlaylistService playListService;
 
-    @Autowired
-    YoutubeService youtubeService;
+	@Autowired
+	YoutubeService youtubeService;
 
-    @GetMapping("/")
-    public String home() {
-        return "video/home";
-    }
+	@Autowired
+	VideoService videoService;
 
-    @GetMapping("/search")
-    public String search(@RequestParam(value = "query", required = false) String query,
-                         @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-                         @RequestParam(value = "sort", defaultValue = "relevance") String sort,
-                         @RequestParam(value = "duration", required = false) String duration,
-                         @RequestParam(value = "upload", required = false) String upload,
-                         @RequestParam(value = "regionCode", required = false) String regionCode,
-                         @RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
-                         HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loginUser");
-        if (user == null) {
-            MessageUtil.errorMessage("로그인 후 이용해주세요.", "/auth/login", model);
-            return "common/error";
-        }
+	@GetMapping("/")
+	public String home() {
+		return "video/home";
+	}
 
-        List<Playlist> playlists = playListService.getPlaylistsByUserId(user.getId());
-        SearchList result = youtubeService.searchVideos(query, page, sort, duration, upload, regionCode);
+	@GetMapping("/search")
+	public String search(@RequestParam(value = "query", required = false) String query,
+			@RequestParam(value = "page", required = false, defaultValue = "1") int page,
+			@RequestParam(value = "sort", defaultValue = "relevance") String sort,
+			@RequestParam(value = "duration", required = false) String duration,
+			@RequestParam(value = "upload", required = false) String upload,
+			@RequestParam(value = "regionCode", required = false) String regionCode,
+			@RequestHeader(value = "X-Requested-With", required = false) String requestedWith, HttpSession session,
+			Model model) {
+		User user = (User) session.getAttribute("loginUser");
+		if (user == null) {
+			MessageUtil.errorMessage("로그인 후 이용해주세요.", "/auth/login", model);
+			return "common/error";
+		}
 
-        model.addAttribute("playlists", playlists);
-        model.addAttribute("searchResult", result);
-        model.addAttribute("query", query);
-        model.addAttribute("sort", sort);
-        model.addAttribute("duration", duration);
-        model.addAttribute("upload", upload);
-        model.addAttribute("regionCode", regionCode);
+		List<Playlist> playlists = playListService.getPlaylistsByUserId(user.getId());
+		SearchList result = youtubeService.searchVideos(query, page, sort, duration, upload, regionCode);
 
-        if ("XMLHttpRequest".equals(requestedWith)) {
-            return "video/searchResultsFragment"; // .jsp 생략
-        }
+		model.addAttribute("playlists", playlists);
+		model.addAttribute("searchResult", result);
+		model.addAttribute("query", query);
+		model.addAttribute("sort", sort);
+		model.addAttribute("duration", duration);
+		model.addAttribute("upload", upload);
+		model.addAttribute("regionCode", regionCode);
 
-        return "video/search";
-    }
+		if ("XMLHttpRequest".equals(requestedWith)) {
+			return "video/searchResultsFragment"; // .jsp 생략
+		}
+
+		return "video/search";
+	}
+
+	@GetMapping("/{id}")
+	public String detail(@PathVariable("id") String id, Model model) {
+		VideoDetail video = videoService.getDetail(id);
+		List<VideoListItem> related = videoService.getRelated(id, 12);
+
+		model.addAttribute("video", video);
+		model.addAttribute("related", related);
+
+		return "video/video";
+	}
+
+	@GetMapping(value = "/{id}/related", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<VideoListItem> moreRelated(@PathVariable("id") String id, @RequestParam(defaultValue = "2") int page,
+			@RequestParam(defaultValue = "12") int size) {
+
+		return videoService.getRelatedPage(id, page, size);
+	}
 }

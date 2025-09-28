@@ -1,6 +1,5 @@
 package com.example.music.config;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.cache.CacheManager;
@@ -23,9 +22,8 @@ public class CacheConfig {
 
 	@Bean
 	public CacheManager cacheManager(Caffeine<Object, Object> caffeine) {
-		CaffeineCacheManager mgr = new CaffeineCacheManager();
-		mgr.setCaffeine(caffeine);
-		mgr.setCacheNames(Arrays.asList("home:popularVideos", "home:latestVideos", "home:popularChannels"));
-		return mgr;
+	    CaffeineCacheManager mgr = new CaffeineCacheManager();
+	    mgr.setCaffeine(caffeine);
+	    return mgr;
 	}
 }
