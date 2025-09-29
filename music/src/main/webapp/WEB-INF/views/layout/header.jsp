@@ -3,46 +3,48 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
-<header class="youtube-header">
-	<!-- 로고 -->
-	<div class="left-section">
-		<a href="/" class="youtube-logo">
-			<img src="<c:url value='/resources/images/youtube-logo.svg' />" alt="YouTube Logo" />
-		</a>
-	</div>
-
-	<!-- 검색창 -->
-	<div class="center-section">
-		<form method="get" action="/video/search" class="search-form">
-			<input type="text" name="query" placeholder="검색" value="${param.query}" />
-			<button type="submit"><i class="fas fa-search"></i></button>
-			<label class="region-only">
-				<input type="checkbox" name="regionCode" value="KR" ${param.regionCode == 'KR' ? 'checked' : ''} />
-				<span>국내 영상만 보기</span>
-			</label>
-		</form>
-	</div>
-
-	<!-- 필터 버튼 -->
-	<div class="filter-btn-wrapper">
-		<button id="filterBtn" class="filter-btn"><i class="fas fa-sliders-h"></i> 필터</button>
-	</div>
-
-	<!-- 로그인 영역 -->
-	<div class="right-section">
-		<button class="mic-btn"><i class="fas fa-microphone"></i></button>
-		<c:choose>
-			<c:when test="${not empty sessionScope.loginUser}">
-				<button id="logoutButton" class="login-btn">로그아웃</button>
-			</c:when>
-			<c:otherwise>
-				<a href="/auth/login" class="login-button">
-					<i class="fa-regular fa-circle-user icon"></i> 로그인
-				</a>
-			</c:otherwise>
-		</c:choose>
-	</div>
-</header>
+<div class="header-container">
+	<header class="youtube-header">
+		<!-- 로고 -->
+		<div class="left-section">
+			<a href="/" class="youtube-logo">
+				<img src="<c:url value='/resources/images/youtube-logo.svg' />" alt="YouTube Logo" />
+			</a>
+		</div>
+	
+		<!-- 검색창 -->
+		<div class="center-section">
+			<form method="get" action="/video/search" class="search-form">
+				<input type="text" name="query" placeholder="검색" value="${param.query}" />
+				<button type="submit"><i class="fas fa-search"></i></button>
+				<label class="region-only">
+					<input type="checkbox" name="regionCode" value="KR" ${param.regionCode == 'KR' ? 'checked' : ''} />
+					<span>국내 영상만 보기</span>
+				</label>
+			</form>
+		</div>
+	
+		<!-- 필터 버튼 -->
+		<div class="filter-btn-wrapper">
+			<button id="filterBtn" class="filter-btn"><i class="fas fa-sliders-h"></i> 필터</button>
+		</div>
+	
+		<!-- 로그인 영역 -->
+		<div class="right-section">
+			<button class="mic-btn"><i class="fas fa-microphone"></i></button>
+			<c:choose>
+				<c:when test="${not empty sessionScope.loginUser}">
+					<button id="logoutButton" class="login-btn">로그아웃</button>
+				</c:when>
+				<c:otherwise>
+					<a href="/auth/login" class="login-button">
+						<i class="fa-regular fa-circle-user icon"></i> 로그인
+					</a>
+				</c:otherwise>
+			</c:choose>
+		</div>
+	</header>
+</div>
 
 <!-- 필터 모달 -->
 <div class="filter-modal" id="filterModal">

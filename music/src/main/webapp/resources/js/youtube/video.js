@@ -1,11 +1,17 @@
-$(document).on('click', '#btnToggleDesc', function() {
-	const $desc = $('#descText');
-	$desc.toggleClass('expanded');
-	if ($desc.hasClass('expanded')) {
-		$(this).text('접기');
-	} else {
-		$(this).text('더보기');
+$(function() {
+	var $box = $('#videoDesc');
+	var $btn = $('#btnToggleDesc');
+	if (!$box.length || !$btn.length) return;
+
+	function update() {
+		$btn.text($box.hasClass('yt-desc--collapsed') ? '더보기' : '접기');
 	}
+	update();
+
+	$(document).on('click', '#btnToggleDesc', function() {
+		$box.toggleClass('yt-desc--collapsed');
+		update();
+	});
 });
 
 $(document).on('click', '#btnShare', function() {
@@ -86,3 +92,91 @@ $(document).on('click', '#btnMore', function() {
 			$btn.prop('disabled', false).text('다시 시도');
 		});
 });
+
+/* === 추가: 설명 렌더링 & 타임스탬프 구간이동 ================================== */
+(function($) {
+	'use strict';
+
+	// HTML escape
+	function esc(s) {
+		return String(s).replace(/[&<>"']/g, function(m) {
+			return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+		});
+	}
+
+	// http/https 링크 자동 링크화
+	function linkify(s) {
+		var url = /\bhttps?:\/\/[^\s<]+/g;
+		return s.replace(url, function(m) {
+			return '<a href="' + m + '" target="_blank" rel="nofollow ugc noopener noreferrer">' + m + '</a>';
+		});
+	}
+
+	// #해시태그 링크화 (내부 검색으로 연결 예시)
+	function hashify(s) {
+		var tag = /(^|\s)#([A-Za-z0-9가-힣_]{1,50})/g;
+		return s.replace(tag, function(all, sp, word) {
+			return sp + '<a class="yt-hashtag" href="/search?q=%23' + encodeURIComponent(word) + '">#' + word + '</a>';
+		});
+	}
+
+	// hh:mm:ss 또는 mm:ss → 타임스탬프 버튼화
+	function timeify(s) {
+		var re = /\b(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\b/g; // [hh:]mm:ss
+		return s.replace(re, function(m, h, mi, se) {
+			var sec = (parseInt(h || '0', 10) * 3600) + (parseInt(mi, 10) * 60) + parseInt(se, 10);
+			return '<button type="button" class="yt-timestamp" data-s="' + sec + '">' + m + '</button>';
+		});
+	}
+
+	// 최종 렌더: 줄바꿈 + 링크 + 해시태그 + 타임코드
+	function renderDescription(raw) {
+		var html = esc(raw || '');
+		html = html.replace(/\r\n|\r|\n/g, '<br>');
+		html = linkify(html);
+		html = hashify(html);
+		html = timeify(html);
+		return '<div class="yt-desc__text">' + html + '</div>';
+	}
+
+	// 초기 렌더 (JSP에서 data-raw-desc 속성에 원문을 넣어두었음)
+	function initDesc() {
+		var $text = $('#descText');
+		if (!$text.length) return;
+
+		var raw = $text.data('raw-desc');
+		if (typeof raw === 'undefined') {
+			// fallback: 이미 들어있는 텍스트를 가져와서 렌더
+			raw = $text.text();
+		}
+		$text.html(renderDescription(raw));
+	}
+
+	// 타임스탬프 클릭 → 구간 이동 (IFrame API 우선, 없으면 iframe src 폴백)
+	$(document).on('click', '.yt-timestamp', function() {
+		var sec = parseInt($(this).attr('data-s'), 10) || 0;
+
+		// IFrame Player API 사용 중이면
+		if (window.player && typeof window.player.seekTo === 'function') {
+			window.player.seekTo(sec, true);
+			if (typeof window.player.playVideo === 'function') window.player.playVideo();
+			return;
+		}
+
+		// 폴백: iframe src=...&start= 갱신
+		var $if = $('#player');
+		if (!$if.length) $if = $('iframe[src*="youtube.com/embed"]');
+		if ($if.length) {
+			var src = $if.attr('src') || '';
+			// 기존 start 제거
+			src = src.replace(/([?&])start=\d+/g, '');
+			var sep = src.indexOf('?') === -1 ? '?' : '&';
+			$if.attr('src', src + sep + 'start=' + sec + '&autoplay=1');
+		}
+	});
+
+	// DOM 준비되면 설명 렌더
+	$(initDesc);
+
+})(jQuery);
+

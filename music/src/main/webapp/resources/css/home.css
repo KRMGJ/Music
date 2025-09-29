@@ -192,6 +192,8 @@
 }
 
 .channel-title {
+	display: block;
+	width: 100%;
 	font-weight: 700;
 	font-size: 15px;
 	overflow: hidden;

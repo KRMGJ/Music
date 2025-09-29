@@ -6,6 +6,12 @@ tbody, html {
 	-yt-spec-text-primary: #0f0f0f;
 }
 
+.header-container {
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 0 16px;
+}
+
 .youtube-header {
 	display: flex;
 	justify-content: space-between;

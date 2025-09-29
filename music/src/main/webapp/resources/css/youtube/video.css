@@ -61,23 +61,52 @@
 	background: #f2f2f2
 }
 
-.desc-wrap {
-	margin-top: 12px;
-	background: #f8f9fa;
-	border: 1px solid #eee;
-	border-radius: 12px;
-	padding: 12px
+/* 유튜브 스타일 느낌의 설명 아코디언 */
+.yt-desc {
+	position: relative;
+	margin: 12px 0 8px;
 }
 
-.desc-text {
-	display: -webkit-box;
-	-webkit-line-clamp: 3;
-	-webkit-box-orient: vertical;
-	overflow: hidden
+.yt-desc--collapsed .yt-desc__text {
+	max-height: 6.5em;
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1),
+		rgba(0, 0, 0, 0));
+	mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
 }
 
-.desc-text.expanded {
-	-webkit-line-clamp: unset
+.yt-desc__toggle {
+	background: none;
+	border: 0;
+	padding: 6px 0;
+	font-size: 13px;
+	color: #065fd4;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.yt-desc a {
+	color: #065fd4;
+	text-decoration: none;
+}
+
+.yt-desc a:hover {
+	text-decoration: underline;
+}
+
+.yt-timestamp {
+	background: none;
+	border: 0;
+	padding: 0;
+	color: #065fd4;
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.yt-hashtag {
+	color: #065fd4;
+	text-decoration: none;
+	margin-right: 2px;
 }
 
 .toggle-more {
