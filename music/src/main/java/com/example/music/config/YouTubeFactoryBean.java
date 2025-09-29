@@ -1,9 +1,10 @@
 package com.example.music.config;
 
+import org.springframework.beans.factory.FactoryBean;
+
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
-import org.springframework.beans.factory.FactoryBean;
 
 public class YouTubeFactoryBean implements FactoryBean<YouTube> {
 

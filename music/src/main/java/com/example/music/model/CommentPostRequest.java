@@ -9,5 +9,4 @@ public class CommentPostRequest {
 	private String videoId;
 	private String channelId;
 	private String text;
-	private String parentId;
 }

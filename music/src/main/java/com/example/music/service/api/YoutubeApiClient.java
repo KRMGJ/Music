@@ -20,7 +20,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Comment;
 import com.google.api.services.youtube.model.CommentSnippet;
@@ -40,10 +41,26 @@ public class YoutubeApiClient {
 //	private static final String API_KEY = "AIzaSyBEZw8L1Tfnmc0O_qlqtOltVDTV8JRZPRc";
 	private static final String API_KEY = "AIzaSyB-w0ykEEHVWU1eKqiJ6a8OQHs_CMX6c_g";
 	private static final String API_URL = "https://www.googleapis.com/youtube/v3";
+	private static final String KOREAN = "&relevanceLanguage=ko&regionCode=KR";
 	private static final String CHANNEL_URL = API_URL + "/channels";
 	private static final String SEARCH_URL = API_URL + "/search";
 	private static final String DETAILS_URL = API_URL + "/videos";
 	private static final ObjectMapper mapper = new ObjectMapper();
+
+	private static final NetHttpTransport HTTP = new NetHttpTransport();
+	private static final JacksonFactory JSON = JacksonFactory.getDefaultInstance();
+
+	// 액세스 토큰 기반 클라이언트 (쓰기용)
+	private YouTube clientWithToken(String accessToken) {
+		return new YouTube.Builder(HTTP, JSON, req -> req.getHeaders().setAuthorization("Bearer " + accessToken))
+				.setApplicationName("music").build();
+	}
+
+	// 읽기(키 기반)만 필요하면 이렇게도 가능
+	private YouTube clientNoAuth() {
+		return new YouTube.Builder(HTTP, JSON, req -> {
+		}).setApplicationName("music").build();
+	}
 
 	/**
 	 * 채널 정보 가져오기
@@ -72,7 +89,7 @@ public class YoutubeApiClient {
 	public JsonNode searchVideos(String encodedQuery, String duration, String upload, String regionCode)
 			throws Exception {
 		StringBuilder url = new StringBuilder(
-				SEARCH_URL + "?part=snippet&type=video&maxResults=20&q=" + encodedQuery + "&key=" + API_KEY);
+				SEARCH_URL + "?part=snippet&type=video&maxResults=20&q=" + encodedQuery + "&key=" + API_KEY + KOREAN);
 
 		// 영상 길이 필터링 (API 지원: short, medium, long)
 		if (duration != null && (duration.equals("short") || duration.equals("medium") || duration.equals("long"))) {
@@ -165,7 +182,7 @@ public class YoutubeApiClient {
 	public JsonNode fetchMostPopular(String regionCode, int maxResults, String pageToken) throws Exception {
 		StringBuilder url = new StringBuilder(DETAILS_URL).append("?part=snippet,contentDetails,statistics")
 				.append("&chart=mostPopular").append("&maxResults=").append(maxResults > 0 ? maxResults : 20)
-				.append("&key=").append(API_KEY);
+				.append("&key=").append(API_KEY).append(KOREAN);
 		if (regionCode != null && !regionCode.isEmpty()) {
 			url.append("&regionCode=").append(regionCode);
 		}
@@ -189,7 +206,8 @@ public class YoutubeApiClient {
 	public JsonNode fetchLatest(int maxResults, String regionCode, String pageToken, String publishedAfterIso)
 			throws Exception {
 		StringBuilder url = new StringBuilder(SEARCH_URL).append("?part=snippet&type=video").append("&order=date")
-				.append("&maxResults=").append(maxResults > 0 ? maxResults : 20).append("&key=").append(API_KEY);
+				.append("&maxResults=").append(maxResults > 0 ? maxResults : 20).append("&key=").append(API_KEY)
+				.append(KOREAN);
 
 		if (regionCode != null && !regionCode.isEmpty()) {
 			url.append("&regionCode=").append(regionCode);
@@ -268,6 +286,27 @@ public class YoutubeApiClient {
 	}
 
 	/**
+	 * 특정 채널의 최신 동영상 검색
+	 * 
+	 * @param channelId  대상 채널 ID
+	 * @param maxResults 최대 결과 수 (기본 12)
+	 * @param pageToken  다음 페이지 토큰 (없으면 null)
+	 * @return 최신 동영상 JsonNode 배열
+	 * @throws Exception
+	 */
+	public JsonNode fetchChannelLatest(String channelId, int maxResults, String pageToken) throws Exception {
+		StringBuilder url = new StringBuilder(SEARCH_URL).append("?part=snippet&type=video").append("&order=date")
+				.append("&channelId=").append(channelId).append("&maxResults=").append(maxResults > 0 ? maxResults : 12)
+				.append("&key=").append(API_KEY);
+
+		if (pageToken != null && !pageToken.isEmpty()) {
+			url.append("&pageToken=").append(pageToken);
+		}
+
+		return mapper.readTree(sendGetRequest(url.toString()));
+	}
+
+	/**
 	 * 제목 기반으로 관련 동영상 검색
 	 * 
 	 * @param title      기준 제목
@@ -284,7 +323,8 @@ public class YoutubeApiClient {
 
 		StringBuilder url = new StringBuilder(SEARCH_URL).append("?part=snippet").append("&type=video")
 				.append("&maxResults=").append(maxResults > 0 ? maxResults : 12).append("&q=")
-				.append(URLEncoder.encode(query, StandardCharsets.UTF_8)).append("&key=").append(API_KEY);
+				.append(URLEncoder.encode(query, StandardCharsets.UTF_8)).append("&key=").append(API_KEY)
+				.append(KOREAN);
 
 		if (pageToken != null && !pageToken.isEmpty()) {
 			url.append("&pageToken=").append(pageToken);
@@ -331,8 +371,8 @@ public class YoutubeApiClient {
 	 * @throws Exception
 	 */
 	public CommentThread insertTopLevelComment(String accessToken, String channelId, String videoId, String text)
-			throws Exception {
-		YouTube yt = buildClient(accessToken);
+			throws IOException {
+		YouTube yt = clientWithToken(accessToken);
 
 		CommentSnippet topSnippet = new CommentSnippet();
 		topSnippet.setTextOriginal(text);
@@ -341,8 +381,12 @@ public class YoutubeApiClient {
 		top.setSnippet(topSnippet);
 
 		CommentThreadSnippet threadSnippet = new CommentThreadSnippet();
-		threadSnippet.setChannelId(channelId); // 업로더 채널 ID
-		threadSnippet.setVideoId(videoId); // 영상 ID
+		// 영상 댓글이면 videoId만 필수
+		threadSnippet.setVideoId(videoId);
+		// 채널 댓글을 의도한 경우에만 세팅
+		if (channelId != null && !channelId.isBlank()) {
+			threadSnippet.setChannelId(channelId);
+		}
 		threadSnippet.setTopLevelComment(top);
 
 		CommentThread body = new CommentThread();
@@ -351,33 +395,11 @@ public class YoutubeApiClient {
 		return yt.commentThreads().insert("snippet", body).execute();
 	}
 
-	/**
-	 * 댓글에 대한 답글 작성
-	 * 
-	 * @param accessToken     OAuth2 액세스 토큰
-	 * @param parentCommentId 부모 댓글 ID
-	 * @param text            답글 내용
-	 * @return 작성된 답글 Comment 객체
-	 * @throws Exception
-	 */
-	public Comment insertReply(String accessToken, String parentCommentId, String text) throws Exception {
-		YouTube yt = buildClient(accessToken);
-
-		CommentSnippet replySnippet = new CommentSnippet();
-		replySnippet.setTextOriginal(text);
-		replySnippet.setParentId(parentCommentId);
-
-		Comment reply = new Comment();
-		reply.setSnippet(replySnippet);
-
-		return yt.comments().insert("snippet", reply).execute();
-	}
-
-	private YouTube buildClient(String accessToken) {
-		GoogleCredential cred = new GoogleCredential().setAccessToken(accessToken);
-		return new YouTube.Builder(cred.getTransport(), cred.getJsonFactory(),
-				req -> req.getHeaders().setAuthorization("Bearer " + accessToken)).setApplicationName("music").build();
-	}
+//	private YouTube buildClient(String accessToken) {
+//		GoogleCredential cred = new GoogleCredential().setAccessToken(accessToken);
+//		return new YouTube.Builder(cred.getTransport(), cred.getJsonFactory(),
+//				req -> req.getHeaders().setAuthorization("Bearer " + accessToken)).setApplicationName("music").build();
+//	}
 
 	@SuppressWarnings("unused")
 	private String bestThumbUrl(JsonNode thumbs) {

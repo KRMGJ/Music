@@ -287,20 +287,24 @@ public class YoutubeServiceImpl implements YoutubeService {
 	@Override
 	@Cacheable(cacheNames = "videoRelatedPage", key = "#id + ':' + #pageToken + ':' + #size")
 	public RelatedResponse getRelatedPage(String id, String pageToken, int size) {
-		log.info("Fetching related videos for id={}, pageToken={}, size={}", id, pageToken, size);
 		try {
 			VideoDetail base = getDetail(id);
 			if (base == null || base.getTitle() == null) {
 				return new RelatedResponse(Collections.emptyList(), null);
 			}
 
+			// 1) 제목 기반 검색
 			JsonNode response = youtubeApiClient.fetchRelatedByTitle(base.getTitle(), size, pageToken);
-			if (response == null || response.isMissingNode()) {
-				return new RelatedResponse(Collections.emptyList(), null);
+			JsonNode items = response.path("items");
+			String nextToken = response.has("nextPageToken") ? response.get("nextPageToken").asText() : null;
+
+			// 2) 만약 결과가 비었으면 → 채널 최신 영상 fallback
+			if (items == null || !items.isArray() || items.size() == 0) {
+				response = youtubeApiClient.fetchChannelLatest(base.getChannelId(), size, pageToken);
+				items = response.path("items");
+				nextToken = response.has("nextPageToken") ? response.get("nextPageToken").asText() : null;
 			}
 
-			String nextToken = response.has("nextPageToken") ? response.get("nextPageToken").asText() : null;
-			JsonNode items = response.path("items");
 			if (items == null || !items.isArray() || items.size() == 0) {
 				return new RelatedResponse(Collections.emptyList(), nextToken);
 			}
@@ -315,7 +319,6 @@ public class YoutubeServiceImpl implements YoutubeService {
 	}
 
 	@Override
-	@Cacheable(cacheNames = "videoComments", key = "#videoId + ':' + #pageToken + ':' + #order + ':' + #pageSize")
 	public Comments.Page getComments(String videoId, String pageToken, String order, Integer pageSize) {
 		try {
 			CommentThreadListResponse resp = youtubeApiClient.fetchCommentThreads(videoId, pageToken, order, pageSize);
@@ -402,14 +405,17 @@ public class YoutubeServiceImpl implements YoutubeService {
 
 	@Override
 	public Object postComment(CommentPostRequest req, String accessToken) throws Exception {
-		if (req.getParentId() != null && !req.getParentId().isEmpty()) {
-			Comment reply = youtubeApiClient.insertReply(accessToken, req.getParentId(), req.getText());
-			return reply;
-		} else {
-			CommentThread ct = youtubeApiClient.insertTopLevelComment(accessToken, req.getChannelId(), req.getVideoId(),
-					req.getText());
-			return ct;
+		if (youtubeApiClient == null) {
+			throw new IllegalStateException("YoutubeApiClient 주입 실패");
 		}
+		if (req.getVideoId() == null || req.getVideoId().isBlank()) {
+			throw new IllegalArgumentException("videoId가 없습니다.");
+		}
+		if (req.getText() == null || req.getText().trim().isEmpty()) {
+			throw new IllegalArgumentException("댓글 내용이 없습니다.");
+		}
+
+		return youtubeApiClient.insertTopLevelComment(accessToken, null, req.getVideoId(), req.getText().trim());
 	}
 
 	// -------------------- helpers --------------------

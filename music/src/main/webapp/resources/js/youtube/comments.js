@@ -7,7 +7,7 @@ function renderCommentItem(cmt) {
 		+ '  <div class="comment-body">'
 		+ '    <div class="comment-author">' + (cmt.authorDisplayName || '알 수 없음') + '</div>'
 		+ '    <div class="comment-text">' + (cmt.textDisplay || '') + '</div>'
-		+ '    <div class="comment-meta">' + (cmt.publishedAt || '') + ' · 좋아요 ' + (cmt.likeCount || 0) + '</div>';
+		+ '    <div class="comment-meta">' + formatRelativeKST(cmt.publishedAt) + ' · 좋아요 ' + (cmt.likeCount || 0) + '</div>';
 
 	if (replyCount > 0) {
 		html += ''
@@ -28,7 +28,7 @@ function renderCommentItem(cmt) {
 					+ '  <div class="comment-body">'
 					+ '    <div class="comment-author">' + (r.authorDisplayName || '알 수 없음') + '</div>'
 					+ '    <div class="comment-text">' + (r.textDisplay || '') + '</div>'
-					+ '    <div class="comment-meta">' + (r.publishedAt || '') + ' · 좋아요 ' + (r.likeCount || 0) + '</div>'
+					+ '    <div class="comment-meta">' + formatRelativeKST(cmt.publishedAt) + ' · 좋아요 ' + (r.likeCount || 0) + '</div>'
 					+ '  </div>'
 					+ '</div>';
 			}
@@ -132,8 +132,8 @@ $(document).on('click', '#btnSubmitComment', function() {
 			let msg = '등록 실패';
 			try {
 				const body = JSON.parse(xhr.responseText);
-				if (body.message) msg = body.message;
-			} catch (_) { /* ignore */ }
+				if (body.message) msg = body.message + (body.reason ? ` (${body.reason})` : '');
+			} catch (_) { }
 			$('#commentError').text(msg).show();
 		})
 		.always(function() {
@@ -163,3 +163,32 @@ $(document).on('click', '#btnMoreComments', function() {
 	const order = $('#commentOrder').val();
 	loadComments(token, order);
 });
+
+function formatDateKST(iso) {
+	if (!iso) return '';
+	const d = new Date(iso);
+	if (isNaN(d.getTime())) return iso;
+
+	const y = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric' }).format(d);
+	const m = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit' }).format(d);
+	const day = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', day: '2-digit' }).format(d);
+	return `${y}-${m}-${day}`;
+}
+
+// 상대 시각(유튜브 느낌) - 몇 분/시간 전, 어제, 며칠 전...
+function formatRelativeKST(iso) {
+	if (!iso) return '';
+	const d = new Date(iso);
+	const diffSec = (Date.now() - d.getTime()) / 1000;
+
+	if (diffSec < 60) return '방금 전';
+	if (diffSec < 3600) return `${Math.floor(diffSec / 60)}분 전`;
+	if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}시간 전`;
+
+	const days = Math.floor(diffSec / 86400);
+	if (days === 1) return '어제';
+	if (days < 7) return `${days}일 전`;
+
+	return formatDateKST(iso); // 1주 이상은 절대시간으로
+}
+
