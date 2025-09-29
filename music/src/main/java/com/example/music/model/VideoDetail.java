@@ -16,6 +16,7 @@ public class VideoDetail {
 	private String title;
 	private String description;
 
+	private String channelId;
 	private String channelTitle;
 	private String channelThumbnail;
 	private String formattedSubscriberCount;

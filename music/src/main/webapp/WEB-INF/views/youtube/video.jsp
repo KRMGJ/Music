@@ -11,9 +11,11 @@
 <meta property="og:description" content="${video.description}" />
 <meta property="og:image" content="${video.thumbnail}" />
 <meta property="og:url" content="${pageContext.request.requestURL}" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="/resources/css/video/video.css" />
-<link rel="stylesheet" href="/resources/css/video/comments.css" />
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+	rel="stylesheet" />
+<link rel="stylesheet" href="/resources/css/youtube/video.css" />
+<link rel="stylesheet" href="/resources/css/youtube/comments.css" />
 </head>
 <body>
 	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
@@ -61,24 +63,50 @@
 					<div id="descText" class="desc-text">${video.description}</div>
 					<div id="btnToggleDesc" class="toggle-more mt-2 text-primary">더보기</div>
 				</div>
-				
-				<section id="comments" class="comment-section" data-video="${video.id}">
-				<div
-					class="comment-header d-flex align-items-center justify-content-between">
-					<h3 class="mb-0">댓글</h3>
-					<div class="comment-controls">
+
+				<div class="comment-section" id="comments" data-video="${video.id}" data-channel="${video.channelId}">
+					<div
+						class="comment-header d-flex align-items-center justify-content-between">
+						<h3>댓글</h3>
 						<select id="commentOrder" class="form-select form-select-sm"
 							style="width: auto;">
-							<option value="time" selected>최신순</option>
-							<option value="relevance">인기순</option>
+							<option value="relevance">관련성</option>
+							<option value="time">최신순</option>
 						</select>
 					</div>
+
+					<!-- 로그인 상태: 세션에 loginUser가 있다고 가정 -->
+					<c:if test="${not empty loginUser}">
+						<div id="commentEditor" class="my-3">
+							<textarea id="commentText" class="form-control" rows="3"
+								placeholder="공개 댓글 추가..."></textarea>
+							<div class="mt-2 d-flex gap-2">
+								<button id="btnSubmitComment" class="btn btn-primary btn-sm">댓글
+									등록</button>
+								<span id="commentSaving" class="text-muted small"
+									style="display: none;">저장 중…</span>
+							</div>
+							<div id="commentError" class="text-danger small mt-1"
+								style="display: none;"></div>
+						</div>
+					</c:if>
+
+					<!-- 비로그인 상태: 구글 로그인 유도 -->
+					<c:if test="${empty loginUser}">
+						<div
+							class="alert alert-light d-flex align-items-center gap-2 my-3"
+							role="alert">
+							<span>댓글을 작성하려면 Google 로그인 해주세요.</span> <a
+								class="btn btn-outline-secondary btn-sm"
+								href="/oauth2/login/google">Google 로그인</a>
+						</div>
+					</c:if>
+
+					<!-- 댓글 목록 & 더보기 -->
+					<div id="commentList" class="mt-3"></div>
+					<button id="btnMoreComments"
+						class="btn btn-outline-secondary btn-sm d-none">댓글 더보기</button>
 				</div>
-			
-				<div id="commentList" class="mt-3"></div>
-			
-				<button id="btnMoreComments" class="btn btn-light mt-2 d-none" data-token="">댓글 더보기</button>
-			</section>
 			</main>
 
 			<!-- 추천 영상 -->
@@ -106,7 +134,8 @@
 					</c:forEach>
 				</div>
 				<!-- 더보기 버튼 -->
-				<button class="btn btn-light w-100 mt-2" id="btnMore" data-token="${nextPageToken}">더보기</button>
+				<button class="btn btn-light w-100 mt-2" id="btnMore"
+					data-token="${nextPageToken}">더보기</button>
 			</aside>
 		</div>
 	</div>
@@ -134,7 +163,7 @@
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 	<script
 		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="/resources/js/video/video.js"></script>
-	<script src="/resources/js/video/comments.js"></script>
+	<script src="/resources/js/youtube/video.js"></script>
+	<script src="/resources/js/youtube/comments.js"></script>
 </body>
 </html>

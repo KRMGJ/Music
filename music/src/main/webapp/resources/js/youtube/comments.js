@@ -36,7 +36,7 @@ function loadComments(token, order) {
 	if (order) params.push('order=' + encodeURIComponent(order));
 	if (token) params.push('pageToken=' + encodeURIComponent(token));
 
-	var url = '/video/' + encodeURIComponent(videoId) + '/comments' + (params.length ? ('?' + params.join('&')) : '');
+	var url = '/youtube/' + encodeURIComponent(videoId) + '/comments' + (params.length ? ('?' + params.join('&')) : '');
 
 	var $btn = $('#btnMoreComments');
 	$btn.prop('disabled', true).text('불러오는 중…');
@@ -67,6 +67,47 @@ function loadComments(token, order) {
 			$btn.prop('disabled', false).text('다시 시도');
 		});
 }
+// 댓글 등록
+$(document).on('click', '#btnSubmitComment', function() {
+	const videoId = $('#comments').data('video');
+	const channelId = $('#comments').data('channel');
+	const text = ($('#commentText').val() || '').trim();
+
+	$('#commentError').hide().text('');
+	if (!text) {
+		$('#commentError').text('댓글 내용을 입력하세요.').show();
+		return;
+	}
+
+	$('#btnSubmitComment').prop('disabled', true);
+	$('#commentSaving').show();
+
+	$.ajax({
+		url: '/youtube/' + encodeURIComponent(videoId) + '/comments',
+		method: 'POST',
+		contentType: 'application/json',
+		data: JSON.stringify({ videoId, channelId, text })
+	})
+		.done(function() {
+			$('#commentText').val('');
+			$('#commentList').empty();
+			$('#btnMoreComments').data('token', '').removeClass('d-none');
+			const order = $('#commentOrder').val();
+			loadComments('', order);
+		})
+		.fail(function(xhr) {
+			let msg = '등록 실패';
+			try {
+				const body = JSON.parse(xhr.responseText);
+				if (body.message) msg = body.message;
+			} catch (_) { }
+			$('#commentError').text(msg).show();
+		})
+		.always(function() {
+			$('#btnSubmitComment').prop('disabled', false);
+			$('#commentSaving').hide();
+		});
+});
 
 // 최초 로딩
 $(function() {

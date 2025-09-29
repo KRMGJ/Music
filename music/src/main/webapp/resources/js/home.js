@@ -116,7 +116,7 @@
 
 			// 썸네일/링크
 			const a = node.querySelector('.video-link');
-			a.href = '/video/' + (v.id || '');
+			a.href = '/youtube/' + (v.id || '');
 
 			const img = node.querySelector('.video-thumbnail');
 			img.src = v.thumbnail || '';
@@ -128,7 +128,7 @@
 
 			// 텍스트
 			const title = node.querySelector('.video-title');
-			title.href = '/video/' + (v.id || '');
+			title.href = '/youtube/' + (v.id || '');
 			title.textContent = v.title || '';
 			title.title = v.title || '';
 

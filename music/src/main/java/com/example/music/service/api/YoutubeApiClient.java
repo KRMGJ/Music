@@ -18,8 +18,13 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.Comment;
+import com.google.api.services.youtube.model.CommentSnippet;
+import com.google.api.services.youtube.model.CommentThread;
 import com.google.api.services.youtube.model.CommentThreadListResponse;
+import com.google.api.services.youtube.model.CommentThreadSnippet;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,8 +35,8 @@ public class YoutubeApiClient {
 	@Autowired
 	YouTube Youtube;
 
-//    private static final String API_KEY = "AIzaSyBBNgTGf8f93anD6oYRWSFBJe388DBXBQg";
-	private static final String API_KEY = "AIzaSyBEZw8L1Tfnmc0O_qlqtOltVDTV8JRZPRc";
+//	private static final String API_KEY = "AIzaSyBEZw8L1Tfnmc0O_qlqtOltVDTV8JRZPRc";
+	private static final String API_KEY = "AIzaSyB-w0ykEEHVWU1eKqiJ6a8OQHs_CMX6c_g";
 	private static final String API_URL = "https://www.googleapis.com/youtube/v3";
 	private static final String CHANNEL_URL = API_URL + "/channels";
 	private static final String SEARCH_URL = API_URL + "/search";
@@ -312,6 +317,65 @@ public class YoutubeApiClient {
 			req.setPageToken(pageToken);
 		}
 		return req.execute();
+	}
+
+	/**
+	 * * 최상위 댓글 작성
+	 * 
+	 * @param accessToken OAuth2 액세스 토큰
+	 * @param channelId   업로더 채널 ID
+	 * @param videoId     대상 영상 ID
+	 * @param text        댓글 내용
+	 * @return 작성된 댓글 스레드 객체
+	 * @throws Exception
+	 */
+	public CommentThread insertTopLevelComment(String accessToken, String channelId, String videoId, String text)
+			throws Exception {
+		YouTube yt = buildClient(accessToken);
+
+		CommentSnippet topSnippet = new CommentSnippet();
+		topSnippet.setTextOriginal(text);
+
+		Comment top = new Comment();
+		top.setSnippet(topSnippet);
+
+		CommentThreadSnippet threadSnippet = new CommentThreadSnippet();
+		threadSnippet.setChannelId(channelId); // 업로더 채널 ID
+		threadSnippet.setVideoId(videoId); // 영상 ID
+		threadSnippet.setTopLevelComment(top);
+
+		CommentThread body = new CommentThread();
+		body.setSnippet(threadSnippet);
+
+		return yt.commentThreads().insert("snippet", body).execute();
+	}
+
+	/**
+	 * 댓글에 대한 답글 작성
+	 * 
+	 * @param accessToken     OAuth2 액세스 토큰
+	 * @param parentCommentId 부모 댓글 ID
+	 * @param text            답글 내용
+	 * @return 작성된 답글 Comment 객체
+	 * @throws Exception
+	 */
+	public Comment insertReply(String accessToken, String parentCommentId, String text) throws Exception {
+		YouTube yt = buildClient(accessToken);
+
+		CommentSnippet replySnippet = new CommentSnippet();
+		replySnippet.setTextOriginal(text);
+		replySnippet.setParentId(parentCommentId);
+
+		Comment reply = new Comment();
+		reply.setSnippet(replySnippet);
+
+		return yt.comments().insert("snippet", reply).execute();
+	}
+
+	private YouTube buildClient(String accessToken) {
+		GoogleCredential cred = new GoogleCredential().setAccessToken(accessToken);
+		return new YouTube.Builder(cred.getTransport(), cred.getJsonFactory(),
+				req -> req.getHeaders().setAuthorization("Bearer " + accessToken)).setApplicationName("music").build();
 	}
 
 	@SuppressWarnings("unused")

@@ -8,22 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.music.model.Comments;
 import com.example.music.model.Playlist;
 import com.example.music.model.SearchList;
 import com.example.music.model.User;
-import com.example.music.model.VideoDetail;
-import com.example.music.model.VideoListItem;
 import com.example.music.service.PlaylistService;
-import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
-import com.example.music.service.serviceImpl.VideoServiceImpl.RelatedResponse;
 import com.example.music.util.MessageUtil;
 
 @Controller
@@ -36,8 +29,8 @@ public class VideoController {
 	@Autowired
 	YoutubeService youtubeService;
 
-	@Autowired
-	VideoService videoService;
+//	@Autowired
+//	VideoService videoService;
 
 	@GetMapping("/")
 	public String home() {
@@ -75,35 +68,5 @@ public class VideoController {
 		}
 
 		return "video/search";
-	}
-
-	@GetMapping("/{id}")
-	public String detail(@PathVariable("id") String id, Model model) {
-		VideoDetail video = videoService.getDetail(id);
-		List<VideoListItem> related = videoService.getRelated(id, 12);
-		RelatedResponse resp = videoService.getRelatedPage(id, null, 12);
-
-		model.addAttribute("video", video);
-		model.addAttribute("related", related);
-		model.addAttribute("nextPageToken", resp.getNextPageToken());
-
-		return "video/video";
-	}
-
-	@GetMapping("/{id}/related")
-	@ResponseBody
-	public RelatedResponse moreRelated(@PathVariable String id, @RequestParam(required = false) String pageToken,
-			@RequestParam(defaultValue = "12") int size) {
-		return videoService.getRelatedPage(id, pageToken, size);
-	}
-
-	@GetMapping("/{id}/comments")
-	@ResponseBody
-	public Comments.Page getComments(@PathVariable("id") String videoId,
-			@RequestParam(value = "pageToken", required = false) String pageToken,
-			@RequestParam(value = "order", required = false) String order, // "time" | "relevance"
-			@RequestParam(value = "size", required = false) Integer pageSize // 1~100
-	) {
-		return videoService.getComments(videoId, pageToken, order, pageSize);
 	}
 }
