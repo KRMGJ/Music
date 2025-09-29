@@ -115,7 +115,7 @@
 				<div id="relList">
 					<c:forEach var="r" items="${related}">
 						<a class="rel-item text-decoration-none text-reset"
-							href="/video/${r.id}">
+							href="/youtube/${r.id}">
 							<div class="rel-thumb">
 								<img src="${r.thumbnail}" alt="${r.title}" />
 								<c:if test="${not empty r.formattedDuration}">

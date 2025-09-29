@@ -1,5 +1,5 @@
 $(document).on('click', '#btnToggleDesc', function() {
-	var $desc = $('#descText');
+	const $desc = $('#descText');
 	$desc.toggleClass('expanded');
 	if ($desc.hasClass('expanded')) {
 		$(this).text('접기');
@@ -9,7 +9,7 @@ $(document).on('click', '#btnToggleDesc', function() {
 });
 
 $(document).on('click', '#btnShare', function() {
-	var $btn = $(this);
+	const $btn = $(this);
 	if (navigator.clipboard && navigator.clipboard.writeText) {
 		navigator.clipboard.writeText(location.href)
 			.then(function() {
@@ -21,7 +21,7 @@ $(document).on('click', '#btnShare', function() {
 			});
 	} else {
 		// fallback: execCommand (구형 브라우저 호환)
-		var temp = $('<input>');
+		const temp = $('<input>');
 		$('body').append(temp);
 		temp.val(location.href).select();
 		try {
@@ -37,40 +37,42 @@ $(document).on('click', '#btnShare', function() {
 
 // 플레이리스트 모달 열기
 $(document).on('click', '#btnSave', function() {
-	var videoId = $(this).data('video');
+	const videoId = $(this).data('video');
 	$('#modalVideoId').val(videoId);
-	var modal = new bootstrap.Modal(document.getElementById('playlistModal'));
+	const modal = new bootstrap.Modal(document.getElementById('playlistModal'));
 	modal.show();
 });
 
 // 추천 영상 더보기
 $(document).on('click', '#btnMore', function() {
-	var $btn = $(this);
-	var token = $btn.data('token') || '';
-	var url = location.pathname + '/related?size=12';
+	const $btn = $(this);
+	const token = $btn.data('token') || '';
+	let url = location.pathname + '/related?size=12';
 	if (token) url += '&pageToken=' + token;
 
 	$btn.prop('disabled', true).text('불러오는 중…');
 
 	$.getJSON(url)
 		.done(function(resp) {
-			var items = resp.items || [];
+			const items = resp.items || [];
 			if (items.length === 0) { $btn.hide(); return; }
 
-			for (var i = 0; i < items.length; i++) {
-				var r = items[i];
-				var html = ''
-					+ '<a class="rel-item text-decoration-none text-reset" href="/video/' + r.id + '">'
-					+ '  <div class="rel-thumb"><img src="' + (r.thumbnail || '') + '" alt="' + (r.title || '') + '"/>';
-				if (r.formattedDuration) html += '<span class="rel-dur">' + r.formattedDuration + '</span>';
-				html += '  </div>'
-					+ '  <div>'
-					+ '    <div style="font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">'
-					+ (r.title || '') + '</div>'
-					+ '    <div class="rel-meta">' + (r.channelTitle || '') + '</div>'
-					+ '    <div class="rel-meta">조회수 ' + (r.formattedViewCount || '') + ' · ' + (r.publishedDate || '') + '</div>'
-					+ '  </div>'
-					+ '</a>';
+			for (let i = 0; i < items.length; i++) {
+				const r = items[i];
+				const html = `
+					<a class="rel-item text-decoration-none text-reset" href="/video/${r.id}">
+						<div class="rel-thumb">
+							<img src="${r.thumbnail || ''}" alt="${r.title || ''}"/>
+							${r.formattedDuration ? `<span class="rel-dur">${r.formattedDuration}</span>` : ''}
+						</div>
+						<div>
+							<div style="font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+								${r.title || ''}
+							</div>
+							<div class="rel-meta">${r.channelTitle || ''}</div>
+							<div class="rel-meta">조회수 ${r.formattedViewCount || ''} · ${r.publishedDate || ''}</div>
+						</div>
+					</a>`;
 				$('#relList').append(html);
 			}
 

@@ -1,9 +1,11 @@
 package com.example.music.service.api;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -213,7 +215,7 @@ public class YoutubeApiClient {
 		if (channelIds == null || channelIds.isEmpty()) {
 			return java.util.Collections.emptyMap();
 		}
-		java.util.Map<String, String> out = new java.util.HashMap<>();
+		Map<String, String> out = new HashMap<>();
 		final int chunkSize = 50;
 		for (int i = 0; i < channelIds.size(); i += chunkSize) {
 			int end = Math.min(i + chunkSize, channelIds.size());
@@ -246,9 +248,9 @@ public class YoutubeApiClient {
 	 */
 	public Map<String, JsonNode> fetchChannelsDetails(java.util.List<String> channelIds) throws Exception {
 		if (channelIds == null || channelIds.isEmpty()) {
-			return java.util.Collections.emptyMap();
+			return Collections.emptyMap();
 		}
-		Map<String, JsonNode> out = new java.util.HashMap<>();
+		Map<String, JsonNode> out = new HashMap<>();
 		final int chunk = 50;
 		for (int i = 0; i < channelIds.size(); i += chunk) {
 			int end = Math.min(i + chunk, channelIds.size());
@@ -282,8 +284,7 @@ public class YoutubeApiClient {
 
 		StringBuilder url = new StringBuilder(SEARCH_URL).append("?part=snippet").append("&type=video")
 				.append("&maxResults=").append(maxResults > 0 ? maxResults : 12).append("&q=")
-				.append(java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8)).append("&key=")
-				.append(API_KEY);
+				.append(URLEncoder.encode(query, StandardCharsets.UTF_8)).append("&key=").append(API_KEY);
 
 		if (pageToken != null && !pageToken.isEmpty()) {
 			url.append("&pageToken=").append(pageToken);
@@ -301,7 +302,7 @@ public class YoutubeApiClient {
 	 * @param pageSize  1~100 (null 또는 범위 밖이면 20)
 	 */
 	public CommentThreadListResponse fetchCommentThreads(String videoId, String pageToken, String order,
-			Integer pageSize) throws java.io.IOException {
+			Integer pageSize) throws IOException {
 		if (order == null || order.isBlank()) {
 			order = "time";
 		}

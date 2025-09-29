@@ -32,6 +32,7 @@ import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
 import com.example.music.service.api.YoutubeApiClient;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.youtube.model.Comment;
 import com.google.api.services.youtube.model.CommentSnippet;
 import com.google.api.services.youtube.model.CommentThread;
@@ -368,7 +369,7 @@ public class YoutubeServiceImpl implements YoutubeService {
 			return Comments.Page.builder().items(list).nextPageToken(resp.getNextPageToken())
 					.resultsPerPage(resultsPerPage).totalResults(totalResults).commentsDisabled(false).build();
 
-		} catch (com.google.api.client.googleapis.json.GoogleJsonResponseException gjre) {
+		} catch (GoogleJsonResponseException gjre) {
 			String reason = null;
 			if (gjre.getDetails() != null && gjre.getDetails().getErrors() != null
 					&& !gjre.getDetails().getErrors().isEmpty()) {
