@@ -13,6 +13,7 @@
 <meta property="og:url" content="${pageContext.request.requestURL}" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="/resources/css/video/video.css" />
+<link rel="stylesheet" href="/resources/css/video/comments.css" />
 </head>
 <body>
 	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
@@ -60,6 +61,24 @@
 					<div id="descText" class="desc-text">${video.description}</div>
 					<div id="btnToggleDesc" class="toggle-more mt-2 text-primary">더보기</div>
 				</div>
+				
+				<section id="comments" class="comment-section" data-video="${video.id}">
+				<div
+					class="comment-header d-flex align-items-center justify-content-between">
+					<h3 class="mb-0">댓글</h3>
+					<div class="comment-controls">
+						<select id="commentOrder" class="form-select form-select-sm"
+							style="width: auto;">
+							<option value="time" selected>최신순</option>
+							<option value="relevance">인기순</option>
+						</select>
+					</div>
+				</div>
+			
+				<div id="commentList" class="mt-3"></div>
+			
+				<button id="btnMoreComments" class="btn btn-light mt-2 d-none" data-token="">댓글 더보기</button>
+			</section>
 			</main>
 
 			<!-- 추천 영상 -->
@@ -116,5 +135,6 @@
 	<script
 		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="/resources/js/video/video.js"></script>
+	<script src="/resources/js/video/comments.js"></script>
 </body>
 </html>

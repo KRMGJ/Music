@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class YoutubeApiClient {
-	
+
 	@Autowired
 	YouTube Youtube;
 
@@ -159,10 +159,12 @@ public class YoutubeApiClient {
 		StringBuilder url = new StringBuilder(DETAILS_URL).append("?part=snippet,contentDetails,statistics")
 				.append("&chart=mostPopular").append("&maxResults=").append(maxResults > 0 ? maxResults : 20)
 				.append("&key=").append(API_KEY);
-		if (regionCode != null && !regionCode.isEmpty())
+		if (regionCode != null && !regionCode.isEmpty()) {
 			url.append("&regionCode=").append(regionCode);
-		if (pageToken != null && !pageToken.isEmpty())
+		}
+		if (pageToken != null && !pageToken.isEmpty()) {
 			url.append("&pageToken=").append(pageToken);
+		}
 		return mapper.readTree(sendGetRequest(url.toString())).get("items");
 	}
 
@@ -203,8 +205,9 @@ public class YoutubeApiClient {
 	 * @throws Exception
 	 */
 	public Map<String, String> fetchChannelThumbnails(java.util.List<String> channelIds) throws Exception {
-		if (channelIds == null || channelIds.isEmpty())
+		if (channelIds == null || channelIds.isEmpty()) {
 			return java.util.Collections.emptyMap();
+		}
 		java.util.Map<String, String> out = new java.util.HashMap<>();
 		final int chunkSize = 50;
 		for (int i = 0; i < channelIds.size(); i += chunkSize) {
@@ -212,16 +215,18 @@ public class YoutubeApiClient {
 			String idsParam = String.join(",", channelIds.subList(i, end));
 			String url = CHANNEL_URL + "?part=snippet&id=" + idsParam + "&key=" + API_KEY;
 			JsonNode items = mapper.readTree(sendGetRequest(url)).get("items");
-			if (items == null)
+			if (items == null) {
 				continue;
+			}
 			for (JsonNode it : items) {
 				String id = it.get("id").asText();
 				JsonNode thumbs = it.path("snippet").path("thumbnails");
 				String thumb = thumbs.has("high") ? thumbs.get("high").get("url").asText()
 						: thumbs.has("medium") ? thumbs.get("medium").get("url").asText()
 								: thumbs.has("default") ? thumbs.get("default").get("url").asText() : null;
-				if (thumb != null)
+				if (thumb != null) {
 					out.put(id, thumb);
+				}
 			}
 		}
 		return out;
@@ -279,7 +284,6 @@ public class YoutubeApiClient {
 			url.append("&pageToken=").append(pageToken);
 		}
 
-		log.info("Related by title URL: {}", url.toString());
 		return mapper.readTree(sendGetRequest(url.toString()));
 	}
 
@@ -293,11 +297,13 @@ public class YoutubeApiClient {
 	 */
 	public CommentThreadListResponse fetchCommentThreads(String videoId, String pageToken, String order,
 			Integer pageSize) throws java.io.IOException {
-		if (order == null || order.isBlank())
+		if (order == null || order.isBlank()) {
 			order = "time";
+		}
 		long max = 20;
-		if (pageSize != null && pageSize >= 1 && pageSize <= 100)
+		if (pageSize != null && pageSize >= 1 && pageSize <= 100) {
 			max = pageSize;
+		}
 
 		YouTube.CommentThreads.List req = Youtube.commentThreads().list("snippet,replies").setVideoId(videoId)
 				.setOrder(order).setMaxResults(max).setKey(API_KEY);
@@ -325,7 +331,6 @@ public class YoutubeApiClient {
 		return null;
 	}
 
-	@SuppressWarnings("deprecation")
 	private String sendGetRequest(String urlStr) throws Exception {
 		HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
 		conn.setRequestMethod("GET");

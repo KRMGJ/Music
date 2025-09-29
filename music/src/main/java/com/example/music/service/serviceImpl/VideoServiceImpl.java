@@ -184,8 +184,8 @@ public class VideoServiceImpl implements VideoService {
 							.updatedAt(topSn != null && topSn.getUpdatedAt() != null
 									? topSn.getUpdatedAt().toStringRfc3339()
 									: null)
-							.likeCount(topSn != null ? topSn.getLikeCount() : null)
-							.totalReplyCount(thread.getSnippet() != null ? thread.getSnippet().getTotalReplyCount() : 0);
+							.likeCount(topSn != null ? topSn.getLikeCount() : null).totalReplyCount(
+									thread.getSnippet() != null ? thread.getSnippet().getTotalReplyCount() : 0);
 
 					// 대댓글 (일부만 포함될 수 있음)
 					List<Comments.Reply> replies = new ArrayList<>();
@@ -214,10 +214,35 @@ public class VideoServiceImpl implements VideoService {
 			Integer totalResults = resp.getPageInfo() != null ? resp.getPageInfo().getTotalResults() : null;
 
 			return Comments.Page.builder().items(list).nextPageToken(resp.getNextPageToken())
-					.resultsPerPage(resultsPerPage).totalResults(totalResults).build();
+					.resultsPerPage(resultsPerPage).totalResults(totalResults).commentsDisabled(false).build();
+
+		} catch (com.google.api.client.googleapis.json.GoogleJsonResponseException gjre) {
+			String reason = null;
+			if (gjre.getDetails() != null && gjre.getDetails().getErrors() != null
+					&& !gjre.getDetails().getErrors().isEmpty()) {
+				reason = gjre.getDetails().getErrors().get(0).getReason();
+			}
+
+			String msg;
+			boolean disabled = false;
+
+			if ("commentsDisabled".equalsIgnoreCase(reason)) {
+				msg = "이 영상은 댓글이 사용 중지되었습니다.";
+				disabled = true;
+			} else if ("videoNotFound".equalsIgnoreCase(reason)) {
+				msg = "영상을 찾을 수 없습니다.";
+			} else if ("forbidden".equalsIgnoreCase(reason)) {
+				msg = "이 영상은 접근이 제한되어 댓글을 불러올 수 없습니다.";
+			} else if ("quotaExceeded".equalsIgnoreCase(reason)) {
+				msg = "YouTube API 사용 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.";
+			} else {
+				msg = "댓글을 불러올 수 없습니다. (" + reason + ")";
+			}
+
+			return Comments.Page.builder().items(java.util.Collections.emptyList()).nextPageToken(null)
+					.resultsPerPage(0).totalResults(0).commentsDisabled(disabled).errorMessage(msg).build();
 
 		} catch (Exception e) {
-			log.error("getComments failed for videoId=" + videoId, e);
 			throw new RuntimeException("YouTube 댓글 조회 실패: " + e.getMessage(), e);
 		}
 	}
@@ -230,8 +255,9 @@ public class VideoServiceImpl implements VideoService {
 
 		for (JsonNode it : items) {
 			String vid = optText(it.path("id"), "videoId");
-			if (vid == null || vid.isEmpty() || vid.equals(excludeId))
+			if (vid == null || vid.isEmpty() || vid.equals(excludeId)) {
 				continue;
+			}
 
 			JsonNode sn = it.path("snippet");
 			String vTitle = optText(sn, "title");
@@ -243,8 +269,9 @@ public class VideoServiceImpl implements VideoService {
 			seeds.add(new RelSeed(vid, vTitle, vThumb, vChannelTitle, vPublished));
 		}
 
-		if (ids.isEmpty())
+		if (ids.isEmpty()) {
 			return Collections.emptyList();
+		}
 
 		Map<String, JsonNode> map = youtubeApiClient.fetchVideoDetails(ids);
 
@@ -290,20 +317,25 @@ public class VideoServiceImpl implements VideoService {
 	}
 
 	private static String bestThumbUrl(JsonNode thumbs) {
-		if (thumbs == null || thumbs.isMissingNode())
+		if (thumbs == null || thumbs.isMissingNode()) {
 			return null;
-		if (thumbs.has("high"))
+		}
+		if (thumbs.has("high")) {
 			return optText(thumbs.get("high"), "url");
-		if (thumbs.has("medium"))
+		}
+		if (thumbs.has("medium")) {
 			return optText(thumbs.get("medium"), "url");
-		if (thumbs.has("default"))
+		}
+		if (thumbs.has("default")) {
 			return optText(thumbs.get("default"), "url");
+		}
 		return null;
 	}
 
 	private static String formatDate(String iso) {
-		if (iso == null || iso.isEmpty())
+		if (iso == null || iso.isEmpty()) {
 			return "";
+		}
 		try {
 			OffsetDateTime odt = OffsetDateTime.parse(iso);
 			return DATE_FMT.format(odt);
@@ -313,8 +345,9 @@ public class VideoServiceImpl implements VideoService {
 	}
 
 	private static String formatDuration(String iso) {
-		if (iso == null || iso.isEmpty())
+		if (iso == null || iso.isEmpty()) {
 			return "";
+		}
 		int h = 0, m = 0, s = 0;
 		String t = iso.replace("PT", "");
 		String num = "";
@@ -335,8 +368,9 @@ public class VideoServiceImpl implements VideoService {
 				}
 			}
 		}
-		if (h > 0)
+		if (h > 0) {
 			return String.format("%d:%02d:%02d", h, m, s);
+		}
 		return String.format("%d:%02d", m, s);
 	}
 
@@ -349,18 +383,22 @@ public class VideoServiceImpl implements VideoService {
 	}
 
 	private static String formatViewCountKR(long n) {
-		if (n >= 100_000_000L)
+		if (n >= 100_000_000L) {
 			return (n / 100_000_000L) + "억회";
-		if (n >= 10_000L)
+		}
+		if (n >= 10_000L) {
 			return (n / 10_000L) + "만회";
+		}
 		return String.format("%,d회", n);
 	}
 
 	private static String formatSubscribersKR(long n) {
-		if (n >= 100_000_000L)
+		if (n >= 100_000_000L) {
 			return (n / 100_000_000L) + "억명";
-		if (n >= 10_000L)
+		}
+		if (n >= 10_000L) {
 			return (n / 10_000L) + "만명";
+		}
 		return String.format("%,d명", n);
 	}
 }

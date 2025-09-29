@@ -56,5 +56,7 @@ public class Comments {
 		private String nextPageToken;
 		private Integer resultsPerPage;
 		private Integer totalResults; // YouTube가 정확히 모든 total을 주진 않음. (pageInfo.totalResults)
+		private Boolean commentsDisabled; // 댓글 사용중지 여부
+		private String errorMessage; // 사용자 안내용 메시지
 	}
 }
