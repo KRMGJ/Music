@@ -15,7 +15,7 @@
 
 	<div class="container py-4">
     <!-- 📺 검색 결과 -->
-    <jsp:include page="/WEB-INF/views/video/fragment/searchResultsFragment.jspf" />
+    <jsp:include page="/WEB-INF/views/video/fragment/searchResultsFragment.jsp" />
 
     <!-- ⏩ 페이지 버튼 -->
     <c:if test="${searchResult.totalPages > 1}">

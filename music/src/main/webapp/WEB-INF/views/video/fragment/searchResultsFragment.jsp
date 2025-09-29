@@ -10,38 +10,49 @@
 		<c:forEach var="video" items="${searchResult.videos}">
 			<div class="d-flex mb-4 video-item">
 				<!-- 썸네일 -->
-				<div class="video-thumbnail me-3 position-relative" data-video-id="${video.videoId}">
+				<a class="video-thumbnail me-3 position-relative d-block"
+					href="/youtube/${video.videoId}" data-video-id="${video.videoId}">
 					<img src="${video.thumbnail}" alt="썸네일" class="thumbnail-img" />
 					<div class="video-duration">${video.formattedDuration}</div>
-				</div>
+				</a>
 
 				<!-- 텍스트 영역 -->
 				<div class="flex-grow-1 d-flex flex-column justify-content-between">
 					<div class="d-flex justify-content-between align-items-start">
-						<a href="https://www.youtube.com/watch?v=${video.videoId}" target="_blank" 
-							class="text-decoration-none text-dark fw-bold video-title">${video.title}</a>
+						<!-- (좌) 제목 -->
+						<a href="/youtube/${video.videoId}"
+							class="text-decoration-none text-dark fw-bold video-title">
+							${video.title} </a>
 
-						<div class="dropdown ms-2">
-							<button class="btn btn-sm btn-light dropdown-toggle"
-								type="button" data-bs-toggle="dropdown" aria-expanded="false">
-								⋮</button>
-							<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="#"
-									onclick="openPlaylistModal('${video.videoId}')">플레이리스트에 추가</a></li>
-								<li><a class="dropdown-item"
-									href="https://www.youtube.com/watch?v=${video.videoId}"
-									target="_blank">공유</a></li>
-							</ul>
+						<!-- (우) 원본 보기 + 기존 드롭다운 -->
+						<div class="d-flex align-items-center gap-2 ms-2">
+							<a class="btn btn-outline-secondary btn-sm"
+								href="https://www.youtube.com/watch?v=${video.videoId}"
+								target="_blank" rel="noopener">원본 보기</a>
+
+							<div class="dropdown">
+								<button class="btn btn-sm btn-light dropdown-toggle"
+									type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
+								<ul class="dropdown-menu">
+									<li><a class="dropdown-item" href="#"
+										onclick="openPlaylistModal('${video.videoId}')">플레이리스트에 추가</a></li>
+									<li><a class="dropdown-item"
+										href="https://www.youtube.com/watch?v=${video.videoId}"
+										target="_blank" rel="noopener">공유(유튜브)</a></li>
+								</ul>
+							</div>
 						</div>
 					</div>
 
-					<div class="text-muted mt-1 video-meta">조회수 ${video.formattedViewCount} ·
-						<fmt:formatDate value="${video.publishedDate}" pattern="yyyy년 M월 d일" />
+					<div class="text-muted mt-1 video-meta">
+						조회수 ${video.formattedViewCount} ·
+						<fmt:formatDate value="${video.publishedDate}"
+							pattern="yyyy년 M월 d일" />
 					</div>
 
 					<div class="d-flex align-items-center my-1 channel-info">
-						<img src="${video.channelInfo.channelThumbnail}" alt="채널썸네일" class="channel-thumbnail" /> 
-						<span>${video.channelInfo.channelTitle}</span>
+						<img src="${video.channelInfo.channelThumbnail}" alt="채널썸네일"
+							class="channel-thumbnail" /> <span>${video.channelInfo.channelTitle}</span>
 					</div>
 
 					<div class="text-muted video-description">${video.description}</div>
@@ -64,8 +75,8 @@
 								<c:forEach var="playlist" items="${playlists}">
 									<div class="form-check">
 										<input class="form-check-input" type="radio" name="playlistId"
-											id="playlistId" value="${playlist.id}" required>
-										<label class="form-check-label" for="pl-${playlist.id}">
+											id="playlistId" value="${playlist.id}" required> <label
+											class="form-check-label" for="pl-${playlist.id}">
 											${playlist.title} </label>
 									</div>
 								</c:forEach>
@@ -77,11 +88,11 @@
 					</div>
 				</div>
 			</div>
-
-			<div id="player-${video.videoId}" class="mt-3"></div>
 		</c:forEach>
 	</c:otherwise>
 </c:choose>
-<link rel="stylesheet" href="/resources/css/video/searchResult.css"/>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/resources/css/video/searchResult.css" />
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+	rel="stylesheet">
 <script src="/resources/js/video/searchResults.js"></script>
