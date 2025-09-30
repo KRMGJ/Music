@@ -46,18 +46,54 @@ $(function() {
 
 	// 이름 수정
 	$(document).on('click', '.js-rename', function() {
-		var id = getIdFromButton(this);
-		var next = window.prompt('새 제목을 입력하세요.');
-		if (!next) return;
+		var $card = $(this).closest('.playlist-card');
+		var id = $card.data('pl-id');
+		var $titleDiv = $card.find('.playlist-title');
+		var currentText = $.trim($titleDiv.text());
 
-		$.ajax({
-			type: 'POST',
-			url: '/playlist/rename',
-			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-			data: { id: id, title: $.trim(next) } // ← 축약표현 대신 명시적 키:값
-		})
-			.done(function() { location.reload(); })
-			.fail(function() { alert('제목 변경 실패'); });
+		// 이미 편집 중이면 중복 실행 방지
+		if ($titleDiv.find('input').length) return;
+
+		// input + 버튼 추가
+		var $input = $('<input type="text" class="rename-input"/>')
+			.val(currentText);
+		var $saveBtn = $('<button class="btn primary btn-sm">저장</button>');
+		var $cancelBtn = $('<button class="btn ghost btn-sm">취소</button>');
+
+		// 기존 내용 지우고 편집 UI 삽입
+		$titleDiv.empty().append($input).append($saveBtn).append($cancelBtn);
+		$input.focus().select();
+
+		// 저장 실행
+		function doSave() {
+			var next = $.trim($input.val());
+			if (!next || next === currentText) {
+				cancelEdit();
+				return;
+			}
+			$.ajax({
+				type: 'POST',
+				url: '/playlist/rename',
+				contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+				data: { id: id, title: next }
+			})
+				.done(function() { location.reload(); })
+				.fail(function() { alert('제목 변경 실패'); cancelEdit(); });
+		}
+
+		// 취소 실행
+		function cancelEdit() {
+			$titleDiv.empty().append(
+				$('<a/>').attr('href', '/playlist/' + id).addClass('title-link').text(currentText)
+			);
+		}
+
+		$saveBtn.on('click', doSave);
+		$cancelBtn.on('click', cancelEdit);
+		$input.on('keydown', function(e) {
+			if (e.key === 'Enter') doSave();
+			if (e.key === 'Escape') cancelEdit();
+		});
 	});
 
 	// 삭제

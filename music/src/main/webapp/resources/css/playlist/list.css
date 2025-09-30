@@ -142,6 +142,20 @@
 	color: inherit;
 }
 
+.rename-input {
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	padding: 4px 6px;
+	font-size: 14px;
+	margin-right: 4px;
+}
+
+.btn-sm {
+	font-size: 12px;
+	padding: 4px 6px;
+	margin-left: 2px;
+}
+
 .playlist-meta, .playlist-date {
 	font-size: 13px;
 	color: #666;
