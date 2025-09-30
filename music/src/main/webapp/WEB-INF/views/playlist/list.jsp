@@ -35,8 +35,8 @@
 
 				<!-- 정렬 -->
 				<form method="get" action="/playlist" id="sortForm">
-					<input type="hidden" name="q" value="${fn:escapeXml(param.q)}" /> <select
-						class="sort-select" name="sort" id="sortSelect">
+					<input type="hidden" name="q" value="${fn:escapeXml(param.q)}" />
+					<select class="sort-select" name="sort" id="sortSelect">
 						<option value="created_desc"
 							${param.sort == 'created_desc' ? 'selected':''}>최근 생성순</option>
 						<option value="created_asc"
@@ -73,7 +73,7 @@
 							<a href="/playlist/${pl.id}" class="thumb-link">
 								<div class="thumbnail-wrapper">
 									<img
-										src="${pl.image != null ? pl.image : '/resources/img/placeholder-playlist.jpg'}"
+										src="${pl.image != null ? pl.image : '/resources/images/default-video-thumbnail.jpg'}"
 										alt="${pl.title}" /> <span class="video-count">${pl.videoCount}개
 										영상</span>
 								</div>
