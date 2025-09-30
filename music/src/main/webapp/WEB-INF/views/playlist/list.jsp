@@ -73,7 +73,7 @@
 							<a href="/playlist/${pl.id}" class="thumb-link">
 								<div class="thumbnail-wrapper">
 									<img
-										src="${pl.image != null ? pl.image : '/resources/images/default-video-thumbnail.jpg'}"
+										src="${pl.lastVideoThumbnail != null ? pl.lastVideoThumbnail : '/resources/images/default-video-thumbnail.jpg'}"
 										alt="${pl.title}" /> <span class="video-count">${pl.videoCount}개
 										영상</span>
 								</div>

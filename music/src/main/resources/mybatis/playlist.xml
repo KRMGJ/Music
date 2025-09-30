@@ -18,8 +18,8 @@
 
     <select id="findPlaylistsWithLastThumbnail" resultMap="playlistResultMap">
         SELECT
-        p.id AS playlist_id,
-        p.title AS playlist_title,
+        p.id,
+        p.title,
         last_videos.thumbnail AS last_video_thumbnail,
         p.view_count,
         p.like_count,
