@@ -4,6 +4,7 @@
     <resultMap id="playlistResultMap" type="Playlist">
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
+        <result property="nickname" column="nickname"/>
         <result property="title" column="title"/>
         <result property="image" column="image"/>
         <result property="viewCount" column="view_count"/>
@@ -72,7 +73,8 @@
     <select id="getPlaylistById" resultMap="playlistResultMap" parameterType="int">
         SELECT
         p.*,
-        v.thumbnail AS last_video_thumbnail
+        v.thumbnail AS last_video_thumbnail,
+        u.nickname
         FROM playlists p
         LEFT JOIN (
         SELECT sub.playlist_id, sub.thumbnail
@@ -84,6 +86,7 @@
         ) sub
         WHERE sub.rn = 1
         ) v ON p.id = v.playlist_id
+        JOIN users u ON p.user_id = u.id
         WHERE p.id = #{id}
     </select>
 

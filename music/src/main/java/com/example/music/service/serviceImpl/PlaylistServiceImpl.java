@@ -15,6 +15,9 @@ import com.example.music.model.Video;
 import com.example.music.service.PlaylistService;
 import com.example.music.service.VideoService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class PlaylistServiceImpl implements PlaylistService {
 
@@ -70,7 +73,11 @@ public class PlaylistServiceImpl implements PlaylistService {
 	public List<Video> getVideosByPlaylistId(String playlistId) {
 		List<String> videoIds = playListVideoDao.getVideosByPlaylistId(playlistId);
 		if (videoIds != null && !videoIds.isEmpty()) {
+			// TODO: videos에 channelInfo join해서 가져오기
 			List<Video> videos = videoDao.getVideosByVideoIds(videoIds);
+			for (Video v : videos) {
+				log.info("playlist video: {}", v.getChannelInfo().getChannelThumbnail());
+			}
 			return videos;
 		}
 		return Collections.emptyList();

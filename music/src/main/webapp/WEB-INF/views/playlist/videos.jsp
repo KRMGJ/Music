@@ -43,7 +43,7 @@
 
 				<div class="playlist-info">
 					<h5>${playlist.title}</h5>
-					<p>게시자: ${playlist.userId}</p>
+					<p>게시자: ${playlist.nickname}</p>
 					<p>영상 ${fn:length(playlistVideos)}개</p>
 					<p>조회수 ${playlist.viewCount}</p>
 					<p>좋아요 ${playlist.likeCount}</p>

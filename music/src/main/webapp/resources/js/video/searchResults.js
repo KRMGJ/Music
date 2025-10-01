@@ -14,10 +14,10 @@ $('#addToPlaylistForm').on('submit', function(event) {
 			videoId: videoId
 		},
 		success: function(response) {
-			alert(response); // 서버에서 전달된 메시지 출력
+			alert("플레이리스트 추가 완료");
 		},
 		error: function(error) {
-			alert('Error adding video to playlist');
+			alert("플레이리스트 추가 실패");
 			console.error('Error details:', error);
 		}
 	});
