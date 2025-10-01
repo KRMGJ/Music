@@ -21,7 +21,6 @@ import com.example.music.service.PlaylistService;
 import com.example.music.service.YoutubeService;
 import com.example.music.util.MessageUtil;
 
-
 @Controller
 @RequestMapping("/playlist")
 public class PlaylistController {
@@ -34,13 +33,11 @@ public class PlaylistController {
 
 	@GetMapping("/list")
 	public String getPlaylists(HttpSession session, Model model) {
-		// 1. 로그인한 사용자 정보 가져오기
 		User user = (User) session.getAttribute("loginUser");
 		if (user == null) {
 			MessageUtil.errorMessage("로그인 후 이용해주세요.", "/auth/login", model);
 			return "common/error";
 		}
-		// 2. 사용자의 재생목록 가져오기
 		List<Playlist> playlists = playlistService.getPlaylistsWithLastThumbnail(user.getId());
 		model.addAttribute("playlists", playlists);
 		return "playlist/list";
@@ -48,21 +45,17 @@ public class PlaylistController {
 
 	@GetMapping("/create")
 	public String createPlaylistForm(HttpSession session, Model model) {
-		// 1. 로그인한 사용자 정보 가져오기
 		User user = (User) session.getAttribute("loginUser");
 		if (user == null) {
 			MessageUtil.errorMessage("로그인 후 이용해주세요.", "/auth/login", model);
 			return "common/error";
 		}
-		// 2. 재생목록 생성 폼으로 이동
 		return "playlist/create";
 	}
 
 	@GetMapping("/videos")
 	public String getVideosByPlaylistId(@RequestParam("playlistId") String playlistId, Model model) {
-		// 1. 재생목록에 포함된 비디오 목록 가져오기
 		List<Video> playlistVideos = playlistService.getVideosByPlaylistId(playlistId);
-		// 2. 재생목록 정보 가져오기
 		Playlist playlist = playlistService.getPlaylistByPlaylistId(playlistId);
 		model.addAttribute("playlistVideos", playlistVideos);
 		model.addAttribute("playlist", playlist);

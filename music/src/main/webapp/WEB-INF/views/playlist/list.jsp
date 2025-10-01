@@ -6,20 +6,15 @@
 <head>
 <title>내 플레이리스트</title>
 
-<!-- 고정 경로: CSS -->
 <link rel="stylesheet" href="/resources/css/playlist/list.css" />
-
-<!-- jQuery (필수) -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- 고정 경로: JS -->
 <script src="/resources/js/playlist/list.js"></script>
 </head>
 <body>
 	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
 	<div class="playlist-container">
-		<!-- 상단 툴바 -->
+		
 		<div class="list-toolbar">
 			<div class="list-actions">
 				<strong>내 플레이리스트</strong> <span class="badge">총
@@ -50,7 +45,6 @@
 					</select>
 				</form>
 
-				<!-- 새 플레이리스트 생성 -->
 				<form id="addPlaylistForm" class="create-form">
 					<input id="createTitle" name="title" type="text"
 						placeholder="새 플레이리스트 제목" required />
@@ -59,7 +53,6 @@
 			</div>
 		</div>
 
-		<!-- 목록 그리드 -->
 		<c:choose>
 			<c:when test="${empty playlists}">
 				<div class="empty-state">
@@ -70,7 +63,7 @@
 				<div class="playlist-grid">
 					<c:forEach var="pl" items="${playlists}">
 						<div class="playlist-card" data-pl-id="${pl.id}">
-							<a href="/playlist/${pl.id}" class="thumb-link">
+							<a href="/playlist/videos?playlistId=${pl.id}" class="thumb-link">
 								<div class="thumbnail-wrapper">
 									<img
 										src="${pl.lastVideoThumbnail != null ? pl.lastVideoThumbnail : '/resources/images/default-video-thumbnail.jpg'}"
