@@ -1,11 +1,11 @@
 package com.example.music.model;
 
+import java.sql.Timestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.sql.Timestamp;
 
 @Getter
 @Setter
@@ -23,5 +23,8 @@ public class Video {
 	private Timestamp publishedDate;
 	private long viewCount;
 	private String formattedViewCount;
-	private ChannelInfo channelInfo;
+	private ChannelInfo channelInfo; // 채널 정보 추가
+	private String channelTitle;
+	private String channelThumbnail;
+	private long subscriberCount;
 }

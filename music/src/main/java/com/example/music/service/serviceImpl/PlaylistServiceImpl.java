@@ -73,11 +73,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 	public List<Video> getVideosByPlaylistId(String playlistId) {
 		List<String> videoIds = playListVideoDao.getVideosByPlaylistId(playlistId);
 		if (videoIds != null && !videoIds.isEmpty()) {
-			// TODO: videos에 channelInfo join해서 가져오기
 			List<Video> videos = videoDao.getVideosByVideoIds(videoIds);
-			for (Video v : videos) {
-				log.info("playlist video: {}", v.getChannelInfo().getChannelThumbnail());
-			}
 			return videos;
 		}
 		return Collections.emptyList();

@@ -62,8 +62,6 @@
 			<div class="sort-bar">
 				<h5>정렬</h5>
 				<select onchange="location.href=this.value" class="sort-select">
-					<option value="?sort=custom"
-						${selectedSortLabel == '직접' ? 'selected' : ''}>직접</option>
 					<option value="?sort=addedDesc"
 						${selectedSortLabel == '추가된 날짜(최신순)' ? 'selected' : ''}>추가된
 						날짜(최신순)</option>
@@ -118,8 +116,8 @@
 										pattern="yyyy년 M월 d일" />
 								</div>
 								<div class="video-channel">
-									<img src="${video.channelInfo.channelThumbnail}"
-										class="channel-thumbnail" /> <span>${video.channelInfo.channelTitle}</span>
+									<img src="${video.channelThumbnail}"
+										class="channel-thumbnail" /> <span>${video.channelTitle}</span>
 								</div>
 								<div class="video-description">
 									${fn:escapeXml(video.description)}</div>

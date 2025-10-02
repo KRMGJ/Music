@@ -128,7 +128,9 @@ public class YoutubeServiceImpl implements YoutubeService {
 				ChannelInfo channelInfo = channelInfoMap.get(channelId);
 
 				videos.add(new Video(videoId, channelId, title, thumbnail, description, durationStr, durationSec,
-						formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo));
+						formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo,
+						channelInfo.getChannelTitle(), channelInfo.getChannelThumbnail(),
+						channelInfo.getSubscriberCount()));
 			}
 
 			// 정렬
@@ -201,7 +203,8 @@ public class YoutubeServiceImpl implements YoutubeService {
 			ChannelInfo channelInfo = new ChannelInfo(channelId, channelTitle, channelThumb, subscriberCount);
 
 			Video video = new Video(videoId, channelId, title, thumbnail, description, durationStr, durationSec,
-					formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo);
+					formattedDuration, publishedDate, viewCount, formattedViewCount, channelInfo,
+					channelInfo.getChannelTitle(), channelInfo.getChannelThumbnail(), channelInfo.getSubscriberCount());
 
 			// 3.1. 채널 정보 DB에 저장
 			ChannelInfo existingChannel = channelInfoDao.getChannelInfoById(channelId);

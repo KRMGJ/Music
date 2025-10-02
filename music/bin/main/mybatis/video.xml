@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="video">
-
-	<resultMap id="ChannelInfoMap" type="ChannelInfo">
-		<id property="channelId" column="ci_channel_id" />
-		<result property="channelTitle" column="ci_channel_title" />
-		<result property="channelThumbnail"
-			column="ci_channel_thumbnail" />
-		<result property="subscriberCount" column="ci_subscriber_count" />
-	</resultMap>
-
 	<resultMap id="videoResultMap" type="Video">
 		<id property="videoId" column="id" />
 		<result property="channelId" column="channel_id" />
@@ -17,29 +8,24 @@
 		<result property="thumbnail" column="thumbnail" />
 		<result property="description" column="description" />
 		<result property="duration" column="duration" />
-		<result property="durationInSeconds"
-			column="duration_in_seconds" />
-		<result property="formattedDuration"
-			column="formatted_duration" />
+		<result property="durationInSeconds" column="duration_in_seconds" />
+		<result property="formattedDuration" column="formatted_duration" />
 		<result property="publishedDate" column="published_date" />
 		<result property="viewCount" column="view_count" />
-		<result property="formattedViewCount"
-			column="formatted_view_count" />
-		<association property="channelInfo"
-			resultMap="ChannelInfoMap" columnPrefix="CI_" />
+		<result property="formattedViewCount" column="formatted_view_count" />
+		<result property="channelTitle" column="channel_title" />
+		<result property="channelThumbnail" column="channel_thumbnail" />
+		<result property="subscriberCount" column="subscriber_count" />
 	</resultMap>	
 
-	<resultMap id="VideoSummaryMap"
-		type="com.example.music.model.VideoSummary">
+	<resultMap id="VideoSummaryMap" type="com.example.music.model.VideoSummary">
 		<id property="id" column="id" />
 		<result property="title" column="title" />
 		<result property="thumbnail" column="thumbnail" />
 		<result property="description" column="description" />
-		<result property="formattedDuration"
-			column="formatted_duration" />
+		<result property="formattedDuration" column="formatted_duration" />
 		<result property="viewCount" column="view_count" />
-		<result property="formattedViewCount"
-			column="formatted_view_count" />
+		<result property="formattedViewCount" column="formatted_view_count" />
 		<result property="publishedDate" column="published_date" />
 		<result property="channelTitle" column="channel_title" />
 		<result property="channelThumbnail" column="channel_thumbnail" />
@@ -49,13 +35,13 @@
 		INSERT INTO videos (id,
 		channel_id, title, thumbnail, description, duration,
 		duration_in_seconds, formatted_duration, published_date, view_count,
-		formatted_view_count)
+		formatted_view_count, channel_title, channel_thumbnail, subscriber_count)
 		VALUES (#{videoId}, #{channelId}, #{title},
 		#{thumbnail}, #{description},
 		#{duration}, #{durationInSeconds},
 		#{formattedDuration},
 		#{publishedDate}, #{viewCount},
-		#{formattedViewCount})
+		#{formattedViewCount}, #{channelTitle}, #{channelThumbnail}, #{subscriberCount})
 	</insert>
 
 	<select id="getVideoById" resultMap="videoResultMap">
@@ -73,32 +59,12 @@
 	</select>
 
 	<select id="getVideosByVideoIds" resultMap="videoResultMap">
-		SELECT
-		v.id,
-		v.channel_id,
-		v.title,
-		v.thumbnail,
-		v.description,
-		v.duration,
-		v.duration_in_seconds,
-		v.formatted_duration,
-		v.published_date,
-		v.view_count,
-		v.formatted_view_count,
-		c.channel_id AS ci_channel_id,
-		c.channel_title AS ci_channel_title,
-		c.channel_thumbnail AS ci_channel_thumbnail,
-		c.subscriber_count AS ci_subscriber_count
-		FROM videos v
-		LEFT JOIN channel_info c ON v.channel_id = c.channel_id
-		WHERE v.id IN
+		SELECT * FROM videos WHERE id IN
 		<foreach item="videoId" collection="list" open="("
 			separator="," close=")">
 			#{videoId}
 		</foreach>
 	</select>
-
-
 
 	<update id="updateVideo" parameterType="String">
 		UPDATE videos
