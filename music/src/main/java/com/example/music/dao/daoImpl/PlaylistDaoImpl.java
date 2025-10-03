@@ -60,19 +60,4 @@ public class PlaylistDaoImpl implements PlaylistDao {
 		List<Playlist> playList = sqlSession.selectList("playlist.findPlaylistsWithLastThumbnail", userId);
 		return playList;
 	}
-
-	@Override
-	public void incrementViewCount(String id) {
-		sqlSession.update("playlist.incrementViewCount", id);
-	}
-
-	@Override
-	public void incrementLikeCount(String id) {
-		sqlSession.update("playlist.incrementLikeCount", id);
-	}
-
-	@Override
-	public void decrementLikeCount(String id) {
-		sqlSession.update("playlist.decrementLikeCount", id);
-	}
 }

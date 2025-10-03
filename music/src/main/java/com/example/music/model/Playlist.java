@@ -17,9 +17,6 @@ public class Playlist {
 	private String userId;
 	private String nickname;
 	private String title;
-	private String image;
-	private int viewCount;
-	private int likeCount;
 	private Timestamp createdDate;
 	private int playlistId;
 	private String playlistTitle;

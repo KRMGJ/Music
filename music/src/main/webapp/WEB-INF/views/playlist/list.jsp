@@ -76,8 +76,6 @@
 								<div class="playlist-title" title="${pl.title}">
 									<a href="/playlist/${pl.id}" class="title-link">${pl.title}</a>
 								</div>
-								<div class="playlist-meta">조회수 ${pl.viewCount} · 좋아요
-									${pl.likeCount}</div>
 								<div class="playlist-date">
 									<fmt:formatDate value="${pl.createdDate}" pattern="yyyy.MM.dd" />
 									생성

@@ -45,8 +45,6 @@
 					<h5>${playlist.title}</h5>
 					<p>게시자: ${playlist.nickname}</p>
 					<p>영상 ${fn:length(playlistVideos)}개</p>
-					<p>조회수 ${playlist.viewCount}</p>
-					<p>좋아요 ${playlist.likeCount}</p>
 					<p>생성일 ${playlist.createdDate}</p>
 					<div class="playlist-buttons">
 						<button class="btn dark">▶ 모두 재생</button>
