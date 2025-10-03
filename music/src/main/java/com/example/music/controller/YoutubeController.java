@@ -20,8 +20,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.music.handler.GoogleAccessTokenResolver;
 import com.example.music.model.CommentPostRequest;
 import com.example.music.model.Comments;
+import com.example.music.model.Playlist;
+import com.example.music.model.User;
 import com.example.music.model.VideoDetail;
 import com.example.music.model.VideoListItem;
+import com.example.music.service.PlaylistService;
 import com.example.music.service.YoutubeService;
 import com.example.music.service.serviceImpl.YoutubeServiceImpl.RelatedResponse;
 
@@ -36,17 +39,24 @@ public class YoutubeController {
 	YoutubeService youtubeService;
 
 	@Autowired
+	PlaylistService playlistService;
+
+	@Autowired
 	GoogleAccessTokenResolver tokenResolver;
 
 	@GetMapping("/{id}")
-	public String detail(@PathVariable("id") String id, Model model) {
+	public String detail(@PathVariable("id") String id, Model model, HttpSession session) {
+		User user = (User) session.getAttribute("loginUser");
+
 		VideoDetail video = youtubeService.getDetail(id);
 		List<VideoListItem> related = youtubeService.getRelated(id, 12);
 		RelatedResponse resp = youtubeService.getRelatedPage(id, null, 12);
+		List<Playlist> playlists = playlistService.getPlaylistsWithLastThumbnail(user.getId());
 
 		model.addAttribute("video", video);
 		model.addAttribute("related", related);
 		model.addAttribute("nextPageToken", resp.getNextPageToken());
+		model.addAttribute("playlists", playlists);
 
 		return "youtube/video";
 	}

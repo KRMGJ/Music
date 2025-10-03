@@ -141,20 +141,30 @@
 
 	<!-- 모달 -->
 	<div class="modal fade" id="playlistModal" tabindex="-1"
-		aria-hidden="true">
+		aria-labelledby="playlistModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">플레이리스트에 저장</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-				</div>
-				<div class="modal-body">
-					<input type="hidden" id="modalVideoId" /> 로그인 후 사용 가능합니다.
-				</div>
-				<div class="modal-footer">
-					<button class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-					<button class="btn btn-primary">저장</button>
-				</div>
+				<form id="addToPlaylistForm">
+					<input type="hidden" name="videoId" id="modalVideoId" required />
+					<div class="modal-header">
+						<h5 class="modal-title" id="playlistModalLabel">플레이리스트에 추가</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="닫기"></button>
+					</div>
+					<div class="modal-body">
+						<c:forEach var="playlist" items="${playlists}">
+							<div class="form-check">
+								<input class="form-check-input" type="radio" name="playlistId"
+									id="playlistId" value="${playlist.id}" required> <label
+									class="form-check-label" for="pl-${playlist.id}">
+									${playlist.title} </label>
+							</div>
+						</c:forEach>
+					</div>
+					<div class="modal-footer">
+						<button type="submit" class="btn btn-primary">추가</button>
+					</div>
+				</form>
 			</div>
 		</div>
 	</div>
@@ -184,5 +194,6 @@
 		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="/resources/js/youtube/video.js"></script>
 	<script src="/resources/js/youtube/comments.js"></script>
+	<script src="/resources/js/video/searchResults.js"></script>
 </body>
 </html>
