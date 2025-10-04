@@ -27,9 +27,6 @@
 		<div class="playlist-left">
 			<div class="playlist-card">
 				<c:choose>
-					<c:when test="${not empty playlist.image}">
-						<img class="playlist-thumbnail" src="${playlist.image}" />
-					</c:when>
 					<c:when test="${not empty playlist.lastVideoThumbnail}">
 						<img class="playlist-thumbnail"
 							src="${playlist.lastVideoThumbnail}" />
@@ -41,16 +38,17 @@
 				</c:choose>
 
 
-				<div class="playlist-info">
-					<h5>${playlist.title}</h5>
-					<p>게시자: ${playlist.nickname}</p>
-					<p>영상 ${fn:length(playlistVideos)}개</p>
-					<p>생성일 ${playlist.createdDate}</p>
-					<div class="playlist-buttons">
-						<button class="btn dark">▶ 모두 재생</button>
-						<button class="btn light">+ 추가</button>
-						<button class="btn light">✏️ 편집</button>
-						<button class="btn light">↗ 공유</button>
+				<div id="playlistInfo" class="playlist-info"
+					data-playlist-id="${playlist.id}">
+					<h5 class="mb-1">${playlist.title}</h5>
+					<p class="text-muted mb-2">게시자: ${playlist.nickname} · 영상
+						${fn:length(playlistVideos)}개 · ${playlist.createdDate}</p>
+
+					<div class="playlist-actions">
+						<button id="btnPlayAll" class="btn dark" aria-label="모두 재생">▶
+							재생</button>
+						<button id="btnShare" class="btn light" aria-label="공유 링크 복사">↗
+							공유</button>
 					</div>
 				</div>
 			</div>
@@ -58,20 +56,16 @@
 
 		<div class="playlist-right">
 			<div class="sort-bar">
-				<h5>정렬</h5>
-				<select onchange="location.href=this.value" class="sort-select">
-					<option value="?sort=addedDesc"
-						${selectedSortLabel == '추가된 날짜(최신순)' ? 'selected' : ''}>추가된
-						날짜(최신순)</option>
-					<option value="?sort=addedAsc"
-						${selectedSortLabel == '추가된 날짜(오래된순)' ? 'selected' : ''}>추가된
-						날짜(오래된순)</option>
-					<option value="?sort=popular"
-						${selectedSortLabel == '인기순' ? 'selected' : ''}>인기순</option>
-					<option value="?sort=dateDesc"
-						${selectedSortLabel == '게시일(최신순)' ? 'selected' : ''}>게시일(최신순)</option>
-					<option value="?sort=dateAsc"
-						${selectedSortLabel == '게시일(오래된순)' ? 'selected' : ''}>게시일(오래된순)</option>
+				<div></div>
+				<select id="sortSelect" class="sort-select">
+					<option value="latest">최신순</option>
+					<option value="oldest">오래된순</option>
+					<option value="viewsDesc">조회수많은순</option>
+					<option value="viewsAsc">조회수적은순</option>
+					<option value="lengthDesc">길이긴순</option>
+					<option value="lengthAsc">길이짧은순</option>
+					<option value="titleAsc">이름순(A→Z)</option>
+					<option value="titleDesc">이름역순(Z→A)</option>
 				</select>
 			</div>
 
@@ -80,49 +74,53 @@
 					<p class="no-videos">이 플레이리스트에 영상이 없습니다.</p>
 				</c:when>
 				<c:otherwise>
-					<c:forEach var="video" items="${playlistVideos}">
-						<div class="video-card">
-							<div class="video-thumbnail-container">
-								<a href="https://www.youtube.com/watch?v=${video.videoId}"
-									target="_blank"> <img src="${video.thumbnail}" alt="썸네일"
-									class="video-thumbnail" />
-									<div class="video-duration">${video.formattedDuration}</div>
-								</a>
-							</div>
-							<div class="video-info">
-								<div class="video-title-container">
+					<div id="videoList">
+						<c:forEach var="video" items="${playlistVideos}">
+							<div class="video-card" data-published="${video.publishedDate}"
+								data-duration="${video.durationInSeconds}"
+								data-title="${fn:toLowerCase(video.title)}"
+								data-views="${video.viewCount}">
+								<div class="video-thumbnail-container">
 									<a href="https://www.youtube.com/watch?v=${video.videoId}"
-										target="_blank" class="video-title">
-										${fn:escapeXml(video.title)} </a>
-									<div class="options-wrapper">
-										<button class="more-btn" onclick="toggleMenu(this)">⋮</button>
-										<div class="dropdown-menu">
-											<form action="/playlist/remove" method="post">
-												<input type="hidden" name="videoId" value="${video.videoId}" />
-												<input type="hidden" name="playlistId"
-													value="${playlist.id}" />
-												<button type="submit" class="menu-item">리스트에서 삭제</button>
-											</form>
-											<button class="menu-item"
-												onclick="shareVideo('${video.videoId}')">공유</button>
+										target="_blank"> <img src="${video.thumbnail}" alt="썸네일"
+										class="video-thumbnail" />
+										<div class="video-duration">${video.formattedDuration}</div>
+									</a>
+								</div>
+								<div class="video-info">
+									<div class="video-title-container">
+										<a href="https://www.youtube.com/watch?v=${video.videoId}"
+											target="_blank" class="video-title">
+											${fn:escapeXml(video.title)} </a>
+										<div class="options-wrapper">
+											<button class="more-btn" onclick="toggleMenu(this)">⋮</button>
+											<div class="dropdown-menu">
+												<form action="/playlist/remove" method="post">
+													<input type="hidden" name="videoId"
+														value="${video.videoId}" /> <input type="hidden"
+														name="playlistId" value="${playlist.id}" />
+													<button type="submit" class="menu-item">리스트에서 삭제</button>
+												</form>
+												<button class="menu-item"
+													onclick="shareVideo('${video.videoId}')">공유</button>
+											</div>
 										</div>
 									</div>
+									<div class="video-meta">
+										조회수 ${video.formattedViewCount} ·
+										<fmt:formatDate value="${video.publishedDate}"
+											pattern="yyyy년 M월 d일" />
+									</div>
+									<div class="video-channel">
+										<img src="${video.channelThumbnail}" class="channel-thumbnail" />
+										<span>${video.channelTitle}</span>
+									</div>
+									<div class="video-description">
+										${fn:escapeXml(video.description)}</div>
 								</div>
-								<div class="video-meta">
-									조회수 ${video.formattedViewCount} ·
-									<fmt:formatDate value="${video.publishedDate}"
-										pattern="yyyy년 M월 d일" />
-								</div>
-								<div class="video-channel">
-									<img src="${video.channelThumbnail}"
-										class="channel-thumbnail" /> <span>${video.channelTitle}</span>
-								</div>
-								<div class="video-description">
-									${fn:escapeXml(video.description)}</div>
 							</div>
-						</div>
-					</c:forEach>
-
+						</c:forEach>
+					</div>
 				</c:otherwise>
 			</c:choose>
 		</div>

@@ -395,29 +395,7 @@ public class YoutubeApiClient {
 		return yt.commentThreads().insert("snippet", body).execute();
 	}
 
-//	private YouTube buildClient(String accessToken) {
-//		GoogleCredential cred = new GoogleCredential().setAccessToken(accessToken);
-//		return new YouTube.Builder(cred.getTransport(), cred.getJsonFactory(),
-//				req -> req.getHeaders().setAuthorization("Bearer " + accessToken)).setApplicationName("music").build();
-//	}
-
-	@SuppressWarnings("unused")
-	private String bestThumbUrl(JsonNode thumbs) {
-		if (thumbs == null || thumbs.isMissingNode()) {
-			return null;
-		}
-		if (thumbs.has("high")) {
-			return thumbs.get("high").get("url").asText();
-		}
-		if (thumbs.has("medium")) {
-			return thumbs.get("medium").get("url").asText();
-		}
-		if (thumbs.has("default")) {
-			return thumbs.get("default").get("url").asText();
-		}
-		return null;
-	}
-
+	@SuppressWarnings("deprecation")
 	private String sendGetRequest(String urlStr) throws Exception {
 		HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
 		conn.setRequestMethod("GET");
