@@ -20,10 +20,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.music.handler.GoogleAccessTokenResolver;
 import com.example.music.model.CommentPostRequest;
 import com.example.music.model.Comments;
+import com.example.music.model.PageResponse;
 import com.example.music.model.Playlist;
 import com.example.music.model.User;
 import com.example.music.model.VideoDetail;
 import com.example.music.model.VideoListItem;
+import com.example.music.model.YoutubePlaylist;
 import com.example.music.service.PlaylistService;
 import com.example.music.service.YoutubeService;
 import com.example.music.service.serviceImpl.YoutubeServiceImpl.RelatedResponse;
@@ -97,8 +99,6 @@ public class YoutubeController {
 				return ResponseEntity.status(401).body("{\"message\":\"세션 만료 또는 권한 없음. 다시 로그인해 주세요.\"}");
 			}
 
-			log.info("youtubeService bean = {}", youtubeService);
-
 			Object result = youtubeService.postComment(req, accessToken);
 			return ResponseEntity.ok(result);
 		} catch (com.google.api.client.googleapis.json.GoogleJsonResponseException e) {
@@ -117,5 +117,18 @@ public class YoutubeController {
 			return ResponseEntity.status(500).body(Map.of("message", "댓글 등록 실패: 서버 오류", "error",
 					e.getClass().getSimpleName(), "detail", String.valueOf(e.getMessage())));
 		}
+	}
+
+	@GetMapping("/my-playlists")
+	public String myPlaylists(@RequestParam(defaultValue = "24") int size,
+			@RequestParam(required = false) String pageToken, HttpSession session, Model model) {
+		String accessToken = tokenResolver.getValidAccessToken(session);
+		PageResponse<YoutubePlaylist> page = youtubeService.getMyPlaylists(accessToken, size, pageToken);
+
+		model.addAttribute("items", page.getItems());
+		model.addAttribute("nextPageToken", page.getNextPageToken());
+		model.addAttribute("prevPageToken", page.getPrevPageToken());
+		model.addAttribute("size", size);
+		return "playlist/list";
 	}
 }

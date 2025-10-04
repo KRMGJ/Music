@@ -16,7 +16,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +42,9 @@ public class YoutubeApiClient {
 
 	@Autowired
 	YouTube Youtube;
+
+	@Autowired
+	RestTemplate restTemplate;
 
 //	private static final String API_KEY = "AIzaSyBEZw8L1Tfnmc0O_qlqtOltVDTV8JRZPRc";
 	private static final String API_KEY = "AIzaSyB-w0ykEEHVWU1eKqiJ6a8OQHs_CMX6c_g";
@@ -393,6 +401,58 @@ public class YoutubeApiClient {
 		body.setSnippet(threadSnippet);
 
 		return yt.commentThreads().insert("snippet", body).execute();
+	}
+
+	/**
+	 * 내(로그인한 사용자)의 플레이리스트 목록 조회
+	 * 
+	 * @param accessToken OAuth2 Access Token (Google)
+	 * @param maxResults  1~50
+	 * @param pageToken   null 가능 (다음 페이지용)
+	 */
+	public JsonNode listMyPlaylists(String accessToken, int maxResults, String pageToken) {
+		StringBuilder url = new StringBuilder("https://www.googleapis.com/youtube/v3/playlists")
+				.append("?part=snippet,contentDetails").append("&mine=true").append("&maxResults=").append(maxResults);
+
+		if (pageToken != null && !pageToken.isEmpty()) {
+			url.append("&pageToken=").append(pageToken);
+		}
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth(accessToken);
+		HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+		ResponseEntity<String> resp = restTemplate.exchange(url.toString(), HttpMethod.GET, entity, String.class);
+
+		try {
+			return mapper.readTree(resp.getBody());
+		} catch (Exception e) {
+			throw new RuntimeException("유튜브 플레이리스트 조회 실패", e);
+		}
+	}
+
+	/**
+	 * 특정 플레이리스트의 아이템(영상들) 조회도 자주 필요합니다. (선택)
+	 */
+	public JsonNode listPlaylistItems(String accessToken, String playlistId, int maxResults, String pageToken) {
+		StringBuilder url = new StringBuilder("https://www.googleapis.com/youtube/v3/playlistItems")
+				.append("?part=snippet,contentDetails").append("&playlistId=").append(playlistId).append("&maxResults=")
+				.append(maxResults);
+
+		if (pageToken != null && !pageToken.isEmpty()) {
+			url.append("&pageToken=").append(pageToken);
+		}
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth(accessToken);
+		HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+		ResponseEntity<String> resp = restTemplate.exchange(url.toString(), HttpMethod.GET, entity, String.class);
+		try {
+			return mapper.readTree(resp.getBody());
+		} catch (Exception e) {
+			throw new RuntimeException("유튜브 플레이리스트 아이템 조회 실패", e);
+		}
 	}
 
 	@SuppressWarnings("deprecation")

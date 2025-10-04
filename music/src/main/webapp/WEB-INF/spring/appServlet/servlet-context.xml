@@ -35,6 +35,9 @@
 		<beans:property name="prefix" value="/WEB-INF/views/" />
 		<beans:property name="suffix" value=".jsp" />
 	</beans:bean>
+	
+	<!-- RestTemplate -->
+	<beans:bean id="restTemplate" class="org.springframework.web.client.RestTemplate"/>
 
 	<!-- 인터셉터 등록 -->
 	<mvc:interceptors>

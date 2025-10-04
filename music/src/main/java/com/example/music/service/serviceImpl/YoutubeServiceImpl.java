@@ -24,10 +24,12 @@ import com.example.music.dao.VideoDao;
 import com.example.music.model.ChannelInfo;
 import com.example.music.model.CommentPostRequest;
 import com.example.music.model.Comments;
+import com.example.music.model.PageResponse;
 import com.example.music.model.SearchList;
 import com.example.music.model.Video;
 import com.example.music.model.VideoDetail;
 import com.example.music.model.VideoListItem;
+import com.example.music.model.YoutubePlaylist;
 import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
 import com.example.music.service.api.YoutubeApiClient;
@@ -398,8 +400,8 @@ public class YoutubeServiceImpl implements YoutubeService {
 				msg = "댓글을 불러올 수 없습니다. (" + reason + ")";
 			}
 
-			return Comments.Page.builder().items(java.util.Collections.emptyList()).nextPageToken(null)
-					.resultsPerPage(0).totalResults(0).commentsDisabled(disabled).errorMessage(msg).build();
+			return Comments.Page.builder().items(Collections.emptyList()).nextPageToken(null).resultsPerPage(0)
+					.totalResults(0).commentsDisabled(disabled).errorMessage(msg).build();
 
 		} catch (Exception e) {
 			throw new RuntimeException("YouTube 댓글 조회 실패: " + e.getMessage(), e);
@@ -419,6 +421,36 @@ public class YoutubeServiceImpl implements YoutubeService {
 		}
 
 		return youtubeApiClient.insertTopLevelComment(accessToken, null, req.getVideoId(), req.getText().trim());
+	}
+
+	@Override
+	@Cacheable(cacheNames = "myPlaylists", key = "#accessToken + ':' + #size + ':' + #pageToken")
+	public PageResponse<YoutubePlaylist> getMyPlaylists(String accessToken, int size, String pageToken) {
+		JsonNode root = youtubeApiClient.listMyPlaylists(accessToken, Math.min(Math.max(size, 1), 50), pageToken);
+
+		List<YoutubePlaylist> list = new ArrayList<>();
+		JsonNode items = root.path("items");
+		if (items.isArray()) {
+			for (JsonNode item : items) {
+				YoutubePlaylist dto = new YoutubePlaylist();
+				dto.setId(item.path("id").asText());
+
+				JsonNode sn = item.path("snippet");
+				dto.setTitle(sn.path("title").asText());
+
+				String best = pickBestThumb(sn.path("thumbnails"));
+				dto.setThumbnailUrl(best);
+
+				dto.setItemCount(item.path("contentDetails").path("itemCount").asInt(0));
+				list.add(dto);
+			}
+		}
+
+		PageResponse<YoutubePlaylist> page = new PageResponse<>();
+		page.setItems(list);
+		page.setNextPageToken(root.path("nextPageToken").asText(null));
+		page.setPrevPageToken(root.path("prevPageToken").asText(null));
+		return page;
 	}
 
 	// -------------------- helpers --------------------
@@ -606,5 +638,16 @@ public class YoutubeServiceImpl implements YoutubeService {
 		} else {
 			return String.format("%,d회", viewCount); // 천 단위 콤마
 		}
+	}
+
+	private static String pickBestThumb(JsonNode tn) {
+		String[] order = { "maxres", "standard", "high", "medium", "default" };
+		for (String key : order) {
+			String url = tn.path(key).path("url").asText(null);
+			if (url != null && !url.isEmpty()) {
+				return url;
+			}
+		}
+		return null;
 	}
 }

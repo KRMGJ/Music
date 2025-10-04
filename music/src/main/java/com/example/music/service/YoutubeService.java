@@ -4,10 +4,12 @@ import java.util.List;
 
 import com.example.music.model.CommentPostRequest;
 import com.example.music.model.Comments;
+import com.example.music.model.PageResponse;
 import com.example.music.model.SearchList;
 import com.example.music.model.Video;
 import com.example.music.model.VideoDetail;
 import com.example.music.model.VideoListItem;
+import com.example.music.model.YoutubePlaylist;
 import com.example.music.service.serviceImpl.YoutubeServiceImpl.RelatedResponse;
 
 public interface YoutubeService {
@@ -28,4 +30,6 @@ public interface YoutubeService {
 	Comments.Page getComments(String videoId, String pageToken, String order, Integer pageSize);
 
 	Object postComment(CommentPostRequest req, String accessToken) throws Exception;
+
+	PageResponse<YoutubePlaylist> getMyPlaylists(String accessToken, int size, String pageToken);
 }
