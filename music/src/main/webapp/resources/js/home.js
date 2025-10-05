@@ -1,8 +1,8 @@
 (function() {
 	const ENDPOINTS = {
-		popular: '/api/home/popular',
-		latest: '/api/home/latest',
-		channels: '/api/home/channels'
+		popular: '/popular',
+		latest: '/latest',
+		channels: '/channels'
 	};
 	const DEFAULT_REGION = 'KR';
 

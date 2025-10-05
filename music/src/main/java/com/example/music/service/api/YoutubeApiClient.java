@@ -99,17 +99,14 @@ public class YoutubeApiClient {
 		StringBuilder url = new StringBuilder(
 				SEARCH_URL + "?part=snippet&type=video&maxResults=20&q=" + encodedQuery + "&key=" + API_KEY + KOREAN);
 
-		// 영상 길이 필터링 (API 지원: short, medium, long)
 		if (duration != null && (duration.equals("short") || duration.equals("medium") || duration.equals("long"))) {
 			url.append("&videoDuration=").append(duration);
 		}
 
-		// 지역 코드 필터링
 		if (regionCode != null && !regionCode.isEmpty()) {
 			url.append("&regionCode=").append(regionCode);
 		}
 
-		// 업로드 날짜 필터링 (publishedAfter 사용)
 		if (upload != null) {
 			ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
 			ZonedDateTime cutoff = null;
@@ -233,7 +230,7 @@ public class YoutubeApiClient {
 	/**
 	 * 채널 썸네일 URL 맵 가져오기
 	 * 
-	 * @param channelIds
+	 * @param channelIds 채널 ID 리스트
 	 * @return 채널ID -> 썸네일URL 맵
 	 * @throws Exception
 	 */
@@ -268,8 +265,8 @@ public class YoutubeApiClient {
 	/**
 	 * 채널 상세 정보 가져오기
 	 * 
-	 * @param channelIds
-	 * @return
+	 * @param channelIds 채널 ID 리스트
+	 * @return 채널ID -> 상세정보(JsonNode) 맵
 	 * @throws Exception
 	 */
 	public Map<String, JsonNode> fetchChannelsDetails(java.util.List<String> channelIds) throws Exception {
@@ -432,26 +429,73 @@ public class YoutubeApiClient {
 	}
 
 	/**
-	 * 특정 플레이리스트의 아이템(영상들) 조회도 자주 필요합니다. (선택)
+	 * 플레이리스트 메타 정보 조회
+	 * 
+	 * @param accessToken OAuth2 Access Token (Google)
+	 * @param playlistId  플레이리스트 ID
+	 */
+	public JsonNode getPlaylistById(String accessToken, String playlistId) {
+		String url = "https://www.googleapis.com/youtube/v3/playlists" + "?part=snippet,contentDetails" + "&id="
+				+ playlistId;
+
+		HttpHeaders h = new HttpHeaders();
+		h.setBearerAuth(accessToken);
+		ResponseEntity<String> r = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(h), String.class);
+		try {
+			return mapper.readTree(r.getBody());
+		} catch (Exception e) {
+			throw new RuntimeException("플레이리스트 메타 조회 실패", e);
+		}
+	}
+
+	/**
+	 * 플레이리스트 아이템(영상) 목록 조회
+	 * 
+	 * @param accessToken OAuth2 Access Token (Google)
+	 * @param playlistId  플레이리스트 ID
+	 * @param maxResults  1~50
+	 * @param pageToken   null 가능 (다음 페이지용)
 	 */
 	public JsonNode listPlaylistItems(String accessToken, String playlistId, int maxResults, String pageToken) {
-		StringBuilder url = new StringBuilder("https://www.googleapis.com/youtube/v3/playlistItems")
+		StringBuilder sb = new StringBuilder("https://www.googleapis.com/youtube/v3/playlistItems")
 				.append("?part=snippet,contentDetails").append("&playlistId=").append(playlistId).append("&maxResults=")
-				.append(maxResults);
-
+				.append(Math.min(Math.max(maxResults, 1), 50));
 		if (pageToken != null && !pageToken.isEmpty()) {
-			url.append("&pageToken=").append(pageToken);
+			sb.append("&pageToken=").append(pageToken);
 		}
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(accessToken);
-		HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-		ResponseEntity<String> resp = restTemplate.exchange(url.toString(), HttpMethod.GET, entity, String.class);
+		HttpHeaders h = new HttpHeaders();
+		h.setBearerAuth(accessToken);
+		ResponseEntity<String> r = restTemplate.exchange(sb.toString(), HttpMethod.GET, new HttpEntity<>(h),
+				String.class);
 		try {
-			return mapper.readTree(resp.getBody());
+			return mapper.readTree(r.getBody());
 		} catch (Exception e) {
-			throw new RuntimeException("유튜브 플레이리스트 아이템 조회 실패", e);
+			throw new RuntimeException("플레이리스트 아이템 조회 실패", e);
+		}
+	}
+
+	/**
+	 * 여러 비디오의 상세 정보 조회
+	 * 
+	 * @param accessToken OAuth2 Access Token (Google)
+	 * @param ids         비디오 ID 리스트
+	 */
+	public JsonNode getVideosByIds(String accessToken, java.util.List<String> ids) {
+		if (ids == null || ids.isEmpty()) {
+			return mapper.createObjectNode().putArray("items");
+		}
+		String idParam = String.join(",", ids);
+		String url = "https://www.googleapis.com/youtube/v3/videos" + "?part=snippet,contentDetails,statistics" + "&id="
+				+ idParam;
+
+		HttpHeaders h = new HttpHeaders();
+		h.setBearerAuth(accessToken);
+		ResponseEntity<String> r = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(h), String.class);
+		try {
+			return mapper.readTree(r.getBody());
+		} catch (Exception e) {
+			throw new RuntimeException("비디오 상세 조회 실패", e);
 		}
 	}
 

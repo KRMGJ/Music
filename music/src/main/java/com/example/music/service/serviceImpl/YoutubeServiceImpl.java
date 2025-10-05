@@ -3,6 +3,7 @@ package com.example.music.service.serviceImpl;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,7 +12,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,6 +33,8 @@ import com.example.music.model.Video;
 import com.example.music.model.VideoDetail;
 import com.example.music.model.VideoListItem;
 import com.example.music.model.YoutubePlaylist;
+import com.example.music.model.YoutubePlaylistDetail;
+import com.example.music.model.YoutubeVideoListItem;
 import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
 import com.example.music.service.api.YoutubeApiClient;
@@ -453,6 +458,95 @@ public class YoutubeServiceImpl implements YoutubeService {
 		return page;
 	}
 
+	@Override
+	@Cacheable(cacheNames = "playlistDetail", key = "#accessToken + ':' + #playlistId + ':' + #size + ':' + #pageToken")
+	public YoutubePlaylistDetail getPlaylistDetail(String accessToken, String playlistId, int size, String pageToken) {
+		JsonNode metaRoot = youtubeApiClient.getPlaylistById(accessToken, playlistId);
+		JsonNode metaItem = metaRoot.path("items").isArray() && metaRoot.path("items").size() > 0
+				? metaRoot.path("items").get(0)
+				: null;
+		if (metaItem == null) {
+			throw new IllegalArgumentException("플레이리스트가 존재하지 않습니다: " + playlistId);
+		}
+
+		JsonNode sn = metaItem.path("snippet");
+		JsonNode tn = sn.path("thumbnails");
+
+		YoutubePlaylistDetail dto = new YoutubePlaylistDetail();
+		dto.setId(playlistId);
+		dto.setTitle(sn.path("title").asText(""));
+		dto.setDescription(sn.path("description").asText(""));
+		dto.setPublishedAt(formatDates(sn.path("publishedAt").asText(null)));
+		dto.setOwnerChannelTitle(sn.path("channelTitle").asText(""));
+		dto.setItemCount(metaItem.path("contentDetails").path("itemCount").asInt(0));
+		dto.setCoverImageUrl(pickBestThumb(tn));
+
+		JsonNode itemsRoot = youtubeApiClient.listPlaylistItems(accessToken, playlistId, size, pageToken);
+		dto.setNextPageToken(itemsRoot.path("nextPageToken").asText(null));
+		dto.setPrevPageToken(itemsRoot.path("prevPageToken").asText(null));
+
+		List<String> ids = new ArrayList<>();
+		Map<String, JsonNode> piByVideoId = new HashMap<>();
+		for (JsonNode it : itemsRoot.path("items")) {
+			String vid = it.path("contentDetails").path("videoId").asText(null);
+			if (vid != null) {
+				ids.add(vid);
+				piByVideoId.put(vid, it);
+			}
+		}
+
+		JsonNode videosRoot = youtubeApiClient.getVideosByIds(accessToken, ids);
+		Map<String, YoutubeVideoListItem> byId = new LinkedHashMap<>();
+		for (JsonNode v : videosRoot.path("items")) {
+			String id = v.path("id").asText();
+			JsonNode vsn = v.path("snippet");
+			JsonNode vtn = vsn.path("thumbnails");
+
+			YoutubeVideoListItem vi = new YoutubeVideoListItem();
+			vi.setId(id);
+			vi.setTitle(vsn.path("title").asText(""));
+			vi.setDescription(vsn.path("description").asText(""));
+			vi.setChannelTitle(vsn.path("channelTitle").asText(""));
+			vi.setThumbnailUrl(pickBestThumb(vtn));
+			vi.setPublishedDate(formatDates(vsn.path("publishedAt").asText(null)));
+
+			// duration
+			String iso = v.path("contentDetails").path("duration").asText(null);
+			Integer secs = iso != null ? (int) parseIsoDurationSeconds(iso) : null;
+			vi.setDurationSeconds(secs);
+			vi.setFormattedDuration(formatDuration(secs));
+
+			// views
+			long views = v.path("statistics").path("viewCount").asLong(-1);
+			if (views >= 0) {
+				vi.setViewCount(views);
+				vi.setFormattedViewCount(NumberFormat.getInstance(Locale.US).format(views));
+			}
+
+			byId.put(id, vi);
+		}
+
+		// API에서 빠진(삭제/비공개 등) 아이템은 playlistItems 정보로 최소 채움
+		List<YoutubeVideoListItem> ordered = new ArrayList<>();
+		for (String id : ids) {
+			YoutubeVideoListItem vi = byId.get(id);
+			if (vi != null) {
+				ordered.add(vi);
+			} else {
+				JsonNode pi = piByVideoId.get(id);
+				YoutubeVideoListItem fallback = new YoutubeVideoListItem();
+				fallback.setId(id);
+				JsonNode psn = pi.path("snippet");
+				fallback.setTitle(psn.path("title").asText("(비공개 또는 삭제됨)"));
+				fallback.setThumbnailUrl(pickBestThumb(psn.path("thumbnails")));
+				ordered.add(fallback);
+			}
+		}
+		dto.setItems(ordered);
+
+		return dto;
+	}
+
 	// -------------------- helpers --------------------
 
 	private List<VideoListItem> parseItems(JsonNode items, String excludeId) throws Exception {
@@ -649,5 +743,30 @@ public class YoutubeServiceImpl implements YoutubeService {
 			}
 		}
 		return null;
+	}
+
+	private static long parseIsoDurationSeconds(String iso) {
+		// ISO-8601 "PT#H#M#S"
+		return Duration.parse(iso).getSeconds();
+	}
+
+	private static String formatDuration(Integer secs) {
+		if (secs == null) {
+			return null;
+		}
+		int h = secs / 3600, m = (secs % 3600) / 60, s = secs % 60;
+		if (h > 0) {
+			return String.format("%d:%02d:%02d", h, m, s);
+		}
+		return String.format("%d:%02d", m, s);
+	}
+
+	private static String formatDates(String iso) {
+		if (iso == null) {
+			return null;
+		}
+		// 2024-05-01T12:34:56Z -> 2024-05-01
+		int i = iso.indexOf('T');
+		return i > 0 ? iso.substring(0, i) : iso;
 	}
 }

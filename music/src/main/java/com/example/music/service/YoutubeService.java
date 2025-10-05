@@ -10,6 +10,7 @@ import com.example.music.model.Video;
 import com.example.music.model.VideoDetail;
 import com.example.music.model.VideoListItem;
 import com.example.music.model.YoutubePlaylist;
+import com.example.music.model.YoutubePlaylistDetail;
 import com.example.music.service.serviceImpl.YoutubeServiceImpl.RelatedResponse;
 
 public interface YoutubeService {
@@ -32,4 +33,6 @@ public interface YoutubeService {
 	Object postComment(CommentPostRequest req, String accessToken) throws Exception;
 
 	PageResponse<YoutubePlaylist> getMyPlaylists(String accessToken, int size, String pageToken);
+
+	YoutubePlaylistDetail getPlaylistDetail(String accessToken, String playlistId, int size, String pageToken);
 }
