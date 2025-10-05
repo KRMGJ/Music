@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(function() {
 	const $signUpForm = $('#signUpForm');
 	const $username = $('#nickname');
 	const $signUpEmail = $('#signUpEmail');
@@ -12,16 +12,16 @@ $(document).ready(function () {
 	const $signInButton = $('#signIn');
 	const $container = $('#auth-container');
 
-	$signUpButton.on('click', function () {
+	$signUpButton.on('click', function() {
 		$container.addClass("right-panel-active");
 	});
 
-	$signInButton.on('click', function () {
+	$signInButton.on('click', function() {
 		$container.removeClass("right-panel-active");
 	});
 
 	// 회원가입 처리
-	$signUpForm.on('submit', function (e) {
+	$signUpForm.on('submit', function(e) {
 		e.preventDefault();
 		if (checkInputs()) {
 			const nickname = $username.val().trim();
@@ -36,11 +36,11 @@ $(document).ready(function () {
 					email: email,
 					password: password
 				},
-				success: function () {
+				success: function() {
 					alert("회원가입 성공");
 					window.location.href = "/auth/login";
 				},
-				error: function () {
+				error: function() {
 					alert("회원가입 실패");
 				}
 			});
@@ -48,7 +48,7 @@ $(document).ready(function () {
 	});
 
 	// 로그인 처리
-	$loginForm.on('submit', function (e) {
+	$loginForm.on('submit', function(e) {
 		e.preventDefault();
 		if (checkLoginInputs()) {
 			const email = $loginEmail.val().trim();
@@ -61,11 +61,13 @@ $(document).ready(function () {
 					email: email,
 					password: password
 				},
-				success: function () {
+				success: function() {
 					alert("로그인 성공");
-					window.location.href = "/";
+					const sp = new URLSearchParams(location.search);
+					const redirect = sp.get('redirect') || document.referrer || '/';
+					window.location.replace(redirect);
 				},
-				error: function () {
+				error: function() {
 					alert("로그인 실패");
 				}
 			});

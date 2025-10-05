@@ -1,7 +1,10 @@
 package com.example.music.controller;
 
+import static com.example.music.util.MessageUtil.errorMessageWithRedirect;
+
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +20,6 @@ import com.example.music.model.SearchList;
 import com.example.music.model.User;
 import com.example.music.service.PlaylistService;
 import com.example.music.service.YoutubeService;
-import com.example.music.util.MessageUtil;
 
 @Controller
 @RequestMapping("/video")
@@ -28,9 +30,6 @@ public class VideoController {
 
 	@Autowired
 	YoutubeService youtubeService;
-
-//	@Autowired
-//	VideoService videoService;
 
 	@GetMapping("/")
 	public String home() {
@@ -45,10 +44,10 @@ public class VideoController {
 			@RequestParam(value = "upload", required = false) String upload,
 			@RequestParam(value = "regionCode", required = false) String regionCode,
 			@RequestHeader(value = "X-Requested-With", required = false) String requestedWith, HttpSession session,
-			Model model) {
+			HttpServletRequest request, Model model) {
 		User user = (User) session.getAttribute("loginUser");
 		if (user == null) {
-			MessageUtil.errorMessage("로그인 후 이용해주세요.", "/auth/login", model);
+			errorMessageWithRedirect(request, "로그인이 필요합니다.", model);
 			return "common/error";
 		}
 

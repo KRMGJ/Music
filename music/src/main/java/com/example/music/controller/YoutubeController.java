@@ -1,8 +1,11 @@
 package com.example.music.controller;
 
+import static com.example.music.util.MessageUtil.errorMessageWithRedirect;
+
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,7 @@ import com.example.music.model.User;
 import com.example.music.model.VideoDetail;
 import com.example.music.model.VideoListItem;
 import com.example.music.model.YoutubePlaylist;
+import com.example.music.model.YoutubePlaylistDetail;
 import com.example.music.service.PlaylistService;
 import com.example.music.service.YoutubeService;
 import com.example.music.service.serviceImpl.YoutubeServiceImpl.RelatedResponse;
@@ -130,5 +134,22 @@ public class YoutubeController {
 		model.addAttribute("prevPageToken", page.getPrevPageToken());
 		model.addAttribute("size", size);
 		return "playlist/list";
+	}
+
+	@GetMapping("/playlist/{playlistId}")
+	public String playlistDetail(@PathVariable String playlistId, @RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String pageToken, Model model, HttpSession session,
+			HttpServletRequest req) {
+		String accessToken = tokenResolver.getValidAccessToken(session);
+		if (accessToken == null) {
+			errorMessageWithRedirect(req, "세션 만료 또는 권한 없음. 다시 로그인해 주세요.", model);
+			return "common/error";
+		}
+		YoutubePlaylistDetail detail = youtubeService.getPlaylistDetail(accessToken, playlistId, size, pageToken);
+
+		model.addAttribute("playlist", detail);
+		model.addAttribute("items", detail.getItems());
+		model.addAttribute("size", size);
+		return "playlist/detail";
 	}
 }

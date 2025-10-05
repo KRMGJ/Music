@@ -12,7 +12,7 @@
 		alert("${message}");
 		<c:choose>
 			<c:when test="${not empty redirectUrl}">
-				window.location.href = "<c:url value='${redirectUrl}'/>";
+				window.location.replace("<c:url value='${redirectUrl}'/>");
 			</c:when>
 			<c:otherwise>
 				history.back();
