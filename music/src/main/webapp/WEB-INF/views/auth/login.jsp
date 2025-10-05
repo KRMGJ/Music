@@ -13,6 +13,17 @@
 <title>로그인</title>
 </head>
 <body>
+<c:set var="redirectTarget" value="${empty param.redirect ? '/' : param.redirect}" />
+<c:url var="googleUrl" value="/oauth2/login/google">
+  <c:param name="redirect" value="${redirectTarget}" />
+</c:url>
+<c:url var="naverUrl" value="/oauth2/login/naver">
+  <c:param name="redirect" value="${redirectTarget}" />
+</c:url>
+<c:url var="kakaoUrl" value="/oauth2/login/kakao">
+  <c:param name="redirect" value="${redirectTarget}" />
+</c:url>
+
 	<div class="auth-wrapper">
 	    <c:if test="${not empty errorMessage}">
             <script>
@@ -24,9 +35,9 @@
 				<form class="signUp-form" id="signUpForm">
 					<h1>Create Account</h1>
 					<div class="social-container">
-						<a href="/oauth2/login/google" class="social"><img src="https://cdn.simpleicons.org/google/4285F4" width="24"/></a>
-						<a href="/oauth2/login/naver" class="social"><img src="https://cdn.simpleicons.org/naver/03C75A" width="24"/></a>
-						<a href="/oauth2/login/kakao" class="social"><img src="https://cdn.simpleicons.org/kakao/FFCD00" width="24"/></a>
+						<a href="${googleUrl}" class="social"><img src="https://cdn.simpleicons.org/google/4285F4" width="24"/></a>
+						<a href="${naverUrl}" class="social"><img src="https://cdn.simpleicons.org/naver/03C75A" width="24"/></a>
+						<a href="${kakaoUrl}" class="social"><img src="https://cdn.simpleicons.org/kakao/FFCD00" width="24"/></a>
 					</div>
 					<span>or use your email for registration</span>
 					<div class="custom-form-control">
@@ -55,9 +66,9 @@
 				<form class="login-form" id="loginForm">
 					<h1>Sign in</h1>
 					<div class="social-container">
-						<a href="/oauth2/login/google" class="social"><img src="https://cdn.simpleicons.org/google/4285F4" width="24"/></a>
-						<a href="/oauth2/login/naver" class="social"><img src="https://cdn.simpleicons.org/naver/03C75A" width="24"/></a>
-						<a href="/oauth2/login/kakao" class="social"><img src="https://cdn.simpleicons.org/kakao/FFCD00" width="24"/></a>
+						<a href="${googleUrl}" class="social"><img src="https://cdn.simpleicons.org/google/4285F4" width="24"/></a>
+						<a href="${naverUrl}" class="social"><img src="https://cdn.simpleicons.org/naver/03C75A" width="24"/></a>
+						<a href="${kakaoUrl}" class="social"><img src="https://cdn.simpleicons.org/kakao/FFCD00" width="24"/></a>
 					</div>
 					<span>or use your account</span> 
 					<div class="custom-form-control">

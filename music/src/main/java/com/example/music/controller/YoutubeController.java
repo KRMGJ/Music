@@ -125,8 +125,13 @@ public class YoutubeController {
 
 	@GetMapping("/my-playlists")
 	public String myPlaylists(@RequestParam(defaultValue = "24") int size,
-			@RequestParam(required = false) String pageToken, HttpSession session, Model model) {
+			@RequestParam(required = false) String pageToken, HttpSession session, Model model,
+			HttpServletRequest request) {
 		String accessToken = tokenResolver.getValidAccessToken(session);
+		if (accessToken == null) {
+			errorMessageWithRedirect(request, "세션 만료 또는 권한 없음. 다시 로그인해 주세요.", model);
+			return "common/error";
+		}
 		PageResponse<YoutubePlaylist> page = youtubeService.getMyPlaylists(accessToken, size, pageToken);
 
 		model.addAttribute("items", page.getItems());
@@ -139,10 +144,10 @@ public class YoutubeController {
 	@GetMapping("/playlist/{playlistId}")
 	public String playlistDetail(@PathVariable String playlistId, @RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) String pageToken, Model model, HttpSession session,
-			HttpServletRequest req) {
+			HttpServletRequest request) {
 		String accessToken = tokenResolver.getValidAccessToken(session);
 		if (accessToken == null) {
-			errorMessageWithRedirect(req, "세션 만료 또는 권한 없음. 다시 로그인해 주세요.", model);
+			errorMessageWithRedirect(request, "세션 만료 또는 권한 없음. 다시 로그인해 주세요.", model);
 			return "common/error";
 		}
 		YoutubePlaylistDetail detail = youtubeService.getPlaylistDetail(accessToken, playlistId, size, pageToken);
