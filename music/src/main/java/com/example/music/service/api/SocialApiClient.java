@@ -1,9 +1,11 @@
 package com.example.music.service.api;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,11 +39,16 @@ public class SocialApiClient {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-		ResponseEntity<Map> res = rest.postForEntity(url, new HttpEntity<>(params, headers), Map.class);
-		Map body = Objects.requireNonNull(res.getBody());
+		HttpEntity<MultiValueMap<String, String>> req = new HttpEntity<>(params, headers);
+
+		ResponseEntity<Map<String, Object>> res = rest.exchange(url, HttpMethod.POST, req,
+				new ParameterizedTypeReference<Map<String, Object>>() {
+				});
+
+		Map<String, Object> body = Objects.requireNonNull(res.getBody(), "empty token response");
 
 		return GoogleToken.builder().accessToken((String) body.get("access_token"))
-				.refreshToken((String) body.get("refresh_token")) // offline 동의 시에만 옴
+				.refreshToken((String) body.get("refresh_token"))
 				.expiresIn(body.get("expires_in") == null ? null : ((Number) body.get("expires_in")).longValue())
 				.tokenType((String) body.get("token_type")).scope((String) body.get("scope"))
 				.idToken((String) body.get("id_token")).build();
@@ -49,6 +56,10 @@ public class SocialApiClient {
 
 	// --- (B) 구글: refresh_token -> access_token 재발급
 	public GoogleToken refreshGoogleAccessToken(String refreshToken) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+		headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
 		RestTemplate rest = new RestTemplate();
 		String url = "https://oauth2.googleapis.com/token";
 
@@ -58,11 +69,13 @@ public class SocialApiClient {
 		params.add("client_secret", properties.getGoogleClientSecret());
 		params.add("refresh_token", refreshToken);
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+		HttpEntity<MultiValueMap<String, String>> req = new HttpEntity<>(params, headers);
 
-		ResponseEntity<Map> res = rest.postForEntity(url, new HttpEntity<>(params, headers), Map.class);
-		Map body = Objects.requireNonNull(res.getBody());
+		ResponseEntity<Map<String, Object>> res = rest.exchange(url, HttpMethod.POST, req,
+				new ParameterizedTypeReference<Map<String, Object>>() {
+				});
+
+		Map<String, Object> body = Objects.requireNonNull(res.getBody());
 
 		return GoogleToken.builder().accessToken((String) body.get("access_token")).refreshToken(refreshToken)
 				.expiresIn(body.get("expires_in") == null ? null : ((Number) body.get("expires_in")).longValue())

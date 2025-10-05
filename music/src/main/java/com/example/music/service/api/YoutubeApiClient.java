@@ -34,9 +34,6 @@ import com.google.api.services.youtube.model.CommentThread;
 import com.google.api.services.youtube.model.CommentThreadListResponse;
 import com.google.api.services.youtube.model.CommentThreadSnippet;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 public class YoutubeApiClient {
 
@@ -62,12 +59,6 @@ public class YoutubeApiClient {
 	private YouTube clientWithToken(String accessToken) {
 		return new YouTube.Builder(HTTP, JSON, req -> req.getHeaders().setAuthorization("Bearer " + accessToken))
 				.setApplicationName("music").build();
-	}
-
-	// 읽기(키 기반)만 필요하면 이렇게도 가능
-	private YouTube clientNoAuth() {
-		return new YouTube.Builder(HTTP, JSON, req -> {
-		}).setApplicationName("music").build();
 	}
 
 	/**
@@ -234,7 +225,7 @@ public class YoutubeApiClient {
 	 * @return 채널ID -> 썸네일URL 맵
 	 * @throws Exception
 	 */
-	public Map<String, String> fetchChannelThumbnails(java.util.List<String> channelIds) throws Exception {
+	public Map<String, String> fetchChannelThumbnails(List<String> channelIds) throws Exception {
 		if (channelIds == null || channelIds.isEmpty()) {
 			return java.util.Collections.emptyMap();
 		}
@@ -269,7 +260,7 @@ public class YoutubeApiClient {
 	 * @return 채널ID -> 상세정보(JsonNode) 맵
 	 * @throws Exception
 	 */
-	public Map<String, JsonNode> fetchChannelsDetails(java.util.List<String> channelIds) throws Exception {
+	public Map<String, JsonNode> fetchChannelsDetails(List<String> channelIds) throws Exception {
 		if (channelIds == null || channelIds.isEmpty()) {
 			return Collections.emptyMap();
 		}
@@ -481,7 +472,7 @@ public class YoutubeApiClient {
 	 * @param accessToken OAuth2 Access Token (Google)
 	 * @param ids         비디오 ID 리스트
 	 */
-	public JsonNode getVideosByIds(String accessToken, java.util.List<String> ids) {
+	public JsonNode getVideosByIds(String accessToken, List<String> ids) {
 		if (ids == null || ids.isEmpty()) {
 			return mapper.createObjectNode().putArray("items");
 		}

@@ -33,6 +33,8 @@ import com.example.music.model.YoutubePlaylistDetail;
 import com.example.music.service.PlaylistService;
 import com.example.music.service.YoutubeService;
 import com.example.music.service.serviceImpl.YoutubeServiceImpl.RelatedResponse;
+import com.google.api.client.googleapis.json.GoogleJsonError;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -105,8 +107,8 @@ public class YoutubeController {
 
 			Object result = youtubeService.postComment(req, accessToken);
 			return ResponseEntity.ok(result);
-		} catch (com.google.api.client.googleapis.json.GoogleJsonResponseException e) {
-			var d = e.getDetails();
+		} catch (GoogleJsonResponseException e) {
+			GoogleJsonError d = e.getDetails();
 			int code = d != null ? d.getCode() : 400;
 			String reason = (d != null && d.getErrors() != null && !d.getErrors().isEmpty())
 					? d.getErrors().get(0).getReason()
@@ -117,7 +119,6 @@ public class YoutubeController {
 			return ResponseEntity.status(e.getStatusCode())
 					.body(Map.of("message", "댓글 등록 실패: " + e.getStatusText(), "body", e.getResponseBodyAsString()));
 		} catch (Exception e) {
-			// 무엇이든 원인 보이게
 			return ResponseEntity.status(500).body(Map.of("message", "댓글 등록 실패: 서버 오류", "error",
 					e.getClass().getSimpleName(), "detail", String.valueOf(e.getMessage())));
 		}

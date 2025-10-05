@@ -74,7 +74,7 @@
 									<c:if test="${not empty v.publishedDate}">${v.publishedDate}</c:if>
 								</div>
 								<div id="descText" class="video-desc js-desc">
-									<c:out value="${video.description}" />
+									<c:out value="${v.description}" />
 								</div>
 
 								<button type="button" id="btnToggleDesc" class="desc-toggle">더보기</button>

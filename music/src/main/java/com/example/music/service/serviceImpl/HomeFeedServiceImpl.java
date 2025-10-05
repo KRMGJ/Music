@@ -4,8 +4,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.Cacheable;
@@ -25,6 +27,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 
 	private final YoutubeApiClient youtube;
 
+	@Override
 	@Cacheable(cacheNames = "home:popularVideos", key = "'region=' + #regionCode + ',limit=' + #limit")
 	public List<VideoSummary> getPopularForHome(String regionCode, int limit) throws Exception {
 		int fetch = Math.max(limit, 12); // 안전한 최소치
@@ -59,8 +62,9 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 			}
 
 			list.add(v);
-			if (v.getChannelId() != null)
+			if (v.getChannelId() != null) {
 				channelIds.add(v.getChannelId());
+			}
 		}
 
 		// 채널 썸네일 주입
@@ -71,8 +75,9 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 		}
 
 		// limit만큼 자르기
-		if (list.size() > limit)
+		if (list.size() > limit) {
 			return list.subList(0, limit);
+		}
 		return list;
 	}
 
@@ -81,7 +86,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 		// 인기풀을 넉넉히 받아 정렬 (최소 30~50 추천)
 		int pool = Math.max(limit * 3, 50);
 
-		var items = youtube.fetchMostPopular(regionCode, pool, null); // part=snippet,contentDetails,statistics
+		JsonNode items = youtube.fetchMostPopular(regionCode, pool, null); // part=snippet,contentDetails,statistics
 
 		List<VideoSummary> list = new ArrayList<>();
 		List<String> channelIds = new ArrayList<>();
@@ -118,7 +123,7 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 
 		// 채널 썸네일 배치 조회
 		Map<String, String> thumbMap = youtube
-				.fetchChannelThumbnails(channelIds.stream().distinct().collect(java.util.stream.Collectors.toList()));
+				.fetchChannelThumbnails(channelIds.stream().distinct().collect(Collectors.toList()));
 		for (VideoSummary v : list) {
 			v.setChannelThumbnail(thumbMap.getOrDefault(v.getChannelId(), null));
 		}
@@ -139,9 +144,9 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 	@Override
 	public List<ChannelSummary> getPopularChannels(String regionCode, int limit) throws Exception {
 		int pool = Math.max(limit * 3, 50);
-		var trending = youtube.fetchMostPopular(regionCode, pool, null);
+		JsonNode trending = youtube.fetchMostPopular(regionCode, pool, null);
 
-		java.util.Set<String> channelIds = new java.util.LinkedHashSet<>();
+		Set<String> channelIds = new LinkedHashSet<>();
 		for (JsonNode item : trending) {
 			String chId = item.path("snippet").path("channelId").asText(null);
 			if (chId != null) {
@@ -149,9 +154,9 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 			}
 		}
 
-		var details = youtube.fetchChannelsDetails(new java.util.ArrayList<>(channelIds));
+		Map<String, JsonNode> details = youtube.fetchChannelsDetails(new ArrayList<>(channelIds));
 
-		List<ChannelSummary> list = new java.util.ArrayList<>();
+		List<ChannelSummary> list = new ArrayList<>();
 		for (String chId : channelIds) {
 			JsonNode d = details.get(chId);
 			if (d == null) {
@@ -170,7 +175,6 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 			cs.setChannelThumbnail(thumb);
 			// 비공개면 필드가 없을 수 있음
 			cs.setSubscriberCount(st.has("subscriberCount") ? st.get("subscriberCount").asLong() : 0L);
-//			cs.setVideoCount(st.has("videoCount") ? st.get("videoCount").asLong() : null);
 
 			list.add(cs);
 		}
@@ -197,16 +201,19 @@ public class HomeFeedServiceImpl implements HomeFeedService {
 		s %= 3600;
 		long m = s / 60;
 		s %= 60;
-		if (h > 0)
+		if (h > 0) {
 			return String.format("%d:%02d:%02d", h, m, s);
+		}
 		return String.format("%d:%02d", m, s);
 	}
 
 	private String formatViewCountKR(long v) {
-		if (v >= 100_000_000)
+		if (v >= 100_000_000) {
 			return (v / 100_000_000) + "억회";
-		if (v >= 10_000)
+		}
+		if (v >= 10_000) {
 			return (v / 10_000) + "만회";
+		}
 		return v + "회";
 	}
 

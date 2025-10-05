@@ -15,9 +15,6 @@ import com.example.music.model.Video;
 import com.example.music.service.PlaylistService;
 import com.example.music.service.VideoService;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Service
 public class PlaylistServiceImpl implements PlaylistService {
 

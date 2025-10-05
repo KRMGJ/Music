@@ -163,7 +163,7 @@ public class YoutubeServiceImpl implements YoutubeService {
 			return new SearchList(pagedList, totalCount, totalPages, page, sort);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("searchVideos failed for query=" + query, e);
 			return new SearchList(Collections.emptyList(), 0, 0, page, sort);
 		}
 	}
@@ -226,7 +226,7 @@ public class YoutubeServiceImpl implements YoutubeService {
 			return video;
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("fetchAndSaveVideoById failed for videoId=" + videoId, e);
 			throw new RuntimeException("영상 정보를 불러오는 중 오류 발생");
 		}
 	}
