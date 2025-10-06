@@ -13,6 +13,25 @@
 	<div class="playlist-container">
 		<h3 style="margin-bottom: 16px;">재생목록</h3>
 
+		<div class="list-toolbar">
+			<div class="list-actions">
+				<select id="sortOption" class="sort-select">
+					<option value="latest">최신순</option>
+					<option value="oldest">오래된순</option>
+					<option value="title">제목순</option>
+					<option value="count">영상개수순</option>
+				</select> <select id="filterOption" class="sort-select">
+					<option value="all">전체</option>
+					<option value="public">공개</option>
+					<option value="unlisted">일부공개</option>
+					<option value="private">비공개</option>
+				</select>
+			</div>
+
+			<input type="text" id="searchInput" class="search-input"
+				placeholder="재생목록 검색">
+		</div>
+
 		<c:choose>
 			<c:when test="${empty items}">
 				<div class="message">플레이리스트가 없습니다.</div>
@@ -20,7 +39,10 @@
 			<c:otherwise>
 				<div class="playlist-grid">
 					<c:forEach var="p" items="${items}">
-						<div class="playlist-card">
+						<div class="playlist-card" data-title="${playlist.title}"
+							data-count="${playlist.videoCount}"
+							data-created="${playlist.createdTimestamp}"
+							data-privacy="${playlist.privacyStatus}">
 							<div class="thumbnail-wrapper">
 								<img src="${p.thumbnailUrl}" alt="${p.title}" />
 								<div class="video-count">${p.itemCount}개영상</div>
@@ -64,6 +86,6 @@
 			</c:otherwise>
 		</c:choose>
 	</div>
-<script src="/resources/js/playlist/list.js"></script>
+	<script src="/resources/js/playlist/list.js"></script>
 </body>
 </html>
