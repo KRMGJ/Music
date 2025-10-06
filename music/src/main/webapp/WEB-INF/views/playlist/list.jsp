@@ -11,7 +11,7 @@
 	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
 	<div class="playlist-container">
-		<h2 style="margin-bottom: 16px;">내 유튜브 플레이리스트</h2>
+		<h3 style="margin-bottom: 16px;">재생목록</h3>
 
 		<c:choose>
 			<c:when test="${empty items}">
@@ -64,6 +64,6 @@
 			</c:otherwise>
 		</c:choose>
 	</div>
-
+<script src="/resources/js/playlist/list.js"></script>
 </body>
 </html>

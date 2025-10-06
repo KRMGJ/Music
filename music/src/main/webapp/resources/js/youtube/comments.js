@@ -3,7 +3,7 @@ function renderCommentItem(cmt) {
 
 	var html = ''
 		+ '<div class="comment-item">'
-		+ '  <img class="comment-avatar" src="' + (cmt.authorProfileImageUrl || '') + '" alt="avatar"/>'
+		+ '  <img class="comment-avatar" src="' + (cmt.authorProfileImageUrl || '/resources/images/default-avatar.png') + '" alt="avatar"/>'
 		+ '  <div class="comment-body">'
 		+ '    <div class="comment-author">' + (cmt.authorDisplayName || '알 수 없음') + '</div>'
 		+ '    <div class="comment-text">' + (cmt.textDisplay || '') + '</div>'
@@ -24,7 +24,7 @@ function renderCommentItem(cmt) {
 				var r = cmt.replies[j];
 				html += ''
 					+ '<div class="reply-item">'
-					+ '  <img class="comment-avatar" src="' + (r.authorProfileImageUrl || '') + '" alt="avatar"/>'
+					+ '  <img class="comment-avatar" src="' + (r.authorProfileImageUrl || '/resources/images/default-avatar.png') + '" alt="avatar"/>'
 					+ '  <div class="comment-body">'
 					+ '    <div class="comment-author">' + (r.authorDisplayName || '알 수 없음') + '</div>'
 					+ '    <div class="comment-text">' + (r.textDisplay || '') + '</div>'

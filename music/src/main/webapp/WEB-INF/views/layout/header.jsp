@@ -40,11 +40,10 @@
 		<div class="right-section">
 			<c:choose>
 				<c:when test="${not empty sessionScope.loginUser}">
-					<div class="user-menu">
 						<button id="userMenuToggle" class="user-chip" aria-haspopup="true"
 							aria-expanded="false">
 							<img class="avatar"
-								src="${empty sessionScope.loginUser.profileImage ? '/resources/img/default-avatar.png' : sessionScope.loginUser.profileImage}"
+								src="${empty sessionScope.loginUser.profileImage ? '/resources/images/default-avatar.png' : sessionScope.loginUser.profileImage}"
 								alt="profile" /> <span class="name">${empty sessionScope.loginUser.nickname ? sessionScope.loginUser.email : sessionScope.loginUser.nickname}</span>
 							<span class="caret">▾</span>
 						</button>
@@ -55,7 +54,6 @@
 							
 							<button type="button" id="logoutButton" class="item danger">로그아웃</button>
 						</div>
-					</div>
 				</c:when>
 
 				<c:otherwise>
