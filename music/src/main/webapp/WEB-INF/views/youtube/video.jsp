@@ -38,6 +38,8 @@
 					<button class="chip" id="btnLike">👍 좋아요</button>
 					<button class="chip" id="btnSave" data-video="${video.id}">📁
 						플레이리스트</button>
+					<button class="chip" id="btnMakeRelated" data-video="${video.id}">
+						🧩 관련영상으로 새 플레이리스트</button>
 					<button class="chip" id="btnShare">🔗 공유</button>
 					<span class="chip text-muted">조회수
 						${video.formattedViewCount} · ${video.publishedDate}</span>

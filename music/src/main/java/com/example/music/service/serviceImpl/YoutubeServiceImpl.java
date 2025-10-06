@@ -3,6 +3,7 @@ package com.example.music.service.serviceImpl;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.text.Normalizer;
 import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -13,12 +14,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +41,7 @@ import com.example.music.model.YoutubeVideoListItem;
 import com.example.music.service.VideoService;
 import com.example.music.service.YoutubeService;
 import com.example.music.service.api.YoutubeApiClient;
+import com.example.music.util.CacheEvictSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.youtube.model.Comment;
@@ -66,6 +70,9 @@ public class YoutubeServiceImpl implements YoutubeService {
 
 	@Autowired
 	ChannelInfoDao channelInfoDao;
+
+	@Autowired
+	CacheEvictSupport cacheEvictSupport;
 
 	private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
@@ -329,6 +336,7 @@ public class YoutubeServiceImpl implements YoutubeService {
 	}
 
 	@Override
+	@Cacheable(cacheNames = "videoComments", key = "#videoId + ':' + #pageToken + ':' + #order + ':' + #pageSize")
 	public Comments.Page getComments(String videoId, String pageToken, String order, Integer pageSize) {
 		try {
 			CommentThreadListResponse resp = youtubeApiClient.fetchCommentThreads(videoId, pageToken, order, pageSize);
@@ -414,6 +422,7 @@ public class YoutubeServiceImpl implements YoutubeService {
 	}
 
 	@Override
+	@CacheEvict(value = "videoComments", key = "#req.videoId + ':*'")
 	public Object postComment(CommentPostRequest req, String accessToken) throws Exception {
 		if (youtubeApiClient == null) {
 			throw new IllegalStateException("YoutubeApiClient 주입 실패");
@@ -547,7 +556,205 @@ public class YoutubeServiceImpl implements YoutubeService {
 		return dto;
 	}
 
+	@Override
+	public String createRelatedPlaylist(String videoId, int maxCount, String titleOverride, String privacy,
+			String accessToken) {
+		JsonNode video = youtubeApiClient.getVideo(videoId, accessToken);
+		JsonNode item = video.path("items").isArray() && video.path("items").size() > 0 ? video.path("items").get(0)
+				: null;
+		if (item == null) {
+			throw new IllegalArgumentException("Video not found: " + videoId);
+		}
+
+		// 원본 정보
+		JsonNode snip = item.path("snippet");
+		String title = snip.path("title").asText("");
+		String channelId = snip.path("channelId").asText("");
+		String categoryId = snip.path("categoryId").asText(""); // 일부 케이스에선 비어있을 수 있음
+		List<String> tags = new ArrayList<>();
+		if (snip.has("tags") && snip.get("tags").isArray()) {
+			for (JsonNode t : snip.get("tags")) {
+				tags.add(t.asText());
+			}
+		}
+		long durSec = parseDurationSeconds(item.path("contentDetails").path("duration").asText(""));
+
+		// 제목 정규화
+		String qNorm = normalizeQuery(title);
+		String qShort = topKTokens(qNorm, 4); // 핵심 토큰 4개만
+
+		// 후보 모으기 (중복 제거)
+		Set<String> pool = new LinkedHashSet<>();
+
+		// Q1: 제목 풀토큰 + 카테고리
+		appendSearch(pool, youtubeApiClient.searchVideos(qNorm, categoryId, null, 25, "ko", "KR", accessToken));
+
+		// Q2: 축약 토큰 + 카테고리
+		appendSearch(pool, youtubeApiClient.searchVideos(qShort, categoryId, null, 25, "ko", "KR", accessToken));
+
+		// Q3: 같은 채널(동일 채널 비중은 나중에 상한 적용)
+		appendSearch(pool, youtubeApiClient.searchVideos(qShort, null, channelId, 15, "ko", "KR", accessToken));
+
+		// 원본 제거
+		pool.remove(videoId);
+		if (pool.isEmpty()) {
+			throw new IllegalStateException("No related candidates found.");
+		}
+
+		// 스코어링
+		List<Candidate> scored = new ArrayList<>();
+		TokenSet titleTokens = TokenSet.of(qNorm);
+		Set<String> tagSet = new HashSet<>(lowerAll(tags));
+
+		for (String vid : pool) {
+			JsonNode detail = youtubeApiClient.getVideo(vid, accessToken);
+			JsonNode it = (detail.path("items").isArray() && detail.path("items").size() > 0)
+					? detail.path("items").get(0)
+					: null;
+			if (it == null) {
+				continue;
+			}
+
+			JsonNode sn = it.path("snippet");
+			String t = sn.path("title").asText("");
+			String ch = sn.path("channelId").asText("");
+			String cat = sn.path("categoryId").asText("");
+			long d = parseDurationSeconds(it.path("contentDetails").path("duration").asText(""));
+
+			Set<String> candTags = new HashSet<>();
+			if (sn.has("tags") && sn.get("tags").isArray()) {
+				for (JsonNode tg : sn.get("tags")) {
+					candTags.add(tg.asText().toLowerCase());
+				}
+			}
+
+			String titleLower = t.toLowerCase();
+			// 금지 토큰(원하면 늘리기): shorts/reaction/teaser/promo
+			if (containsAny(titleLower, "shorts", "reaction", "teaser", "promo")) {
+				continue;
+			}
+
+			String defLang = sn.path("defaultLanguage").asText("");
+			String defAudio = sn.path("defaultAudioLanguage").asText("");
+			JsonNode localizations = it.path("localizations");
+			boolean koreanLanguage = isKoreanLang(defLang) || isKoreanLang(defAudio);
+			boolean koreaLocation = inKoreaByLatLng(it.path("recordingDetails"));
+			boolean koreanHints = hasKoreanHints(titleLower, candTags, localizations);
+
+			if (!koreanLanguage && !koreanHints && !koreaLocation) {
+				// 완전 제외
+				continue;
+			}
+
+			TokenSet candTokens = TokenSet.of(normalizeQuery(t));
+
+			double score = 0.0;
+
+			score += 0.45 * jaccard(titleTokens.tokens, candTokens.tokens);
+
+			if (!tagSet.isEmpty() && !candTags.isEmpty()) {
+				score += 0.15 * jaccard(tagSet, candTags);
+			}
+
+			if (!categoryId.isBlank() && categoryId.equals(cat)) {
+				score += 0.08;
+			}
+
+			if (durSec > 0 && d > 0) {
+				double ratio = (double) Math.min(d, durSec) / Math.max(d, durSec);
+				if (ratio >= 0.80) {
+					score += 0.12 * ratio;
+				}
+			}
+
+			if (channelId.equals(ch)) {
+				score += 0.08;
+			}
+
+			if (koreanLanguage) {
+				score += 0.08;
+			} else if (koreanHints) {
+				score += 0.05;
+			}
+			if (koreaLocation) {
+				score += 0.04;
+			}
+
+			boolean foreignStrong = (defLang.startsWith("en") || defAudio.startsWith("en") || defLang.startsWith("ja")
+					|| defAudio.startsWith("ja"));
+			if (foreignStrong && !koreanLanguage && !koreanHints && !koreaLocation) {
+				score -= 0.15; // 확실히 낮추기
+			}
+
+			scored.add(new Candidate(vid, ch, score));
+		}
+
+		// 정렬(점수 내림차순), 동일 채널 상한(예: 40%)
+		scored.sort((a, b) -> Double.compare(b.score, a.score));
+		List<String> pick = capSameChannel(scored, channelId, maxCount, 0.4);
+
+		// 플레이리스트 생성 + 추가
+		String playlistTitle = (titleOverride != null && !titleOverride.isBlank()) ? titleOverride
+				: String.format("[Auto] %s - 연관 영상", title);
+		JsonNode created = youtubeApiClient.createPlaylist(playlistTitle, "원본(" + videoId + ") 기반 휴리스틱 연관 영상", privacy,
+				accessToken);
+		String playlistId = created.path("id").asText();
+
+		for (String vid : pick) {
+			try {
+				youtubeApiClient.addVideoToPlaylist(playlistId, vid, accessToken);
+			} catch (Exception ignore) {
+			}
+		}
+		cacheEvictSupport.evictByPrefix("myPlaylists", accessToken + ":");
+		cacheEvictSupport.evictByPrefix("playlistDetail", accessToken + ":" + pick + ":");
+		return playlistId;
+	}
+
 	// -------------------- helpers --------------------
+
+	private static boolean isKoreanLang(String lang) {
+		if (lang == null || lang.isBlank()) {
+			return false;
+		}
+		String l = lang.toLowerCase();
+		return l.equals("ko") || l.startsWith("ko-");
+	}
+
+	private static boolean hasKoreanHints(String titleLower, Set<String> tagsLower, JsonNode localizations) {
+		boolean hasHangul = titleLower.chars()
+				.anyMatch(c -> Character.UnicodeBlock.of(c) == Character.UnicodeBlock.HANGUL_SYLLABLES
+						|| Character.UnicodeBlock.of(c) == Character.UnicodeBlock.HANGUL_JAMO
+						|| Character.UnicodeBlock.of(c) == Character.UnicodeBlock.HANGUL_COMPATIBILITY_JAMO);
+
+		boolean tagHint = false;
+		if (tagsLower != null) {
+			for (String t : tagsLower) {
+				if (t.contains("kpop") || t.contains("korea") || t.contains("korean") || t.contains("케이팝")
+						|| t.contains("한국") || t.contains("한글")) {
+					tagHint = true;
+					break;
+				}
+			}
+		}
+
+		boolean locKo = localizations != null && localizations.has("ko");
+
+		return hasHangul || tagHint || locKo;
+	}
+
+	private static boolean inKoreaByLatLng(JsonNode recordingDetails) {
+		if (recordingDetails == null) {
+			return false;
+		}
+		JsonNode loc = recordingDetails.path("location");
+		if (!loc.has("latitude") || !loc.has("longitude")) {
+			return false;
+		}
+		double lat = loc.path("latitude").asDouble();
+		double lng = loc.path("longitude").asDouble();
+		return (lat >= 33.0 && lat <= 39.5) && (lng >= 124.0 && lng <= 132.0);
+	}
 
 	private List<VideoListItem> parseItems(JsonNode items, String excludeId) throws Exception {
 		List<String> ids = new ArrayList<>();
@@ -769,4 +976,119 @@ public class YoutubeServiceImpl implements YoutubeService {
 		int i = iso.indexOf('T');
 		return i > 0 ? iso.substring(0, i) : iso;
 	}
+
+	public static String normalizeQuery(String title) {
+		if (title == null) {
+			return "";
+		}
+		String t = title.replaceAll("\\(.*?\\)|\\[.*?\\]", " "); // 괄호제거
+		t = t.replaceAll("[^\\p{L}\\p{Nd}\\s]", " "); // 특수문자 제거
+		t = Normalizer.normalize(t, Normalizer.Form.NFKC);
+		t = t.replaceAll("\\s+", " ").trim();
+		// 불용어/노이즈 토큰 간단 제거
+		t = t.replaceAll("(?i)official|mv|m\\/v|lyrics?|live|shorts?|ver\\.?|full|hd|4k", " ").replaceAll("\\s+", " ")
+				.trim();
+		return t;
+	}
+
+	private static void appendSearch(Set<String> pool, JsonNode searchRes) {
+		for (JsonNode it : searchRes.path("items")) {
+			String vid = it.path("id").path("videoId").asText(null);
+			if (vid != null) {
+				pool.add(vid);
+			}
+		}
+	}
+
+	private static List<String> capSameChannel(List<Candidate> scored, String originChannel, int maxCount,
+			double sameChannelCapRatio) {
+		int cap = Math.max(1, (int) Math.floor(maxCount * sameChannelCapRatio));
+		List<String> out = new ArrayList<>();
+		int sameChCnt = 0;
+
+		for (Candidate c : scored) {
+			if (out.size() >= maxCount) {
+				break;
+			}
+			// 동일 채널 상한
+			if (originChannel.equals(c.channelId)) {
+				if (sameChCnt >= cap) {
+					continue;
+				}
+				sameChCnt++;
+			}
+			out.add(c.videoId);
+		}
+		return out;
+	}
+
+	private static boolean containsAny(String s, String... keys) {
+		for (String k : keys) {
+			if (s.contains(k)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static List<String> lowerAll(List<String> in) {
+		return in.stream().map(String::toLowerCase).toList();
+	}
+
+	private static long parseDurationSeconds(String iso8601) {
+		if (iso8601 == null || iso8601.isBlank()) {
+			return 0;
+		}
+		return java.time.Duration.parse(iso8601).getSeconds();
+	}
+
+	private static String topKTokens(String s, int k) {
+		String[] t = s.split("\\s+");
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < Math.min(k, t.length); i++) {
+			if (i > 0) {
+				sb.append(' ');
+			}
+			sb.append(t[i]);
+		}
+		return sb.toString();
+	}
+
+	private static double jaccard(Set<String> a, Set<String> b) {
+		if (a.isEmpty() || b.isEmpty()) {
+			return 0.0;
+		}
+		Set<String> inter = new HashSet<>(a);
+		inter.retainAll(b);
+		Set<String> union = new HashSet<>(a);
+		union.addAll(b);
+		return (double) inter.size() / (double) union.size();
+	}
+
+	static class TokenSet {
+		final Set<String> tokens = new HashSet<>();
+
+		static TokenSet of(String s) {
+			TokenSet ts = new TokenSet();
+			for (String t : s.toLowerCase().split("\\s+")) {
+				if (!t.isBlank()) {
+					ts.tokens.add(t);
+				}
+			}
+			return ts;
+		}
+	}
+
+	static class Candidate {
+		final String videoId;
+		final String channelId;
+		final double score;
+
+		Candidate(String v, String c, double s) {
+			videoId = v;
+			channelId = c;
+			score = s;
+		}
+	}
+
 }

@@ -36,9 +36,6 @@ import com.example.music.service.serviceImpl.YoutubeServiceImpl.RelatedResponse;
 import com.google.api.client.googleapis.json.GoogleJsonError;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Controller
 @RequestMapping("/youtube")
 public class YoutubeController {
@@ -53,8 +50,13 @@ public class YoutubeController {
 	GoogleAccessTokenResolver tokenResolver;
 
 	@GetMapping("/{id}")
-	public String detail(@PathVariable("id") String id, Model model, HttpSession session) {
+	public String detail(@PathVariable("id") String id, Model model, HttpSession session, HttpServletRequest request) {
 		User user = (User) session.getAttribute("loginUser");
+
+		if (user == null) {
+			errorMessageWithRedirect(request, "로그인이 필요합니다.", model);
+			return "common/error";
+		}
 
 		VideoDetail video = youtubeService.getDetail(id);
 		List<VideoListItem> related = youtubeService.getRelated(id, 12);
@@ -157,5 +159,17 @@ public class YoutubeController {
 		model.addAttribute("items", detail.getItems());
 		model.addAttribute("size", size);
 		return "playlist/detail";
+	}
+
+	@PostMapping("/related-to-playlist")
+	public ResponseEntity<?> createRelatedPlaylist(@RequestParam String videoId,
+			@RequestParam(defaultValue = "20") int maxResults, @RequestParam(required = false) String title,
+			@RequestParam(defaultValue = "private") String privacy, HttpSession session) {
+		// 사용자별 OAuth 액세스 토큰 확보
+		String accessToken = tokenResolver.getValidAccessToken(session);
+
+		String playlistId = youtubeService.createRelatedPlaylist(videoId, maxResults, title, privacy, accessToken);
+
+		return ResponseEntity.ok(Map.of("playlistId", playlistId, "message", "연관 영상 플레이리스트 생성 완료"));
 	}
 }

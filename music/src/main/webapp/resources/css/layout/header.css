@@ -1,9 +1,9 @@
 tbody, html {
 	margin: 0;
-	padding: 0; -
-	-yt-spec-10-percent-layer: var(- -yt-spec-outline); -
-	-yt-spec-outline: rgba(0, 0, 0, 0.1); -
-	-yt-spec-text-primary: #0f0f0f;
+	padding: 0;
+	--yt-spec-10-percent-layer: var(- -yt-spec-outline);
+	--yt-spec-outline: rgba(0, 0, 0, 0.1);
+	--yt-spec-text-primary: #0f0f0f;
 }
 
 .header-container {
@@ -111,8 +111,7 @@ tbody, html {
 }
 
 .filter-btn {
-	padding: 8px 12px;
-	/*background-color: #eee;*/
+	padding: 6px 10px;
 	background-color: white;
 	border: 1px solid #ccc;
 	border-radius: 50px;
@@ -225,4 +224,79 @@ tbody, html {
 
 .close-btn:hover {
 	cursor: pointer;
+}
+
+.user-menu {
+	position: relative;
+}
+
+.user-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	border: 1px solid #d9d9d9;
+	background: #fff;
+	border-radius: 999px;
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.user-chip .avatar {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.user-chip .name {
+	max-width: 140px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.user-chip .caret {
+	color: #666;
+	font-size: 12px;
+}
+
+.user-dropdown {
+	position: absolute;
+	right: 0;
+	top: calc(100% + 8px);
+	min-width: 220px;
+	background: #fff;
+	border: 1px solid #e5e5e5;
+	border-radius: 12px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+	padding: 6px 0;
+	display: none;
+	z-index: 2000;
+}
+
+.user-dropdown.show {
+	display: block;
+}
+
+.user-dropdown .item {
+	display: block;
+	width: 100%;
+	padding: 10px 14px;
+	font-size: 14px;
+	text-align: left;
+	color: #0f0f0f;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.user-dropdown .item:hover {
+	background: #f5f5f5;
+}
+
+.user-dropdown .item.danger {
+	color: #d93025;
+	font-weight: 700;
 }

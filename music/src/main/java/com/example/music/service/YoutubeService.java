@@ -35,4 +35,7 @@ public interface YoutubeService {
 	PageResponse<YoutubePlaylist> getMyPlaylists(String accessToken, int size, String pageToken);
 
 	YoutubePlaylistDetail getPlaylistDetail(String accessToken, String playlistId, int size, String pageToken);
+
+	String createRelatedPlaylist(String videoId, int maxCount, String titleOverride, String privacy,
+			String accessToken);
 }

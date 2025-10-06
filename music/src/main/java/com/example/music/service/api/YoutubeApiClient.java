@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -14,14 +15,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +48,9 @@ public class YoutubeApiClient {
 	RestTemplate restTemplate;
 
 //	private static final String API_KEY = "AIzaSyBEZw8L1Tfnmc0O_qlqtOltVDTV8JRZPRc";
-	private static final String API_KEY = "AIzaSyB-w0ykEEHVWU1eKqiJ6a8OQHs_CMX6c_g";
+//	private static final String API_KEY = "AIzaSyBaBoI87JsjrK5l5J9NgW5yTrVdRmEj0Nw";
+	private static final String API_KEY = "AIzaSyCTwfJV74t9C-JpvGQC1D1TK0ZkyHs_x9Q";
+//	private static final String API_KEY = "AIzaSyB-w0ykEEHVWU1eKqiJ6a8OQHs_CMX6c_g";
 	private static final String API_URL = "https://www.googleapis.com/youtube/v3";
 	private static final String KOREAN = "&relevanceLanguage=ko&regionCode=KR";
 	private static final String CHANNEL_URL = API_URL + "/channels";
@@ -59,6 +65,13 @@ public class YoutubeApiClient {
 	private YouTube clientWithToken(String accessToken) {
 		return new YouTube.Builder(HTTP, JSON, req -> req.getHeaders().setAuthorization("Bearer " + accessToken))
 				.setApplicationName("music").build();
+	}
+
+	private HttpHeaders bearer(String accessToken) {
+		HttpHeaders h = new HttpHeaders();
+		h.setBearerAuth(accessToken);
+		h.setContentType(MediaType.APPLICATION_JSON);
+		return h;
 	}
 
 	/**
@@ -488,6 +501,105 @@ public class YoutubeApiClient {
 		} catch (Exception e) {
 			throw new RuntimeException("비디오 상세 조회 실패", e);
 		}
+	}
+
+	/**
+	 * 단일 비디오의 상세 정보 조회
+	 * 
+	 * @param videoId     비디오 ID
+	 * @param accessToken OAuth2 Access Token (Google)
+	 * @return JsonNode
+	 */
+	public JsonNode getVideo(String videoId, String accessToken) {
+		URI uri = UriComponentsBuilder.fromHttpUrl(API_URL + "/videos")
+				.queryParam("part", "snippet,contentDetails,recordingDetails,localizations").queryParam("id", videoId)
+				.build().toUri();
+
+		ResponseEntity<JsonNode> res = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(bearer(accessToken)),
+				JsonNode.class);
+		return Objects.requireNonNull(res.getBody());
+	}
+
+	/**
+	 * 동영상 검색
+	 * 
+	 * @param q                 검색어
+	 * @param categoryId        카테고리 ID (null 가능)
+	 * @param channelId         채널 ID (null 가능)
+	 * @param max               최대 결과 수 (1~50, 기본 25)
+	 * @param relevanceLanguage 관련 언어 코드 (null 가능)
+	 * @param regionCode        지역 코드 (null 가능)
+	 * @param accessToken       OAuth2 Access Token (Google)
+	 * @return 검색 결과 JsonNode
+	 */
+	public JsonNode searchVideos(String q, String categoryId, String channelId, Integer max, String relevanceLanguage,
+			String regionCode, String accessToken) {
+		UriComponentsBuilder b = UriComponentsBuilder.fromHttpUrl(API_URL + "/search").queryParam("part", "snippet")
+				.queryParam("type", "video").queryParam("order", "relevance")
+				.queryParam("maxResults", Math.min(Math.max(max == null ? 25 : max, 1), 50)).queryParam("q", q);
+
+		if (categoryId != null && !categoryId.isBlank()) {
+			b.queryParam("videoCategoryId", categoryId);
+		}
+		if (channelId != null && !channelId.isBlank()) {
+			b.queryParam("channelId", channelId);
+		}
+		if (relevanceLanguage != null && !relevanceLanguage.isBlank()) {
+			b.queryParam("relevanceLanguage", relevanceLanguage);
+		}
+		if (regionCode != null && !regionCode.isBlank()) {
+			b.queryParam("regionCode", regionCode);
+		}
+
+		URI uri = b.build().toUri();
+		ResponseEntity<JsonNode> res = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(bearer(accessToken)),
+				JsonNode.class);
+		return Objects.requireNonNull(res.getBody());
+	}
+
+	/**
+	 * 새 플레이리스트 생성
+	 * 
+	 * @param title       제목
+	 * @param description 설명 (null 가능)
+	 * @param privacy     공개 범위 (public, private, unlisted) (null 가능, 기본 private)
+	 * @param accessToken OAuth2 Access Token (Google)
+	 * @return 생성된 플레이리스트 JsonNode
+	 */
+	public JsonNode createPlaylist(String title, String description, String privacy, String accessToken) {
+		URI uri = UriComponentsBuilder.fromHttpUrl(API_URL + "/playlists").queryParam("part", "snippet,status")
+				.build(true).toUri();
+
+		Map<String, Object> body = new HashMap<>();
+		Map<String, Object> snippet = Map.of("title", title, "description", description == null ? "" : description);
+		Map<String, Object> status = Map.of("privacyStatus",
+				(privacy == null || privacy.isBlank()) ? "private" : privacy);
+		body.put("snippet", snippet);
+		body.put("status", status);
+
+		ResponseEntity<JsonNode> res = restTemplate.exchange(uri, HttpMethod.POST,
+				new HttpEntity<>(body, bearer(accessToken)), JsonNode.class);
+		return Objects.requireNonNull(res.getBody());
+	}
+
+	/**
+	 * 플레이리스트에 동영상 추가
+	 * 
+	 * @param playlistId  플레이리스트 ID
+	 * @param videoId     비디오 ID
+	 * @param accessToken OAuth2 Access Token (Google)
+	 * @return 추가된 플레이리스트 아이템 JsonNode
+	 */
+	public JsonNode addVideoToPlaylist(String playlistId, String videoId, String accessToken) {
+		URI uri = UriComponentsBuilder.fromHttpUrl(API_URL + "/playlistItems").queryParam("part", "snippet").build(true)
+				.toUri();
+
+		Map<String, Object> body = Map.of("snippet",
+				Map.of("playlistId", playlistId, "resourceId", Map.of("kind", "youtube#video", "videoId", videoId)));
+
+		ResponseEntity<JsonNode> res = restTemplate.exchange(uri, HttpMethod.POST,
+				new HttpEntity<>(body, bearer(accessToken)), JsonNode.class);
+		return Objects.requireNonNull(res.getBody());
 	}
 
 	@SuppressWarnings("deprecation")

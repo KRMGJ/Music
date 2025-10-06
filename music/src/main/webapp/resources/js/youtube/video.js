@@ -180,3 +180,44 @@ $(document).on('click', '#btnMore', function() {
 
 })(jQuery);
 
+function callCreateRelated(videoId) {
+	const title = prompt('새 플레이리스트 제목을 입력하세요.\n(비우면 자동으로 생성됩니다)', '');
+	const privacy = 'private'; // 필요하면 prompt/select로 바꿔도 OK: 'public'|'unlisted'|'private'
+	if (videoId == null) return;
+
+	// 버튼 잠금 및 피드백
+	const $btns = $('#btnMakeRelated, #btnMakeRelatedAside').prop('disabled', true).text('생성 중…');
+
+	$.post('/youtube/related-to-playlist', {
+		videoId: videoId,
+		maxResults: 30,
+		title: title || '',
+		privacy: privacy
+	})
+		.done(res => {
+			alert('연관 영상 플레이리스트 생성 완료!');
+			console.log(res);
+		})
+		.fail(function(xhr) {
+		  const msg =
+		    (xhr && xhr.responseJSON && xhr.responseJSON.error) ||
+		    (xhr && xhr.responseText) ||
+		    '알 수 없는 오류';
+		  alert('생성에 실패했습니다.');
+		  console.error(msg);
+		})
+		.always(() => {
+			$btns.prop('disabled', false).each(function() {
+				const isAside = this.id === 'btnMakeRelatedAside';
+				$(this).text(isAside ? '새 플레이리스트 만들기' : '🧩 관련영상으로 새 플레이리스트');
+			});
+		});
+}
+
+$(document).on('click', '#btnMakeRelated', function() {
+	callCreateRelated($(this).data('video'));
+});
+$(document).on('click', '#btnMakeRelatedAside', function() {
+	callCreateRelated($(this).data('video'));
+});
+

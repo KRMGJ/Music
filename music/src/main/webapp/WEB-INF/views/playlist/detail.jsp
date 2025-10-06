@@ -57,7 +57,7 @@
 					<c:forEach var="v" items="${items}">
 						<div class="video-card">
 							<div class="video-thumbnail-container">
-								<a href="/video/${v.id}"> <img class="video-thumbnail"
+								<a href="/youtube/${v.id}"> <img class="video-thumbnail"
 									src="${v.thumbnailUrl}" alt="${v.title}"> <c:if
 										test="${not empty v.formattedDuration}">
 										<span class="video-duration">${v.formattedDuration}</span>
