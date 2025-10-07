@@ -7,6 +7,7 @@ function renderCommentItem(cmt) {
 		+ '  <div class="comment-body">'
 		+ '    <div class="comment-author">' + (cmt.authorDisplayName || '알 수 없음') + '</div>'
 		+ '    <div class="comment-text">' + (cmt.textDisplay || '') + '</div>'
+		+ '    <button type="button" class="comment-more" style="display:none;">더보기</button>'
 		+ '    <div class="comment-meta">' + formatRelativeKST(cmt.publishedAt) + ' · 좋아요 ' + (cmt.likeCount || 0) + '</div>';
 
 	if (replyCount > 0) {
@@ -68,6 +69,7 @@ function loadComments(token, order) {
 			for (const item of items) {
 				$('#commentList').append(renderCommentItem(item));
 			}
+			applyClamp($('#commentList'));
 
 			if (resp.nextPageToken) {
 				$btn
@@ -191,4 +193,46 @@ function formatRelativeKST(iso) {
 
 	return formatDateKST(iso); // 1주 이상은 절대시간으로
 }
+
+// 요소가 잘리는지 판단
+function isOverflow($el) {
+	const el = $el[0];
+	if (!el) return false;
+	return el.scrollHeight - 1 > el.clientHeight; // 여유 1px
+}
+
+// 새로 들어온 댓글에 3줄 클램프 적용
+function applyClamp($scope) {
+	$scope.find('.comment-text').each(function() {
+		const $t = $(this);
+		if ($t.data('clamp-inited')) return;
+
+		// 일단 3줄로 제한
+		$t.addClass('clamp-3');
+		// 그라데이션 & 버튼 표시 여부 결정
+		if (isOverflow($t)) {
+			$t.addClass('has-gradient');
+			$t.next('.comment-more').show();
+		} else {
+			$t.removeClass('clamp-3 has-gradient');
+			$t.next('.comment-more').hide();
+		}
+		$t.data('clamp-inited', true);
+	});
+}
+
+// 더보기/간략히 토글
+$(document).on('click', '.comment-more', function() {
+	const $btn = $(this);
+	const $text = $btn.prev('.comment-text');
+	const collapsed = $text.hasClass('clamp-3');
+
+	if (collapsed) {
+		$text.removeClass('clamp-3 has-gradient');
+		$btn.text('간략히');
+	} else {
+		$text.addClass('clamp-3 has-gradient');
+		$btn.text('더보기');
+	}
+});
 

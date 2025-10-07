@@ -47,9 +47,9 @@ public class YoutubeApiClient {
 	@Autowired
 	RestTemplate restTemplate;
 
-//	private static final String API_KEY = "AIzaSyBEZw8L1Tfnmc0O_qlqtOltVDTV8JRZPRc";
+	private static final String API_KEY = "AIzaSyBEZw8L1Tfnmc0O_qlqtOltVDTV8JRZPRc";
 //	private static final String API_KEY = "AIzaSyBaBoI87JsjrK5l5J9NgW5yTrVdRmEj0Nw";
-	private static final String API_KEY = "AIzaSyCTwfJV74t9C-JpvGQC1D1TK0ZkyHs_x9Q";
+//	private static final String API_KEY = "AIzaSyCTwfJV74t9C-JpvGQC1D1TK0ZkyHs_x9Q";
 //	private static final String API_KEY = "AIzaSyB-w0ykEEHVWU1eKqiJ6a8OQHs_CMX6c_g";
 	private static final String API_URL = "https://www.googleapis.com/youtube/v3";
 	private static final String KOREAN = "&relevanceLanguage=ko&regionCode=KR";

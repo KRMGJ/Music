@@ -44,10 +44,44 @@
 
 .comment-text {
 	margin-bottom: 4px;
+	position: relative;
+	line-height: 1.45;
+}
+
+.comment-text.clamp-3 {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.comment-text.clamp-3.has-gradient::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 2.2em;
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 80%);
 }
 
 .comment-text p {
 	margin: 0;
+}
+
+.comment-more {
+	background: none;
+	border: none;
+	padding: 0;
+	margin-top: 2px;
+	color: #065fd4;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.comment-more:hover {
+	text-decoration: underline;
 }
 
 .comment-meta {
